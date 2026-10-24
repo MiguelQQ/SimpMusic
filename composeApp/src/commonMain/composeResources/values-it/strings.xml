@@ -228,8 +228,8 @@
     <string name="skip_sponsor_part_of_video">Salta la parte dello sponsor del video</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Si è verificato un errore imprevisto. Ci dispiace per l'inconvenienza.</string>
     <string name="customactivityoncrash_error_activity_restart_app">Riavvia l'applicazione</string>
-    <string name="help_build_lyrics_database">Aiuta SimpMusic a costruire il database dei testi</string>
-    <string name="help_build_lyrics_database_description">Invia i tuoi testi salvati al database dei testi di SimpMusic</string>
+    <string name="help_build_lyrics_database">Aiuta Killmon Music a costruire il database dei testi</string>
+    <string name="help_build_lyrics_database_description">Invia i tuoi testi salvati al database dei testi di Killmon Music</string>
     <string name="customactivityoncrash_error_activity_close_app">Chiudi l'applicazione</string>
     <string name="customactivityoncrash_error_activity_error_details">Dettagli errore</string>
     <string name="customactivityoncrash_error_activity_error_details_title">Dettagli errore</string>
@@ -501,7 +501,7 @@
     <string name="later">Dopo</string>
     <string name="give_a_star">Dai una stella</string>
     <string name="enjoying_simpmusic">Divertiti con Killmon Music</string>
-    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">Se ti piace usare SimpMusic, stella SimpMusic su GitHub o lasciare una recensione su</string>
+    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">Se ti piace usare Killmon Music, stella Killmon Music su GitHub o lasciare una recensione su</string>
     <string name="if_you_love_my_work_consider">"Se ami il mio lavoro, considera"</string>
     <string name="buying_me_a_coffee">di offrirmi un caffè.</string>
     <string name="fade_audio_effect">Effetto di dissolvenza audio</string>
@@ -563,8 +563,8 @@
     <string name="contributor_name">Nome del collaboratore</string>
     <string name="contributor_email">E-mail del collaboratore</string>
     <string name="anonymous">Anonimo</string>
-    <string name="simpmusic_lyrics">Testi di SimpMusic</string>
-    <string name="lyrics_provider_simpmusic">Testi forniti da SimpMusic Lyrics</string>
+    <string name="simpmusic_lyrics">Testi di Killmon Music</string>
+    <string name="lyrics_provider_simpmusic">Testi forniti da Killmon Lyrics</string>
     <string name="backup_in_progress">Duplicazione in corso</string>
     <string name="restore_in_progress">Ripristino in corso</string>
     <string name="backup_downloaded">Copia dei dati scaricati</string>
@@ -664,7 +664,7 @@
     <string name="local_tracking_description">Registra la cronologia di ascolto nel database locale</string>
     <string name="blog_notification_title">Notifiche post blog</string>
     <string name="blog_notification_description">Ricevi una notifica quando viene pubblicato un nuovo post sul blog</string>
-    <string name="simpmusic_charts">Classifica SimpMusic</string>
+    <string name="simpmusic_charts">Classifica Killmon Music</string>
     <string name="crossfading">Dissolvenza incrociata</string>
     <string name="your_320kbps_url">Il tuo URL 320kbps</string>
     <string name="your_320kbps_url_description">Lascia vuoto per scegliere automaticamente un URL di lavoro dal checker uptime.</string>

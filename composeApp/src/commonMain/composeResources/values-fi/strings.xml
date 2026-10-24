@@ -186,7 +186,7 @@
     <string name="what_segments_will_be_skipped">Valise ohitettavat segmentit</string>
     <string name="save">Tallenna</string>
     <string name="saved">Tallennettu</string>
-    <string name="sponsor_block_intro">SponsorBlock on joukkoistettu järjestelmä YouTube-videoiden ärsyttävien osien ohittamiseen.\nLisätietoja: https://sponsor.ajay.app/\nSimpMusicissa SponsorBlock on käytettävissä vain, kun laite on online-tilassa</string>
+    <string name="sponsor_block_intro">SponsorBlock on joukkoistettu järjestelmä YouTube-videoiden ärsyttävien osien ohittamiseen.\nLisätietoja: https://sponsor.ajay.app/\nKillmon Musicissa SponsorBlock on käytettävissä vain, kun laite on online-tilassa</string>
     <string name="skip_sponsor_part_of_video">Ohita videon sponsoriosa</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Tapahtui odottamaton virhe. Pahoittelemme.</string>
     <string name="customactivityoncrash_error_activity_restart_app">Käynnistä sovellus uudelleen</string>
@@ -239,7 +239,7 @@
     <string name="email">Sähköposti</string>
     <string name="password">Salasana</string>
     <string name="please_enter_your_email_and_password">Syötä sähköpostiosoitteesi ja salasanasi</string>
-    <string name="translation_language_message">Kirjoita kielikoodi (esim: en) (2 kirjainta). Jos haluat asettaa kielen samaksi kuin SimpMusicissa, jätä kenttä tyhjäksi.</string>
+    <string name="translation_language_message">Kirjoita kielikoodi (esim: en) (2 kirjainta). Jos haluat asettaa kielen samaksi kuin Killmon Musicissa, jätä kenttä tyhjäksi.</string>
     <string name="invalid_language_code">Virheellinen kielikoodi</string>
     <string name="lyrics_provider_youtube">YouTuben tarjoamat sanoitukset</string>
     <string name="limit_player_cache">Rajoita soittimen välimuistia</string>

@@ -129,7 +129,7 @@ tasks.named<hydraulic.conveyor.gradle.WriteConveyorConfigTask>("writeConveyorCon
         destination.get().asFile.appendText(
             """
             |app.fsname = simpmusic
-            |app.display-name = SimpMusic
+            |app.display-name = Killmon Music
             |app.rdns-name = com.maxrave.simpmusic
             |
             |// Override the Gradle-detected classpath with the ProGuard'd
@@ -167,7 +167,7 @@ compose.desktop {
             }
             targetFormats(*listTarget.toTypedArray())
             modules("jdk.unsupported")
-            packageName = "SimpMusic"
+            packageName = "Killmon Music"
             macOS {
                 val formatedDate =
                     Instant.now().let {
@@ -399,13 +399,13 @@ tasks.register("packageConveyorAppImage") {
             """[Desktop Entry]
             |Type=Application
             |Version=1.0
-            |Name=SimpMusic
-            |Comment=SimpMusic v$versionName - FOSS YouTube Music Client
+            |Name=Killmon Music
+            |Comment=Killmon Music v$versionName - FOSS YouTube Music Client
             |Exec=bin/simpmusic %u
             |Icon=simpmusic
             |Terminal=false
             |Categories=Audio;AudioVideo;
-            |StartupWMClass=SimpMusic
+            |StartupWMClass=Killmon Music
             |MimeType=x-scheme-handler/simpmusic;x-scheme-handler/wordbyword;
             |
             """.trimMargin(),

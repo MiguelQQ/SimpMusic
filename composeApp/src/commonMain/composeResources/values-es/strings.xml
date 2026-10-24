@@ -42,6 +42,7 @@
     <string name="restore_success">Restauración exitosa</string>
     <string name="search">Buscar</string>
     <string name="songs">Canciones</string>
+    <string name="music">Música</string>
     <string name="albums">Álbumes</string>
     <string name="playlists">Listas de reproducción</string>
     <string name="artists">Artistas</string>
@@ -216,8 +217,8 @@
     <string name="skip_sponsor_part_of_video">Omitir patrocinadores en el vídeo</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Se ha producido un error inesperado. Disculpa las molestias.</string>
     <string name="customactivityoncrash_error_activity_restart_app">Reiniciar app</string>
-    <string name="help_build_lyrics_database">Ayuda a SimpMusic a contruir la base de datos de letras</string>
-    <string name="help_build_lyrics_database_description">Envía tus letras guardadas a la base de datos de letras de SimpMusic</string>
+    <string name="help_build_lyrics_database">Ayuda a Killmon Music a contruir la base de datos de letras</string>
+    <string name="help_build_lyrics_database_description">Envía tus letras guardadas a la base de datos de letras de Killmon Music</string>
     <string name="customactivityoncrash_error_activity_close_app">Cerrar app</string>
     <string name="customactivityoncrash_error_activity_error_details">Detalles del error</string>
     <string name="customactivityoncrash_error_activity_error_details_title">Detalles del error</string>
@@ -497,7 +498,7 @@
     <string name="later">Más tarde</string>
     <string name="give_a_star">Dar una estrella</string>
     <string name="enjoying_simpmusic">Disfrutando Killmon Music</string>
-    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">Si te gusta usar SimpMusic, da una estrella a SimpMusic en gituhb o deja una reseña</string>
+    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">Si te gusta usar Killmon Music, da una estrella a Killmon Music en gituhb o deja una reseña</string>
     <string name="if_you_love_my_work_consider">"Si amas mi trabajo, considera "</string>
     <string name="buying_me_a_coffee">comprame un café.</string>
     <string name="footguns_promo_title">Every trap I fell into</string>
@@ -556,8 +557,8 @@
     <string name="contributor_name">Nombre del contribuidor</string>
     <string name="contributor_email">Correo del contribuidor</string>
     <string name="anonymous">Anónimo</string>
-    <string name="simpmusic_lyrics">SimpMusic Lyrics</string>
-    <string name="lyrics_provider_simpmusic">Letras proporcionadas por SimpMusic Lyrics</string>
+    <string name="simpmusic_lyrics">Killmon Lyrics</string>
+    <string name="lyrics_provider_simpmusic">Letras proporcionadas por Killmon Lyrics</string>
     <string name="backup_in_progress">Copia de seguridad en curso</string>
     <string name="restore_in_progress">Restauración en curso</string>
     <string name="backup_downloaded">Respaldar datos descargados</string>
@@ -580,7 +581,7 @@
     <string name="update_channel">Actualizar canal</string>
     <string name="enable_liquid_glass_effect">Habilitar efecto de vidrio líquido (BETA)</string>
     <string name="enable_liquid_glass_effect_description">Activa el efecto de vidrio líquido de iOS en algunas posiciones (Android 13+)</string>
-    <string name="your_library">Mi biblioteca</string>
+    <string name="your_library">Tu biblioteca</string>
     <string name="play_explicit_content">Reproducir contenido explícito</string>
     <string name="play_explicit_content_description">Habilitar la reproducción de contenido explícito</string>
     <string name="explicit_content_blocked">Omitir contenido explícito</string>
@@ -667,7 +668,7 @@
     <string name="local_tracking_description">Registra tu historial de escucha en la base de datos local</string>
     <string name="blog_notification_title">Notificaciones de publicaciones del blog</string>
     <string name="blog_notification_description">Recibe una notificación cuando se publique una nueva entrada del blog</string>
-    <string name="simpmusic_charts">Gráficos SimpMusic</string>
+    <string name="simpmusic_charts">Gráficos Killmon Music</string>
     <string name="crossfading">Crossfade</string>
     <string name="your_320kbps_url">Su URL de 320kbps</string>
     <string name="your_320kbps_url_description">Dejar en blanco para elegir automáticamente una URL funcional desde la comprobación de tiempo de activación.</string>
@@ -689,7 +690,7 @@
     <string name="import_result">Creadas %1$d listas de reproducción e importadas %2$d canciones.</string>
     <string name="import_result_skipped">Se omitieron %1$d entradas porque su canción no estaba en el archivo.</string>
     <string name="import_failed">Error en la importación</string>
-    <string name="import_invalid_file">Este archivo no es un archivo de importación válido de SimpMusic. Convierte tu biblioteca en simpmusic.org primero.</string>
+    <string name="import_invalid_file">Este archivo no es un archivo de importación válido de Killmon Music. Convierte tu biblioteca en simpmusic.org primero.</string>
     <string name="analytics">Analíticas</string>
     <string name="select_all">Seleccionar todo</string>
     <string name="n_selected">%1$d seleccionados</string>

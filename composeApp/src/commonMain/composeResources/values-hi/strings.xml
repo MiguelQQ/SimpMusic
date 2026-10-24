@@ -147,7 +147,7 @@
     <string name="albums_inArtist">एल्बम</string>
     <string name="singles_inArtist">सिंगल्स</string>
     <string name="fans_might_also_like_inArtist">प्रशंसकों को यह भी पसंद आ सकता है</string>
-    <string name="crash_log">सिम्पम्यूजिक क्रैश हो गया। इस समस्या के लिए खेद है।\nक्रैश-लॉग डेवलपर को भेजें</string>
+    <string name="crash_log">Killmon Music क्रैश हो गया। इस समस्या के लिए खेद है।\nक्रैश-लॉग डेवलपर को भेजें</string>
     <string name="crash">क्रैश</string>
     <string name="send">भेजें</string>
     <string name="mail_subject">क्रैश रिपोर्ट</string>
@@ -202,12 +202,12 @@
     <string name="what_segments_will_be_skipped">कौन से सेगमेंट छोड़े जाएंगे</string>
     <string name="save">सहेजें</string>
     <string name="saved">सहेजा गया</string>
-    <string name="sponsor_block_intro">स्पॉन्सरब्लॉक यूट्यूब वीडियो के परेशान करने वाले हिस्सों को छोड़ने की एक सामूहिक प्रणाली है।\nअधिक जानकारी: https://sponsor.ajay.app/\nसिम्पम्यूजिक में, स्पॉन्सरब्लॉक केवल डिवाइस ऑनलाइन होने पर उपलब्ध है</string>
+    <string name="sponsor_block_intro">स्पॉन्सरब्लॉक यूट्यूब वीडियो के परेशान करने वाले हिस्सों को छोड़ने की एक सामूहिक प्रणाली है।\nअधिक जानकारी: https://sponsor.ajay.app/\nKillmon Music में, स्पॉन्सरब्लॉक केवल डिवाइस ऑनलाइन होने पर उपलब्ध है</string>
     <string name="skip_sponsor_part_of_video">वीडियो के प्रायोजक भाग को छोड़ें</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">एक अप्रत्याशित त्रुटि हुई। क्षमा करें।</string>
     <string name="customactivityoncrash_error_activity_restart_app">ऐप पुनः प्रारंभ करें</string>
-    <string name="help_build_lyrics_database">सिम्पम्यूजिक गीत को गीत डेटाबेस बनाने में सहायता करें</string>
-    <string name="help_build_lyrics_database_description">अपने सहेजे गए गीत सिम्पम्यूजिक गीत डेटाबेस में भेजें</string>
+    <string name="help_build_lyrics_database">Killmon Music गीत को गीत डेटाबेस बनाने में सहायता करें</string>
+    <string name="help_build_lyrics_database_description">अपने सहेजे गए गीत Killmon Music गीत डेटाबेस में भेजें</string>
     <string name="customactivityoncrash_error_activity_close_app">ऐप बंद करें</string>
     <string name="customactivityoncrash_error_activity_error_details">त्रुटि विवरण</string>
     <string name="customactivityoncrash_error_activity_error_details_title">त्रुटि विवरण</string>
@@ -242,7 +242,7 @@
     <string name="saved_to_local_playlist">स्थानीय प्लेलिस्ट में सहेजा गया</string>
     <string name="if_you_want_to_unsync_this_playlist_please_go_to_local_playlist">यदि आप इस प्लेलिस्ट को असिंक करना चाहते हैं, कृपया स्थानीय प्लेलिस्ट पर जाएं</string>
     <string name="log_in_to_get_YouTube_playlist">यूट्यूब प्लेलिस्ट पाने के लिए लॉग इन करें</string>
-    <string name="sync_playlist_warning">सिम्पम्यूजिक स्वचालित रूप से एक यूट्यूब म्यूजिक प्लेलिस्ट बनाएगा। क्या आप सुनिश्चित हैं?</string>
+    <string name="sync_playlist_warning">Killmon Music स्वचालित रूप से एक यूट्यूब म्यूजिक प्लेलिस्ट बनाएगा। क्या आप सुनिश्चित हैं?</string>
     <string name="syncing">सिंक हो रहा है</string>
     <string name="unsync_playlist_warning">"इस प्लेलिस्ट को असिंक करें? यह प्लेलिस्ट यूट्यूब म्यूजिक से नहीं हटाई जाएगी"</string>
     <string name="unsyncing">असिंक हो रहा है</string>
@@ -259,7 +259,7 @@
     <string name="email">ईमेल</string>
     <string name="password">पासवर्ड</string>
     <string name="please_enter_your_email_and_password">कृपया अपना ईमेल और पासवर्ड दर्ज करें</string>
-    <string name="translation_language_message">भाषा कोड टाइप करें (उदा: hi) (2 अक्षर)। यदि आप सिम्पम्यूजिक की भाषा के समान सेट करना चाहते हैं, कृपया एडिट बॉक्स खाली छोड़ दें।</string>
+    <string name="translation_language_message">भाषा कोड टाइप करें (उदा: hi) (2 अक्षर)। यदि आप Killmon Music की भाषा के समान सेट करना चाहते हैं, कृपया एडिट बॉक्स खाली छोड़ दें।</string>
     <string name="invalid_language_code">अमान्य भाषा कोड</string>
     <string name="lyrics_provider_youtube">गीत यूट्यूब द्वारा प्रदान किए गए</string>
     <string name="lyrics_provider_betterlyrics">Lyrics उपलब्ध कराने के लिए BetterLyrics का धन्यवाद</string>
@@ -399,8 +399,8 @@
     <string name="other_version">अन्य वर्ज़न</string>
     <string name="later">बाद में</string>
     <string name="give_a_star">एक सितारा दें</string>
-    <string name="enjoying_simpmusic">सिम्पम्यूजिक का आनंद ले रहे हैं</string>
-    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">यदि आपको सिम्पम्यूजिक का उपयोग करना अच्छा लगता है, तो गिटहब पर सिम्पम्यूजिक को स्टार करें या समीक्षा लिखें</string>
+    <string name="enjoying_simpmusic">Killmon Music का आनंद ले रहे हैं</string>
+    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">यदि आपको Killmon Music का उपयोग करना अच्छा लगता है, तो गिटहब पर Killmon Music को स्टार करें या समीक्षा लिखें</string>
     <string name="if_you_love_my_work_consider">"अगर आपको मेरा काम पसंद आए, तो "</string>
     <string name="buying_me_a_coffee">मुझे एक कॉफ़ी देकर समर्थन करें।</string>
     <string name="fade_audio_effect">ऑडियो प्रभाव फीका करें</string>
@@ -443,8 +443,8 @@
     <string name="use_anonymous">अनाम नाम से योगदान करें</string>
     <string name="contributor_name">योगदानकर्ता नाम</string>
     <string name="anonymous">अनाम</string>
-    <string name="simpmusic_lyrics">गीत SimpMusic Lyrics द्वारा प्रदान किए गए</string>
-    <string name="lyrics_provider_simpmusic">गीत के बोल सिम्पम्यूज़िक लिरिक्स द्वारा प्रदान किए गए</string>
+    <string name="simpmusic_lyrics">गीत Killmon Lyrics द्वारा प्रदान किए गए</string>
+    <string name="lyrics_provider_simpmusic">गीत के बोल Killmon Music लिरिक्स द्वारा प्रदान किए गए</string>
     <string name="backup_in_progress">बैकप चल रहा है</string>
     <string name="restore_in_progress">पुनर्स्थापना प्रगति पर है</string>
     <string name="backup_downloaded">डाउनलोड किए गए डेटा का बैकअप लें</string>

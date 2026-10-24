@@ -68,19 +68,13 @@ import org.koin.compose.koinInject
 import simpmusic.composeapp.generated.resources.Res
 import simpmusic.composeapp.generated.resources.ai_translated
 import simpmusic.composeapp.generated.resources.line_synced
-import simpmusic.composeapp.generated.resources.lyrics_provider_betterlyrics
-import simpmusic.composeapp.generated.resources.lyrics_provider_lrc
-import simpmusic.composeapp.generated.resources.lyrics_provider_simpmusic
-import simpmusic.composeapp.generated.resources.lyrics_provider_youtube
-import simpmusic.composeapp.generated.resources.offline_mode
 import simpmusic.composeapp.generated.resources.rich_synced
-import simpmusic.composeapp.generated.resources.spotify_lyrics_provider
 import simpmusic.composeapp.generated.resources.unsynced
 
 /**
  * The LYRICS body: compact header, the app's own [LyricsView] — the SAME renderer the other
  * styles' lyrics card embeds (owner's rule: reuse the existing component, never rebuild it) —
- * two floating action buttons, the sync-type and provider caption lines, and the shared bottom cluster.
+ * two floating action buttons, the sync-type caption (word by word / line / unsynced), and the shared bottom cluster.
  * The top-level composable falls back to MAIN when lyrics disappear mid-session.
  */
 @Composable
@@ -200,11 +194,8 @@ internal fun AppleMusicLyricsView(
                             .padding(horizontal = if (rendererOwnsGutter) 0.dp else AppleMusicLyricPaddingX),
                     backgroundColor = Color.Transparent,
                     footerContent = {
-                        // Right-aligned, and stacked: plain text rather than the AIBadge pill the
-                        // other styles use. Classic puts that badge beside a "Lyrics" heading where
-                        // it has a row to itself; here it would sit inline with the provider
-                        // caption, which is already the quietest thing on the page — a filled pill
-                        // next to it shouts. Two right-anchored lines read as one footnote block.
+                        // Sync type only ("Word by word" / line / unsynced). Provider attribution
+                        // ("Lyrics provided by …") is intentionally not shown.
                         Column(
                             horizontalAlignment = Alignment.End,
                             modifier = Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 8.dp),
@@ -217,29 +208,12 @@ internal fun AppleMusicLyricsView(
                                     modifier = Modifier.fillMaxWidth(),
                                 )
                             }
-                            // One line per fact, not one line joined by a bullet. "Word by word"
-                            // and "Lyrics provided by SimpMusic Lyrics" are two different things,
-                            // and glued together they make a single line long enough to run the
-                            // width of the screen.
-                            //
-                            // fillMaxWidth + TextAlign.End on each, not just the Column's
-                            // alignment: Column alignment places a whole text block, so a line that
-                            // wraps still ends up left-aligned within itself.
                             Text(
                                 text = appleMusicLyricsSyncText(lyricsData),
                                 style = typography.footer,
                                 textAlign = TextAlign.End,
                                 modifier = Modifier.fillMaxWidth(),
                             )
-                            val provider = appleMusicLyricsProviderText(lyricsData)
-                            if (provider.isNotBlank()) {
-                                Text(
-                                    text = provider,
-                                    style = typography.footer,
-                                    textAlign = TextAlign.End,
-                                    modifier = Modifier.fillMaxWidth(),
-                                )
-                            }
                         }
                     },
                 )
@@ -355,16 +329,3 @@ private fun appleMusicLyricsSyncText(lyricsData: NowPlayingScreenData.LyricsData
         }
     return syncTypeText
 }
-
-/** The provider half of the caption. Its own line — see the footer for why. */
-@Composable
-private fun appleMusicLyricsProviderText(lyricsData: NowPlayingScreenData.LyricsData): String =
-    when (lyricsData.lyricsProvider) {
-        LyricsProvider.SIMPMUSIC -> stringResource(Res.string.lyrics_provider_simpmusic)
-        LyricsProvider.LRCLIB -> stringResource(Res.string.lyrics_provider_lrc)
-        LyricsProvider.YOUTUBE -> stringResource(Res.string.lyrics_provider_youtube)
-        LyricsProvider.SPOTIFY -> stringResource(Res.string.spotify_lyrics_provider)
-        LyricsProvider.OFFLINE -> stringResource(Res.string.offline_mode)
-        LyricsProvider.BETTER_LYRICS -> stringResource(Res.string.lyrics_provider_betterlyrics)
-        LyricsProvider.AI -> ""
-    }

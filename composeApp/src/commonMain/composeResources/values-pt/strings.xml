@@ -204,8 +204,8 @@
     <string name="skip_sponsor_part_of_video">Pular parte do patrocinador do vídeo</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Um erro inesperado acabou acontecendo. Pedimos desculpas pelo inconveniente.</string>
     <string name="customactivityoncrash_error_activity_restart_app">Reiniciar aplicativo</string>
-    <string name="help_build_lyrics_database">Ajude o SimpMusic Letras a construir o banco de dados de letras</string>
-    <string name="help_build_lyrics_database_description">Envie suas letras salvas para o banco de dados do SimpMusic Letras</string>
+    <string name="help_build_lyrics_database">Ajude o Killmon Music Letras a construir o banco de dados de letras</string>
+    <string name="help_build_lyrics_database_description">Envie suas letras salvas para o banco de dados do Killmon Music Letras</string>
     <string name="customactivityoncrash_error_activity_close_app">Fechar aplicativo</string>
     <string name="customactivityoncrash_error_activity_error_details">Detalhes do erro</string>
     <string name="customactivityoncrash_error_activity_error_details_title">Detalhes do erro</string>
@@ -415,7 +415,7 @@
     <string name="later">Depois</string>
     <string name="give_a_star">Dê uma estrela</string>
     <string name="enjoying_simpmusic">Aproveitando o Killmon Music</string>
-    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">Se gosta de usar o SimpMusic, dê-nos uma estrela no GitHub ou deixe-nos uma avaliação</string>
+    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">Se gosta de usar o Killmon Music, dê-nos uma estrela no GitHub ou deixe-nos uma avaliação</string>
     <string name="if_you_love_my_work_consider">"Se aprecia o meu trabalho, considere "</string>
     <string name="buying_me_a_coffee">compre-me um café.</string>
     <string name="fade_audio_effect">Efeito de Áudio em Fade</string>
@@ -468,14 +468,14 @@
     <string name="contributor_name">Nome do colaborador</string>
     <string name="contributor_email">E-mail do colaborador</string>
     <string name="anonymous">Anônimo</string>
-    <string name="simpmusic_lyrics">SimpMusic Letras</string>
-    <string name="lyrics_provider_simpmusic">Lyrics provided by SimpMusic Lyrics</string>
+    <string name="simpmusic_lyrics">Killmon Music Letras</string>
+    <string name="lyrics_provider_simpmusic">Lyrics provided by Killmon Lyrics</string>
     <string name="backup_in_progress">Recuperação Em Progresso</string>
     <string name="restore_in_progress">Restauração Em Progresso</string>
     <string name="backup_downloaded">Recuperação dos dados baixados</string>
     <string name="backup_downloaded_description">Faça backup de todos os dados das músicas baixadas</string>
     <string name="auto_backup">Backup automático</string>
-    <string name="auto_backup_description">Backup automático dos seus dados para a pasta Downloads/SimpMusic</string>
+    <string name="auto_backup_description">Backup automático dos seus dados para a pasta Downloads/KillmonMusic</string>
     <string name="backup_frequency">Frequência de backup</string>
     <string name="daily">Diariamente</string>
     <string name="weekly">Semanalmente</string>
@@ -539,7 +539,7 @@
     <string name="quit_app">Sair do app</string>
     <string name="local_tracking_title">Histórico de reprodução local</string>
     <string name="local_tracking_description">Registrar seu histórico de reprodução no banco de dados local</string>
-    <string name="simpmusic_charts">Paradas SimpMusic</string>
+    <string name="simpmusic_charts">Paradas Killmon Music</string>
     <string name="crossfading">Crossfading</string>
     <string name="your_320kbps_url">Sua URL de 320kbps</string>
     <string name="your_320kbps_url_description">Deixe vazio para escolher automaticamente uma URL de trabalho do verificador.</string>

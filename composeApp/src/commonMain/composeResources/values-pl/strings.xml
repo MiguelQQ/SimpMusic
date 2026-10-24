@@ -135,7 +135,7 @@
     <string name="developer_blog">Blog dewelopera</string>
     <string name="developer_blog_tagline">Czytaj notatki deweloperów &amp; poradniki i materiały zza kulis</string>
     <string name="blog_promo_title">Nowości od dewelopera</string>
-    <string name="blog_promo_message">​Właśnie wystartowałem z moim osobistym blogiem pod adresem simpmusic.org – dzielę się tam historią powstania SimpMusic, technicznymi analizami ze świata music-tech oraz notatkami inżynieryjnymi. Zajrzyj, jeśli jesteś ciekawy ✨</string>
+    <string name="blog_promo_message">​Właśnie wystartowałem z moim osobistym blogiem pod adresem simpmusic.org – dzielę się tam historią powstania Killmon Music, technicznymi analizami ze świata music-tech oraz notatkami inżynieryjnymi. Zajrzyj, jeśli jesteś ciekawy ✨</string>
     <string name="visit_blog">Odwiedź blog</string>
     <string name="paypal">PayPal</string>
     <string name="title">Tytuł</string>
@@ -221,8 +221,8 @@
     <string name="skip_sponsor_part_of_video">Pomiń część filmu sponsora</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Wystąpił nieoczekiwany błąd. Przepraszamy za niedogodności.</string>
     <string name="customactivityoncrash_error_activity_restart_app">Zrestartuj aplikację</string>
-    <string name="help_build_lyrics_database">Pomóż zbudować bazę tekstów piosenek SimpMusic</string>
-    <string name="help_build_lyrics_database_description">Wyślij swoje zapisane teksty do bazy danych tekstów piosenek SimpMusic</string>
+    <string name="help_build_lyrics_database">Pomóż zbudować bazę tekstów piosenek Killmon Music</string>
+    <string name="help_build_lyrics_database_description">Wyślij swoje zapisane teksty do bazy danych tekstów piosenek Killmon Music</string>
     <string name="customactivityoncrash_error_activity_close_app">Zamknij aplikację</string>
     <string name="customactivityoncrash_error_activity_error_details">Opis błędu</string>
     <string name="customactivityoncrash_error_activity_error_details_title">Opis błędu</string>
@@ -461,7 +461,7 @@
     <string name="later">Później</string>
     <string name="give_a_star">Daj gwiazdkę</string>
     <string name="enjoying_simpmusic">Ciesz się Killmon Music</string>
-    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">Jeśli lubisz używać SimpMusic, zostaw gwiazdkę na GitHub lub zostaw recenzję na</string>
+    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">Jeśli lubisz używać Killmon Music, zostaw gwiazdkę na GitHub lub zostaw recenzję na</string>
     <string name="if_you_love_my_work_consider">"Jeśli kochasz moją pracę, rozważ "</string>
     <string name="buying_me_a_coffee">postawienie mi kawy.</string>
     <string name="fade_audio_effect">Efekt zanikania dźwięku</string>
@@ -506,8 +506,8 @@
     <string name="contributor_name">Nazwa kontrybutora</string>
     <string name="contributor_email">E-mail kontrybutora</string>
     <string name="anonymous">Anonimowy</string>
-    <string name="simpmusic_lyrics">Teksty SimpMusic</string>
-    <string name="lyrics_provider_simpmusic">Tekst dostarczony przez Teksty SimpMusic</string>
+    <string name="simpmusic_lyrics">Teksty Killmon Music</string>
+    <string name="lyrics_provider_simpmusic">Tekst dostarczony przez Teksty Killmon Music</string>
     <string name="backup_in_progress">Kopia zapasowa w toku</string>
     <string name="restore_in_progress">Przywracanie w toku</string>
     <string name="backup_downloaded">Utwórz kopię zapasową pobranych danych</string>

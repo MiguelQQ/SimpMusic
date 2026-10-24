@@ -206,8 +206,8 @@
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">یک خطای غیرمنتظره
     رخ داده است. از بابت ناراحتی عذرخواهی می‌کنیم.</string>
     <string name="customactivityoncrash_error_activity_restart_app">برنامه را دوباره راه‌اندازی کنید</string>
-    <string name="help_build_lyrics_database">به SimpMusic کمک کنید تا پایگاه داده متن ترانه را بسازد</string>
-    <string name="help_build_lyrics_database_description">متن ترانه‌های ذخیره شده خود را به پایگاه داده متن SimpMusic ارسال کنید</string>
+    <string name="help_build_lyrics_database">به Killmon Music کمک کنید تا پایگاه داده متن ترانه را بسازد</string>
+    <string name="help_build_lyrics_database_description">متن ترانه‌های ذخیره شده خود را به پایگاه داده متن Killmon Music ارسال کنید</string>
     <string name="customactivityoncrash_error_activity_close_app">برنامه را ببندید</string>
     <string name="customactivityoncrash_error_activity_error_details">ریزگان خطا</string>
     <string name="customactivityoncrash_error_activity_error_details_title">ریزگان خطا</string>
@@ -406,7 +406,7 @@
     <string name="later">بعدا</string>
     <string name="give_a_star">ستاره بدید</string>
     <string name="enjoying_simpmusic">از Killmon Music لذت می‌بری</string>
-    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">اگر از استفاده از SimpMusic لذت می‌برید، به SimpMusic در GitHub ستاره دهید یا نظر خود را درباره آن بنویسید</string>
+    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">اگر از استفاده از Killmon Music لذت می‌برید، به Killmon Music در GitHub ستاره دهید یا نظر خود را درباره آن بنویسید</string>
     <string name="if_you_love_my_work_consider">"اگر از کار من خوشتان می‌آید، لطفاً "</string>
     <string name="buying_me_a_coffee">یک قهوه برایم بخرید.</string>
     <string name="fade_audio_effect">افکت محو صدا</string>
@@ -451,8 +451,8 @@
     <string name="contributor_name">اسم مشارکت کننده</string>
     <string name="contributor_email">ایمیل مشارکت کننده</string>
     <string name="anonymous">ناشناس</string>
-    <string name="simpmusic_lyrics">متن ترانه‌های SimpMusic</string>
-    <string name="lyrics_provider_simpmusic">متن ترانه‌ها ارائه شده توسط سرویس متن ترانه‌های SimpMusic</string>
+    <string name="simpmusic_lyrics">متن ترانه‌های Killmon Music</string>
+    <string name="lyrics_provider_simpmusic">متن ترانه‌ها ارائه شده توسط سرویس متن ترانه‌های Killmon Music</string>
     <string name="backup_in_progress">پشتیبان گیری در حال انجام است</string>
     <!-- Listen Together -->
 </resources>

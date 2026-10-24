@@ -175,12 +175,7 @@ import simpmusic.composeapp.generated.resources.like_and_dislike
 import simpmusic.composeapp.generated.resources.line_synced
 import simpmusic.composeapp.generated.resources.lyrics
 import simpmusic.composeapp.generated.resources.lyrics_offset
-import simpmusic.composeapp.generated.resources.lyrics_provider_betterlyrics
-import simpmusic.composeapp.generated.resources.lyrics_provider_lrc
-import simpmusic.composeapp.generated.resources.lyrics_provider_simpmusic
-import simpmusic.composeapp.generated.resources.lyrics_provider_youtube
 import simpmusic.composeapp.generated.resources.now_playing_upper
-import simpmusic.composeapp.generated.resources.offline_mode
 import simpmusic.composeapp.generated.resources.playing_on_device
 import simpmusic.composeapp.generated.resources.published_at
 import simpmusic.composeapp.generated.resources.radio_mix_upper
@@ -188,7 +183,6 @@ import simpmusic.composeapp.generated.resources.rate_lyrics
 import simpmusic.composeapp.generated.resources.rich_synced
 import simpmusic.composeapp.generated.resources.share_lyrics
 import simpmusic.composeapp.generated.resources.show
-import simpmusic.composeapp.generated.resources.spotify_lyrics_provider
 import simpmusic.composeapp.generated.resources.unsynced
 import simpmusic.composeapp.generated.resources.view_count
 
@@ -1433,43 +1427,6 @@ fun NowPlayingContentSpotify(
                                                 Modifier
                                                     .fillMaxWidth()
                                                     .padding(top = 10.dp),
-                                        )
-                                        Text(
-                                            text =
-                                                when (state.screenData.lyricsData?.lyricsProvider) {
-                                                    LyricsProvider.SIMPMUSIC -> {
-                                                        stringResource(Res.string.lyrics_provider_simpmusic)
-                                                    }
-
-                                                    LyricsProvider.LRCLIB -> {
-                                                        stringResource(Res.string.lyrics_provider_lrc)
-                                                    }
-
-                                                    LyricsProvider.YOUTUBE -> {
-                                                        stringResource(Res.string.lyrics_provider_youtube)
-                                                    }
-
-                                                    LyricsProvider.SPOTIFY -> {
-                                                        stringResource(Res.string.spotify_lyrics_provider)
-                                                    }
-
-                                                    LyricsProvider.OFFLINE -> {
-                                                        stringResource(Res.string.offline_mode)
-                                                    }
-
-                                                    LyricsProvider.BETTER_LYRICS -> {
-                                                        stringResource(Res.string.lyrics_provider_betterlyrics)
-                                                    }
-
-                                                    else -> {
-                                                        ""
-                                                    }
-                                                },
-                                            style = typo().bodySmall,
-                                            textAlign = TextAlign.End,
-                                            modifier =
-                                                Modifier
-                                                    .fillMaxWidth(),
                                         )
                                     }
                                 }

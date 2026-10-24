@@ -37,8 +37,8 @@ object WindowsProtocolRegistrar {
             return
         }
 
-        register(SCHEME, "URL:SimpMusic Protocol", exePath)
-        register(LASTFM_SCHEME, "URL:SimpMusic Last.fm Callback", exePath)
+        register(SCHEME, "URL:Killmon Music Protocol", exePath)
+        register(LASTFM_SCHEME, "URL:Killmon Music Last.fm Callback", exePath)
     }
 
     private fun register(

@@ -200,8 +200,8 @@
     <string name="skip_sponsor_part_of_video">Прескачане на спонсорираната част</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Появи се непредвидена грешка. Извиняваме се за неудобството.</string>
     <string name="customactivityoncrash_error_activity_restart_app">Рестартирай приложението</string>
-    <string name="help_build_lyrics_database">Помогнете на SimpMusic лирики да построи датабазата за лирики</string>
-    <string name="help_build_lyrics_database_description">Пратете вашите запазени лирики към датабазата на SimpMusic лирики</string>
+    <string name="help_build_lyrics_database">Помогнете на Killmon Music лирики да построи датабазата за лирики</string>
+    <string name="help_build_lyrics_database_description">Пратете вашите запазени лирики към датабазата на Killmon Music лирики</string>
     <string name="customactivityoncrash_error_activity_close_app">Затвори приложението</string>
     <string name="customactivityoncrash_error_activity_error_details">Подробности за грешката</string>
     <string name="customactivityoncrash_error_activity_error_details_title">Подробности за грешката</string>
@@ -395,7 +395,7 @@
     <string name="later">По-късно</string>
     <string name="give_a_star">Оцени</string>
     <string name="enjoying_simpmusic">Доволни от Killmon Music</string>
-    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">Оценете SimpMusic в GitHub или оставете ревю ако сте доволни</string>
+    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">Оценете Killmon Music в GitHub или оставете ревю ако сте доволни</string>
     <string name="if_you_love_my_work_consider">"Ако сте доволни от работата ми, моля помислете да "</string>
     <string name="buying_me_a_coffee">ме почерпите кафе.</string>
     <string name="fade_audio_effect">Постепенно намаляване на звука</string>

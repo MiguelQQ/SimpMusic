@@ -146,7 +146,7 @@
     <string name="developer_blog">בלוג המפתח</string>
     <string name="developer_blog_tagline">קרא הערות מפתח, מדריכים &amp; ומאחורי-הקלעים</string>
     <string name="blog_promo_title">משהו חדש מהמפתח</string>
-    <string name="blog_promo_message">השקתי את הבלוג של SimpMusic ב-simpmusic.org - אני משתף את הסיפור מאחורי SimpMusic, צלילות מעמיקות בטכנולוגיית מוזיקה והערות הנדסיות. קראו אותו אם אתם סקרנים ✨</string>
+    <string name="blog_promo_message">השקתי את הבלוג של Killmon Music ב-simpmusic.org - אני משתף את הסיפור מאחורי Killmon Music, צלילות מעמיקות בטכנולוגיית מוזיקה והערות הנדסיות. קראו אותו אם אתם סקרנים ✨</string>
     <string name="visit_blog">בקרו בבלוג</string>
     <string name="paypal">PayPal</string>
     <string name="title">כותרת</string>
@@ -232,8 +232,8 @@
     <string name="skip_sponsor_part_of_video">דלג על חלק הפרסומות בסרטון</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">שגיאה לא צפויה התרחשה. מצטערים על אי הנוחות.</string>
     <string name="customactivityoncrash_error_activity_restart_app">הפעל מחדש את האפליקציה</string>
-    <string name="help_build_lyrics_database">עזור ל-SimpMusic lyrics לבנות את מאגר המילים</string>
-    <string name="help_build_lyrics_database_description">שלחו את המילים ששמרתם למאגר המילים של SimpMusic lyrics</string>
+    <string name="help_build_lyrics_database">עזור ל-Killmon Lyrics לבנות את מאגר המילים</string>
+    <string name="help_build_lyrics_database_description">שלחו את המילים ששמרתם למאגר המילים של Killmon Lyrics</string>
     <string name="customactivityoncrash_error_activity_close_app">סגור את האפליקציה</string>
     <string name="customactivityoncrash_error_activity_error_details">פרטי שגיאה</string>
     <string name="customactivityoncrash_error_activity_error_details_title">פרטי שגיאה</string>
@@ -521,7 +521,7 @@
     <string name="later">מאוחר יותר</string>
     <string name="give_a_star">סימון בכוכב</string>
     <string name="enjoying_simpmusic">נהנים מאפליקציית Killmon Music</string>
-    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">אם אתם נהנים מהשימוש ב-SimpMusic, סמנו את SimpMusic בכוכב ב-GitHub או השאירו חוות דעת ב</string>
+    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">אם אתם נהנים מהשימוש ב-Killmon Music, סמנו את Killmon Music בכוכב ב-GitHub או השאירו חוות דעת ב</string>
     <string name="if_you_love_my_work_consider">"אם אתם אוהבים את העבודה שלי, תשקלו "</string>
     <string name="buying_me_a_coffee">לקנות לי קפה.</string>
     <string name="footguns_promo_title">כל מלכודת שנפלתי בה</string>
@@ -591,8 +591,8 @@
     <string name="contributor_name">שם התורם</string>
     <string name="contributor_email">אימייל התורם</string>
     <string name="anonymous">אנונימי</string>
-    <string name="simpmusic_lyrics">מילים של SimpMusic</string>
-    <string name="lyrics_provider_simpmusic">מילים מסופקות על ידי SimpMusic Lyrics</string>
+    <string name="simpmusic_lyrics">מילים של Killmon Music</string>
+    <string name="lyrics_provider_simpmusic">מילים מסופקות על ידי Killmon Lyrics</string>
     <string name="backup_in_progress">גיבוי בתהליך</string>
     <string name="restore_in_progress">שחזור בתהליך</string>
     <string name="backup_downloaded">גבה מידע שהורד</string>
@@ -720,7 +720,7 @@
     <string name="local_tracking_description">רשום את היסטוריית ההאזנה שלך למסד הנתונים המקומי</string>
     <string name="blog_notification_title">עדכוני פוסט הבלוג</string>
     <string name="blog_notification_description">קבל התראה כאשר פוסט בלוג חדש מפורסם</string>
-    <string name="simpmusic_charts">מצעדי SimpMusic</string>
+    <string name="simpmusic_charts">מצעדי Killmon Music</string>
     <string name="crossfading">משלב בין השירים</string>
     <string name="your_320kbps_url">קישור ה-320kbps שלך</string>
     <string name="your_320kbps_url_description">השאר ריק כדי לבחור אוטומטית את הקישור העובד מבודק זמן הפעילות.</string>
@@ -744,7 +744,7 @@
     <string name="audio_output_hdmi">HDMI</string>
     <string name="import_data">יבא פלייליסטים</string>
     <string name="import_playlists_from_other_apps">יבא פלייליסטים מאפליקציה אחרת</string>
-    <string name="import_data_intro">ייבוא מביא פלייליסטים שהומרו מ-Spotify או מאפליקציית לקוח אחרת של YouTube Music.\nכלי המרה: https://www.simpmusic.org/tools\nב-SimpMusic, ניתן לייבא רק קבצי פלייליסט בפורמט שלנו</string>
+    <string name="import_data_intro">ייבוא מביא פלייליסטים שהומרו מ-Spotify או מאפליקציית לקוח אחרת של YouTube Music.\nכלי המרה: https://www.simpmusic.org/tools\nב-Killmon Music, ניתן לייבא רק קבצי פלייליסט בפורמט שלנו</string>
     <string name="import_reading_file">קורא קובץ…</string>
     <string name="import_progress_songs">%1$d מתוך %2$d שירים</string>
     <string name="import_result">נוצרו %1$d פלייליסטים ויובאו %2$d שירים.</string>
@@ -921,7 +921,7 @@
     <string name="login_sync_code_expired">הקוד במחשב שלך פג. הצג אחד חדש וסרוק אותו שוב.</string>
     <string name="login_sync_failed">משהו השתבש. אנא נסה שוב.</string>
     <string name="modified_build_title">אפליקציה לא רשמית</string>
-    <string name="modified_build_message">אתה משתמש בעותק לא רשמי של SimpMusic ששונה או נארז מחדש על ידי מישהו אחר. לא ניתן להשתמש בו. הורד את הגרסה הרשמית מהאתר simpmusic.org.</string>
+    <string name="modified_build_message">אתה משתמש בעותק לא רשמי של Killmon Music ששונה או נארז מחדש על ידי מישהו אחר. לא ניתן להשתמש בו. הורד את הגרסה הרשמית מהאתר simpmusic.org.</string>
     <string name="taste_title">מהו טעם המוזיקה שלך?</string>
     <string name="taste_invite">תן לבינה מלאכותית לקרוא את 12 החודשים האחרונים של ההאזנות שלך ולספר לך.</string>
     <string name="taste_loading_title">קורא את טעם המוזיקה שלך…</string>

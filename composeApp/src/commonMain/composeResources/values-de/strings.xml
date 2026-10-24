@@ -143,7 +143,7 @@
     <string name="developer_blog">Entwickler-Blog</string>
     <string name="developer_blog_tagline">Lesen Sie Entwicklernotizen, Tutorials &amp; hinter den Kulissen</string>
     <string name="blog_promo_title">Neues vom Entwickler</string>
-    <string name="blog_promo_message">Ich habe gerade den SimpMusic-Blog unter simpmusic.org gestartet – dort erzähle ich die Geschichte hinter SimpMusic, gehe ausführlich auf Musiktechnologie ein und teile technische Einblicke. Schaut doch mal rein, wenn ihr neugierig seid ✨</string>
+    <string name="blog_promo_message">Ich habe gerade den Killmon Music-Blog unter simpmusic.org gestartet – dort erzähle ich die Geschichte hinter Killmon Music, gehe ausführlich auf Musiktechnologie ein und teile technische Einblicke. Schaut doch mal rein, wenn ihr neugierig seid ✨</string>
     <string name="visit_blog">Blog besuchen</string>
     <string name="paypal">PayPal</string>
     <string name="title">Titel</string>
@@ -229,8 +229,8 @@
     <string name="skip_sponsor_part_of_video">Gesponserten Teil des Videos überspringen</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Ein unerwarteter Fehler ist aufgetreten. Entschuldigung für die Unannehmlichkeiten.</string>
     <string name="customactivityoncrash_error_activity_restart_app">App neu starten</string>
-    <string name="help_build_lyrics_database">Hilf SimpMusic-Lyrics beim Aufbau der Songtext-Datenbank</string>
-    <string name="help_build_lyrics_database_description">Sende deine gespeicherten Songtexte an die SimpMusic-Lyrics-Datenbank</string>
+    <string name="help_build_lyrics_database">Hilf Killmon Lyrics beim Aufbau der Songtext-Datenbank</string>
+    <string name="help_build_lyrics_database_description">Sende deine gespeicherten Songtexte an die Killmon Lyrics-Datenbank</string>
     <string name="customactivityoncrash_error_activity_close_app">App schließen</string>
     <string name="customactivityoncrash_error_activity_error_details">Fehlerdetails</string>
     <string name="customactivityoncrash_error_activity_error_details_title">Fehlerdetails</string>
@@ -517,11 +517,11 @@
     <string name="later">später</string>
     <string name="give_a_star">Gebe einen Stern</string>
     <string name="enjoying_simpmusic">Spaß an Killmon Music</string>
-    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">Wenn dir SimpMusic gefällt, gib SimpMusic einen Stern auf Github oder lasse eine Rezension da</string>
+    <string name="if_you_enjoy_using_simpmusic_star_simpmusic_on_github_or_leave_a_review_on">Wenn dir Killmon Music gefällt, gib Killmon Music einen Stern auf Github oder lasse eine Rezension da</string>
     <string name="if_you_love_my_work_consider">"Wenn Dumeine Arbeit liebst, denk darüber nach "</string>
     <string name="buying_me_a_coffee">Mir einen Kaffee zu kaufen.</string>
     <string name="footguns_promo_title">Jede Falle, in die ich getappt bin</string>
-    <string name="footguns_promo_message">SimpMusic hat mich viele schlaflose Nächte gekostet, in denen ich mich mit Kotlin- und Compose-Fallstricken herumgeschlagen habe, vor denen mich keine Dokumentation jemals gewarnt hatte. Ich habe jeden einzelnen davon in „kotlin-footguns“ festgehalten, damit ihr nicht dieselben schlaflosen Nächte durchmachen müsst. Wenn ich euch damit auch nur eine Nacht ersparen kann, würde mir ein Stern sehr viel bedeuten.</string>
+    <string name="footguns_promo_message">Killmon Music hat mich viele schlaflose Nächte gekostet, in denen ich mich mit Kotlin- und Compose-Fallstricken herumgeschlagen habe, vor denen mich keine Dokumentation jemals gewarnt hatte. Ich habe jeden einzelnen davon in „kotlin-footguns“ festgehalten, damit ihr nicht dieselben schlaflosen Nächte durchmachen müsst. Wenn ich euch damit auch nur eine Nacht ersparen kann, würde mir ein Stern sehr viel bedeuten.</string>
     <string name="fade_audio_effect">Fade Audioeffekt</string>
     <string name="disabled">Deaktivieren</string>
     <string name="fade_audio_effect_duration">Fade Audioeffekt Dauer (ms) (auf 0 setzen zum Deaktivieren)</string>
@@ -587,14 +587,14 @@
     <string name="contributor_name">Name des Mitwirkenden</string>
     <string name="contributor_email">E-Mail des Mitwirkenden</string>
     <string name="anonymous">Anonym</string>
-    <string name="simpmusic_lyrics">SimpMusic-Lyrics</string>
-    <string name="lyrics_provider_simpmusic">Songtexte von SimpMusic-Lyrics bereitgestellt</string>
+    <string name="simpmusic_lyrics">Killmon Lyrics</string>
+    <string name="lyrics_provider_simpmusic">Songtexte von Killmon Lyrics bereitgestellt</string>
     <string name="backup_in_progress">Backup wird erstellt</string>
     <string name="restore_in_progress">Backup wird wiederhergestellt</string>
     <string name="backup_downloaded">Backup der heruntergeladenen Daten</string>
     <string name="backup_downloaded_description">Backup aller heruntergeladenen Songs</string>
     <string name="auto_backup">Automatisches Backup</string>
-    <string name="auto_backup_description">Sichere deine Daten automatisch in den Downloads/SimpMusic Ordner</string>
+    <string name="auto_backup_description">Sichere deine Daten automatisch in den Downloads/KillmonMusic Ordner</string>
     <string name="backup_frequency">Backup-Häufigkeit</string>
     <string name="daily">Täglich</string>
     <string name="weekly">Wöchentlich</string>
@@ -716,7 +716,7 @@
     <string name="local_tracking_description">Zeichne den Wiedergabeverlauf in der lokalen Datenbank auf</string>
     <string name="blog_notification_title">Benachrichtigungen zu Blogbeiträgen</string>
     <string name="blog_notification_description">Werde benachrichtigt wenn ein neuer Blog-Beitrag veröffentlicht wird</string>
-    <string name="simpmusic_charts">SimpMusic Charts</string>
+    <string name="simpmusic_charts">Killmon Chart</string>
     <string name="crossfading">Crossfading (überblenden)</string>
     <string name="your_320kbps_url">Deine 320kbps URL</string>
     <string name="your_320kbps_url_description">Lassen Sie das Feld leer, damit automatisch eine funktionierende URL aus dem Verfügbarkeitsprüfer ausgewählt wird.</string>
@@ -740,13 +740,13 @@
     <string name="import_data">Playlists importieren</string>
     <string name="import_playlists_from_other_apps">Playlisten von einer anderen App importieren</string>
     <string name="import_data_intro">Mit der Importfunktion kannst Du Playlists einlesen, die aus Spotify oder einer anderen YT Music-Client-App konvertiert wurden. Konvertierungstool: https://www.simpmusic.org/tools 
-In SimpMusic können nur Playlist-Dateien in unserem eigenen Format importiert werden</string>
+In Killmon Music können nur Playlist-Dateien in unserem eigenen Format importiert werden</string>
     <string name="import_reading_file">Datei wird gelesen…</string>
     <string name="import_progress_songs">%1$d von %2$d Songs</string>
     <string name="import_result">%1$d Playlisten erstellt und %2$d Songs importiert.</string>
     <string name="import_result_skipped">%1$d Einträge wurden übersprungen, da der entsprechende Titel in der Datei fehlte.</string>
     <string name="import_failed">Import fehlgeschlagen</string>
-    <string name="import_invalid_file">Diese Datei ist keine gültige SimpMusic Importdatei. Konvertiere zuerst deine Bibliothek auf simpmusic.org.</string>
+    <string name="import_invalid_file">Diese Datei ist keine gültige Killmon Music Importdatei. Konvertiere zuerst deine Bibliothek auf simpmusic.org.</string>
     <string name="analytics">Statistiken</string>
     <string name="select_all">Alles auswählen</string>
     <string name="n_selected">%1$d ausgewählt</string>
@@ -917,7 +917,7 @@ In SimpMusic können nur Playlist-Dateien in unserem eigenen Format importiert w
     <string name="login_sync_code_expired">Der Code auf Ihrem Computer ist abgelaufen. Zeige einen neuen und scanne erneut.</string>
     <string name="login_sync_failed">Etwas ist schiefgelaufen. Bitte versuche es erneut.</string>
     <string name="modified_build_title">Inoffizielle App</string>
-    <string name="modified_build_message">Du verwendest eine inoffizielle Kopie von SimpMusic die von jemand anderem modifiziert oder neu verpackt wurde. Es kann nicht benutzt werden. Laden Sie die offizielle Version von simpmusic.org herunter.</string>
+    <string name="modified_build_message">Du verwendest eine inoffizielle Kopie von Killmon Music die von jemand anderem modifiziert oder neu verpackt wurde. Es kann nicht benutzt werden. Laden Sie die offizielle Version von simpmusic.org herunter.</string>
     <string name="taste_title">Was ist dein Musikgeschmack?</string>
     <string name="taste_invite">Lass die KI deine Hörgewohnheiten der letzten 12 Monate analysieren und dir das Ergebnis mitteilen.</string>
     <string name="taste_loading_title">Deinen Musikgeschmack analysieren…</string>
