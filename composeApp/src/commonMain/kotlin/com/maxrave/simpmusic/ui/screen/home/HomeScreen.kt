@@ -151,6 +151,7 @@ import com.maxrave.simpmusic.ui.component.OfflineErrorState
 import com.maxrave.simpmusic.ui.component.PromoBanner
 import com.maxrave.simpmusic.ui.component.PromoBannerData
 import com.maxrave.simpmusic.ui.component.PlayNextSwipeBox
+import com.maxrave.simpmusic.ui.component.QuickPicksCardShape
 import com.maxrave.simpmusic.ui.component.QuickPicksItem
 import com.maxrave.simpmusic.ui.component.ReviewDialog
 import com.maxrave.simpmusic.ui.component.SectionHeaderButton
@@ -1460,6 +1461,7 @@ fun QuickPicks(
                         enabled = !item.videoId.isNullOrEmpty(),
                         onPlayNext = { sharedViewModel.playNext(item.toTrack()) },
                         modifier = Modifier.weight(1f),
+                        clipShape = QuickPicksCardShape,
                     ) {
                         QuickPicksItem(
                             onClick = {

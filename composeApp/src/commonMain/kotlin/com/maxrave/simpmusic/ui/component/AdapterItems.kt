@@ -824,9 +824,10 @@ fun QuickPicksItem(
             Modifier
                 .wrapContentHeight()
                 .fillMaxWidth()
+                .height(56.dp)
                 .focusable(true)
-                .clip(RoundedCornerShape(6.dp))
-                .background(com.maxrave.simpmusic.ui.theme.killmonCard)
+                .clip(QuickPicksCardShape)
+                .background(com.maxrave.simpmusic.ui.theme.killmonCard, QuickPicksCardShape)
                 .combinedClickable(
                     onClick = onClick,
                     onLongClick = onLongClick,
@@ -854,7 +855,7 @@ fun QuickPicksItem(
                 modifier =
                     Modifier
                         .size(56.dp)
-                        .clip(RoundedCornerShape(6.dp)),
+                        .clip(QuickPicksCardShape),
             )
             Column(
                 Modifier

@@ -84,6 +84,7 @@ import com.maxrave.simpmusic.ui.icon.ArrowForwardIos
 import com.maxrave.simpmusic.ui.icon.SimpIcons
 import com.maxrave.simpmusic.ui.navigation.destination.home.AnalyticsDestination
 import com.maxrave.simpmusic.ui.navigation.destination.login.KillmonLoginDestination
+import com.maxrave.simpmusic.update.KillmonInAppUpdate
 import com.maxrave.simpmusic.ui.navigation.destination.login.KillmonRegisterDestination
 import com.maxrave.simpmusic.ui.navigation.destination.home.HomeDestination
 import com.maxrave.simpmusic.ui.navigation.destination.home.NotificationDestination
@@ -159,6 +160,7 @@ fun App(
     val killmonAccount = koinInject<KillmonAccountRepository>()
     val killmonReady by killmonAccount.ready.collectAsStateWithLifecycle()
     val killmonSession by killmonAccount.session.collectAsStateWithLifecycle()
+    KillmonInAppUpdate(active = killmonReady && killmonSession != null)
     // Latched once. Home is composed only after the stored session has been checked, so a missing
     // session never paints Home for a frame.
     var killmonStart by remember { mutableStateOf<Any?>(null) }

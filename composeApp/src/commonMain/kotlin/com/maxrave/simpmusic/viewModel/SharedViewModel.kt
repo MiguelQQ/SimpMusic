@@ -1192,7 +1192,8 @@ class SharedViewModel(
     val updateResponse: StateFlow<UpdateData?> = _updateResponse
 
     fun checkForUpdate() {
-        // Killmon does not check GitHub or F-Droid releases. Nothing is fetched and no dialog opens.
+        // Upstream GitHub and F-Droid checks stay off. Killmon asks MiguelQQ/SimpMusic
+        // from KillmonInAppUpdate after the account session is ready.
         _isCheckingUpdate.value = false
         _updateResponse.value = null
     }
