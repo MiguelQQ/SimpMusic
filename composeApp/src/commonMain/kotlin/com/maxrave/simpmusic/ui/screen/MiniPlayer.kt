@@ -567,38 +567,43 @@ fun MiniPlayer(
                         }
                     }
                     val playColor = Color.White
-                    if (isPlatformCastAvailable()) {
-                        PlatformCastButton(modifier = Modifier.size(MiniPlayerTouch), tint = playColor)
-                    } else {
-                        MiniPlayerGlyph(
-                            imageVector = SimpIcons.MusicCast,
-                            tint = playColor,
-                            onClick = onClick,
-                        )
-                    }
-                    MiniPlayerSaveButton(
-                        liked = liked,
-                        onClick = { sharedViewModel.onUIEvent(UIEvent.ToggleLike) },
-                    )
-                    Crossfade(targetState = loading, label = "") {
-                        if (it) {
-                            Box(modifier = Modifier.size(MiniPlayerTouch), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(22.dp),
-                                    color = playColor,
-                                    strokeWidth = 2.dp,
-                                )
-                            }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.padding(end = 8.dp),
+                    ) {
+                        if (isPlatformCastAvailable()) {
+                            PlatformCastButton(modifier = Modifier.size(MiniPlayerTouch), tint = playColor)
                         } else {
                             MiniPlayerGlyph(
-                                imageVector = if (isPlaying) SimpIcons.Pause else SimpIcons.PlayArrow,
+                                imageVector = SimpIcons.MusicCast,
                                 tint = playColor,
-                                onClick = { sharedViewModel.onUIEvent(UIEvent.PlayPause) },
-                                iconSize = 30.dp,
+                                onClick = onClick,
                             )
                         }
+                        MiniPlayerSaveButton(
+                            liked = liked,
+                            onClick = { sharedViewModel.onUIEvent(UIEvent.ToggleLike) },
+                        )
+                        Crossfade(targetState = loading, label = "") {
+                            if (it) {
+                                Box(modifier = Modifier.size(MiniPlayerTouch), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(22.dp),
+                                        color = playColor,
+                                        strokeWidth = 2.dp,
+                                    )
+                                }
+                            } else {
+                                MiniPlayerGlyph(
+                                    imageVector = if (isPlaying) SimpIcons.Pause else SimpIcons.PlayArrow,
+                                    tint = playColor,
+                                    onClick = { sharedViewModel.onUIEvent(UIEvent.PlayPause) },
+                                    iconSize = 30.dp,
+                                )
+                            }
+                        }
                     }
-                    Spacer(modifier = Modifier.width(6.dp))
                 }
                 Box(
                     modifier =

@@ -1,7 +1,11 @@
 package com.maxrave.simpmusic.ui.component
 
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.maxrave.simpmusic.expect.ui.PlatformBackdrop
 import com.maxrave.simpmusic.ui.icon.Add
@@ -42,6 +46,9 @@ expect fun LiquidGlassAppBottomNavigationBar(
     reloadDestinationIfNeeded: (KClass<*>) -> Unit = { _ -> },
 )
 
+/** Default 24 dp. The phone bar raises it to 28 dp; the glyph itself stays the same. */
+val LocalBottomNavIconSize = compositionLocalOf { 24.dp }
+
 sealed class BottomNavScreen(
     val ordinal: Int,
     val destination: Any,
@@ -56,6 +63,7 @@ sealed class BottomNavScreen(
             Icon(
                 SimpIcons.Home,
                 contentDescription = null,
+                modifier = Modifier.size(LocalBottomNavIconSize.current),
             )
         },
     )
@@ -68,6 +76,7 @@ sealed class BottomNavScreen(
             Icon(
                 SimpIcons.Search,
                 contentDescription = null,
+                modifier = Modifier.size(LocalBottomNavIconSize.current),
             )
         },
     )
@@ -80,6 +89,7 @@ sealed class BottomNavScreen(
             Icon(
                 imageVector = SimpIcons.LibraryMusic,
                 contentDescription = null,
+                modifier = Modifier.size(LocalBottomNavIconSize.current),
             )
         },
     )
@@ -93,6 +103,7 @@ sealed class BottomNavScreen(
             Icon(
                 imageVector = SimpIcons.Add,
                 contentDescription = null,
+                modifier = Modifier.size(LocalBottomNavIconSize.current),
             )
         },
     )
@@ -106,6 +117,7 @@ sealed class BottomNavScreen(
             Icon(
                 imageVector = SimpIcons.AutoGraph,
                 contentDescription = null,
+                modifier = Modifier.size(LocalBottomNavIconSize.current),
             )
         },
     )
@@ -121,6 +133,7 @@ sealed class BottomNavScreen(
             Icon(
                 imageVector = SimpIcons.Sensors,
                 contentDescription = null,
+                modifier = Modifier.size(LocalBottomNavIconSize.current),
             )
         },
     )

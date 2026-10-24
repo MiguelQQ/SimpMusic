@@ -8,6 +8,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,18 +26,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -53,12 +57,13 @@ import simpmusic.composeapp.generated.resources.*
 import kotlin.math.roundToInt
 import kotlin.reflect.KClass
 
+/** Spotify gray for a phone tab that is not selected. */
+private val NavUnselected = Color(0xFFB3B3B3)
+
 /**
- * The phone bottom bar with liquid glass OFF: the same floating capsule-and-FAB form as the glass
- * bar, drawn flat. One capsule of tabs (Search stays out — it is the round button beside it, the
- * same split the glass bar makes), a sliding rounded indicator instead of the frosted blob, solid
- * theme surfaces instead of refraction. Geometry mirrors the glass bar so switching the setting
- * changes the material, not the layout: 96dp tab cap, 64dp bar, 56dp indicator and FAB.
+ * Killmon phone bar: four equal slots (Inicio, Buscar, Tu biblioteca, Crear), the current glyphs
+ * at 28 dp with a label underneath. Selected is white and bold. No pill and no indicator fill.
+ * The scrim behind it lives in [App], so this row stays transparent and the black shows through.
  */
 @Composable
 fun AppBottomNavigationBar(
@@ -126,53 +131,54 @@ fun AppBottomNavigationBar(
         }
     }
 
-    NavigationBar(
-        containerColor = Color.Transparent,
-        contentColor = Color.White,
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        0f to Color(0x00000000),
-                        0.25f to Color(0xE6000000),
-                        1f to Color(0xFF000000),
-                    ),
-                ),
-    ) {
-        bottomNavScreens.forEach { screen ->
-            val selected =
-                if (screen == BottomNavScreen.Create) {
-                    showCreate
-                } else {
-                    selectedIndex == screen.ordinal && !showCreate
-                }
-            NavigationBarItem(
-                selected = selected,
-                onClick = { selectTab(screen) },
-                icon = {
-                    CompositionLocalProvider(
-                        LocalContentColor provides if (selected) Color.White else Color(0xFFB3B3B3),
-                    ) {
+    CompositionLocalProvider(LocalBottomNavIconSize provides 28.dp) {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(bottom = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            bottomNavScreens.forEach { screen ->
+                val selected =
+                    if (screen == BottomNavScreen.Create) {
+                        showCreate
+                    } else {
+                        selectedIndex == screen.ordinal && !showCreate
+                    }
+                val tint = if (selected) Color.White else NavUnselected
+                Column(
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .clickable(
+                                interactionSource = remember(screen.ordinal) { MutableInteractionSource() },
+                                indication = null,
+                                onClick = { selectTab(screen) },
+                            )
+                            .padding(top = 10.dp, bottom = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    CompositionLocalProvider(LocalContentColor provides tint) {
                         screen.icon()
                     }
-                },
-                label = {
+                    Spacer(Modifier.height(4.dp))
                     Text(
                         stringResource(screen.title),
-                        style = typo().bodySmall.copy(fontWeight = FontWeight.Bold),
+                        style =
+                            typo().bodySmall.copy(
+                                fontSize = 12.sp,
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                                color = tint,
+                            ),
+                        color = tint,
                         maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
                     )
-                },
-                colors =
-                    NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.White,
-                        selectedTextColor = Color.White,
-                        unselectedIconColor = Color(0xFFB3B3B3),
-                        unselectedTextColor = Color(0xFFB3B3B3),
-                        indicatorColor = Color.Transparent,
-                    ),
-            )
+                }
+            }
         }
     }
     CreateSheetHost(
