@@ -90,7 +90,6 @@ fun CreateActions(
 ) {
     val room by koinInject<ListenTogetherRepository>().room.collectAsStateWithLifecycle()
     var showCreate by remember { mutableStateOf(false) }
-    var showPlaylistName by remember { mutableStateOf(false) }
     val tint = MaterialTheme.colorScheme.onBackground
 
     val createButton: @Composable () -> Unit = {
@@ -149,16 +148,36 @@ fun CreateActions(
         }
     }
 
-    if (showCreate) {
+    CreateSheetHost(
+        navController = navController,
+        visible = showCreate,
+        onDismiss = { showCreate = false },
+        sharedViewModel = sharedViewModel,
+    )
+}
+
+/**
+ * Create playlist / Listen Together sheet, reused by the Home "+" and the bottom-nav Crear tab.
+ */
+@Composable
+fun CreateSheetHost(
+    navController: NavController,
+    visible: Boolean,
+    onDismiss: () -> Unit,
+    sharedViewModel: SharedViewModel = koinInject(),
+) {
+    val room by koinInject<ListenTogetherRepository>().room.collectAsStateWithLifecycle()
+    var showPlaylistName by remember { mutableStateOf(false) }
+    if (visible) {
         CreateSheet(
             liveRoom = room.inRoom,
-            onDismiss = { showCreate = false },
+            onDismiss = onDismiss,
             onPlaylist = {
-                showCreate = false
+                onDismiss()
                 showPlaylistName = true
             },
             onListenTogether = {
-                showCreate = false
+                onDismiss()
                 navController.navigate(ListenTogetherDestination)
             },
         )

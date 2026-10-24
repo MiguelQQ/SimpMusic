@@ -24,11 +24,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -67,16 +69,16 @@ fun AppBottomNavigationBar(
     reloadDestinationIfNeeded: (KClass<*>) -> Unit = { _ -> },
 ) {
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    // `ordinal` identifies a tab, it is NOT the position — Mix for you and Analytics sit before
-    // Library here while keeping the ordinal they were declared with, so that the numbering stays
-    // stable whether or not those tabs are present.
+    var showCreate by remember { mutableStateOf(false) }
+    // Killmon: Inicio, Buscar, Tu biblioteca, Crear. Mix / Analytics stay when those features are on.
     val bottomNavScreens =
         listOfNotNull(
             BottomNavScreen.Home,
+            BottomNavScreen.Search,
+            BottomNavScreen.Library,
+            BottomNavScreen.Create,
             BottomNavScreen.MixForYou.takeIf { showMixForYouTab },
             BottomNavScreen.Analytics.takeIf { showAnalyticsTab },
-            BottomNavScreen.Library,
-            BottomNavScreen.Search,
         )
     var selectedIndex by rememberSaveable {
         mutableIntStateOf(
@@ -86,13 +88,10 @@ fun AppBottomNavigationBar(
                 is LibraryDestination -> BottomNavScreen.Library.ordinal
                 is AnalyticsDestination -> BottomNavScreen.Analytics.ordinal
                 is MixForYouDestination -> BottomNavScreen.MixForYou.ordinal
-                else -> BottomNavScreen.Home.ordinal // Default to Home if not recognized
+                else -> BottomNavScreen.Home.ordinal
             },
         )
     }
-    // A tab can disappear from the list under the user: tracking gets turned off while Analytics is
-    // selected, or the YouTube session ends while Mix for you is. Fall back to Home in both cases so
-    // nothing is left highlighted.
     LaunchedEffect(showAnalyticsTab, showMixForYouTab) {
         if ((!showAnalyticsTab && selectedIndex == BottomNavScreen.Analytics.ordinal) ||
             (!showMixForYouTab && selectedIndex == BottomNavScreen.MixForYou.ordinal)
@@ -101,57 +100,86 @@ fun AppBottomNavigationBar(
         }
     }
     val selectTab: (BottomNavScreen) -> Unit = { screen ->
-        if (selectedIndex == screen.ordinal) {
-            if (currentBackStackEntry?.destination?.hierarchy?.any {
-                    it.hasRoute(screen.destination::class)
-                } == true
-            ) {
-                reloadDestinationIfNeeded(screen.destination::class)
-            } else {
-                navController.navigate(screen.destination)
-            }
+        if (screen == BottomNavScreen.Create) {
+            showCreate = true
         } else {
-            selectedIndex = screen.ordinal
-            navController.navigate(screen.destination) {
-                popUpTo(navController.graph.startDestinationId) {
-                    saveState = true
+            showCreate = false
+            if (selectedIndex == screen.ordinal) {
+                if (currentBackStackEntry?.destination?.hierarchy?.any {
+                        it.hasRoute(screen.destination::class)
+                    } == true
+                ) {
+                    reloadDestinationIfNeeded(screen.destination::class)
+                } else {
+                    navController.navigate(screen.destination)
                 }
-                launchSingleTop = true
-                restoreState = true
+            } else {
+                selectedIndex = screen.ordinal
+                navController.navigate(screen.destination) {
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
             }
         }
     }
 
-    // Search rides in its own circular button, so the capsule holds everything else.
-    val barTabs = bottomNavScreens.filter { it != BottomNavScreen.Search }
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        // One centred cluster — capsule, gap, FAB — exactly like the glass bar: fill = false keeps
-        // the capsule at its measured width, so the leftover goes around the cluster instead of
-        // wedging itself between the capsule and the search button.
-        horizontalArrangement = Arrangement.Center,
+    NavigationBar(
+        containerColor = Color.Transparent,
+        contentColor = Color.White,
         modifier =
             Modifier
                 .fillMaxWidth()
-                .windowInsetsPadding(NavigationBarDefaults.windowInsets)
-                .padding(horizontal = 16.dp)
-                .padding(top = 4.dp, bottom = 8.dp),
+                .background(
+                    Brush.verticalGradient(
+                        0f to Color(0x00000000),
+                        0.25f to Color(0xE6000000),
+                        1f to Color(0xFF000000),
+                    ),
+                ),
     ) {
-        BoxWithConstraints(Modifier.weight(1f, fill = false)) {
-            FlatTabBar(
-                tabs = barTabs,
-                selectedIndex = selectedIndex,
-                availableWidth = maxWidth,
-                onTabSelected = selectTab,
+        bottomNavScreens.forEach { screen ->
+            val selected =
+                if (screen == BottomNavScreen.Create) {
+                    showCreate
+                } else {
+                    selectedIndex == screen.ordinal && !showCreate
+                }
+            NavigationBarItem(
+                selected = selected,
+                onClick = { selectTab(screen) },
+                icon = {
+                    CompositionLocalProvider(
+                        LocalContentColor provides if (selected) Color.White else Color(0xFFB3B3B3),
+                    ) {
+                        screen.icon()
+                    }
+                },
+                label = {
+                    Text(
+                        stringResource(screen.title),
+                        style = typo().bodySmall.copy(fontWeight = FontWeight.Bold),
+                        maxLines = 1,
+                    )
+                },
+                colors =
+                    NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color.White,
+                        selectedTextColor = Color.White,
+                        unselectedIconColor = Color(0xFFB3B3B3),
+                        unselectedTextColor = Color(0xFFB3B3B3),
+                        indicatorColor = Color.Transparent,
+                    ),
             )
         }
-        Spacer(Modifier.size(12.dp))
-        FlatSearchButton(
-            selected = selectedIndex == BottomNavScreen.Search.ordinal,
-            onClick = { selectTab(BottomNavScreen.Search) },
-        )
     }
+    CreateSheetHost(
+        navController = navController,
+        visible = showCreate,
+        onDismiss = { showCreate = false },
+    )
 }
 
 /**

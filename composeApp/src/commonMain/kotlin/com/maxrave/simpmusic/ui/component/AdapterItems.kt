@@ -163,7 +163,12 @@ fun HomeItem(
             state = lazyListState,
             flingBehavior = snapperFlingBehavior,
         ) {
-            items(data.contents) { temp ->
+            items(
+                data.contents,
+                key = { item ->
+                    item?.videoId ?: item?.browseId ?: item?.playlistId ?: item?.title ?: item.hashCode()
+                },
+            ) { temp ->
                 if (temp != null) {
                     HomeContentCard(
                         temp = temp,
@@ -266,7 +271,7 @@ fun HomeSectionHeader(
             }
             Text(
                 text = data.title,
-                style = typo().headlineMedium,
+                style = typo().headlineMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 modifier = Modifier.fillMaxWidth(),
@@ -818,9 +823,10 @@ fun QuickPicksItem(
         modifier =
             Modifier
                 .wrapContentHeight()
-                .width(widthDp - 30.dp)
+                .fillMaxWidth()
                 .focusable(true)
-                .clip(RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(6.dp))
+                .background(com.maxrave.simpmusic.ui.theme.killmonCard)
                 .combinedClickable(
                     onClick = onClick,
                     onLongClick = onLongClick,
@@ -830,7 +836,8 @@ fun QuickPicksItem(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(10.dp),
+                    .height(56.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             AsyncImage(
                 model =
@@ -846,25 +853,20 @@ fun QuickPicksItem(
                 contentScale = ContentScale.Crop,
                 modifier =
                     Modifier
-                        .align(Alignment.CenterVertically)
-                        .size(44.dp)
-                        .clip(
-                            RoundedCornerShape(10),
-                        ),
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(6.dp)),
             )
             Column(
                 Modifier
                     .padding(
-                        start = 16.dp,
+                        start = 12.dp,
+                        end = 8.dp,
                     ).align(Alignment.CenterVertically),
                 verticalArrangement = Arrangement.SpaceEvenly,
             ) {
-                // One line + marquee, NOT maxLines = 2: the parent LazyHorizontalGrid uses
-                // GridCells.Fixed(4) over a fixed 256.dp, so every cell is exactly 64.dp and a
-                // second title line pushes the artist row out of the cell, where the grid clips it.
                 Text(
                     text = data.title,
-                    style = typo().titleSmall,
+                    style = typo().titleSmall.copy(fontWeight = FontWeight.Bold),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurface,

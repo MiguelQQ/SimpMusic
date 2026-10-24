@@ -103,10 +103,17 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.navigation.NavController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.text.font.FontWeight
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.kmpalette.loader.rememberNetworkLoader
+import com.kmpalette.rememberDominantColorState
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.http.Url
 import com.maxrave.domain.data.entities.SongEntity
 import com.maxrave.domain.manager.DataStoreManager
 import com.maxrave.domain.utils.connectArtists
@@ -126,10 +133,14 @@ import com.maxrave.simpmusic.ui.component.QueueBottomSheet
 import com.maxrave.simpmusic.ui.component.liquidGlass
 import com.maxrave.simpmusic.ui.component.rememberGlassLuminance
 import com.maxrave.simpmusic.ui.component.rememberHolderPainter
+import com.maxrave.simpmusic.expect.ui.PlatformCastButton
+import com.maxrave.simpmusic.expect.ui.isPlatformCastAvailable
 import com.maxrave.simpmusic.ui.icon.Close
 import com.maxrave.simpmusic.ui.icon.Headphones
+import com.maxrave.simpmusic.ui.icon.MusicCast
 import com.maxrave.simpmusic.ui.icon.OpenInFull
 import com.maxrave.simpmusic.ui.icon.PictureInPictureAlt
+import com.maxrave.simpmusic.ui.icon.PlaylistAdd
 import com.maxrave.simpmusic.ui.icon.QueueMusic
 import com.maxrave.simpmusic.ui.icon.SimpIcons
 import com.maxrave.simpmusic.ui.icon.VolumeOff
@@ -268,21 +279,25 @@ fun MiniPlayer(
         job4.join()
     }
 
+    val artworkLoader = rememberNetworkLoader(remember { HttpClient(CIO) })
+    val artworkColorState =
+        rememberDominantColorState(
+            defaultColor = Color(0xFF2A2A2A),
+            defaultOnColor = Color.White,
+            loader = artworkLoader,
+        )
+    LaunchedEffect(songEntity?.thumbnails) {
+        val url = songEntity?.thumbnails ?: return@LaunchedEffect
+        runCatching { artworkColorState.updateFrom(Url(url)) }
+    }
+
     if (getPlatform() == Platform.Android) {
-        // One shape for both the Card and the clip below. They must not diverge: the clip wraps
-        // the Card's own background draw, so the larger radius wins and silently becomes the
-        // visible one.
-        val miniPlayerShape = CircleShape
-        // Without glass the card follows the theme, not the playing artwork.
+        val miniPlayerShape = RoundedCornerShape(8.dp)
         val cardColor =
-            if (isLiquidGlassEnabled == DataStoreManager.TRUE) {
-                Color.Transparent
-            } else {
-                // Same opaque surface as the bottom bar capsule, so the two floating surfaces read as one set.
-                MaterialTheme.colorScheme.surfaceContainer
-            }
-        // The flat (default) card: round artwork and controls sitting in filled circles. Glass keeps its own look.
-        val isFlat = isLiquidGlassEnabled != DataStoreManager.TRUE
+            artworkColorState.color
+                .copy(alpha = 0.55f)
+                .compositeOver(Color(0xFF121212))
+        val isFlat = true
         Card(
             shape = miniPlayerShape,
             colors =
@@ -293,12 +308,6 @@ fun MiniPlayer(
             modifier =
                 modifier
                     .then(
-                        if (isLiquidGlassEnabled == DataStoreManager.TRUE) {
-                            Modifier.liquidGlass(backdrop, layer, luminance, RoundedCornerShape(16.dp))
-                        } else {
-                            Modifier
-                        },
-                    ).then(
                         Modifier
                             .clip(miniPlayerShape)
                             .offset { IntOffset(0, offsetY.value.roundToInt()) }
@@ -390,25 +399,10 @@ fun MiniPlayer(
                             Box(
                                 modifier =
                                     Modifier
-                                        .size(40.dp)
+                                        .size(48.dp)
                                         .align(Alignment.CenterVertically),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                if (isFlat) {
-                                    // Progress rides a ring around the artwork: wavy while playing, flat when paused.
-                                    val ringStroke = Stroke(width = with(LocalDensity.current) { 3.dp.toPx() }, cap = StrokeCap.Round)
-                                    CircularWavyProgressIndicator(
-                                        progress = { animatedProgress },
-                                        modifier = Modifier.fillMaxSize(),
-                                        color = MaterialTheme.colorScheme.primary,
-                                        trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                                        stroke = ringStroke,
-                                        trackStroke = ringStroke,
-                                        // A raw 0/1, never a tweened value: the node animates amplitude
-                                        // itself and drops new targets mid-animation (see WavySeekBar).
-                                        amplitude = { p -> if (p > 0f && isPlaying) 1f else 0f },
-                                    )
-                                }
                                 AsyncImage(
                                     model =
                                         ImageRequest
@@ -419,12 +413,11 @@ fun MiniPlayer(
                                     placeholder = rememberHolderPainter(),
                                     error = rememberHolderPainter(),
                                     contentDescription = null,
-                                    // Crop in the circle: FillWidth would leave bands around a 16:9 video thumbnail.
-                                    contentScale = if (isFlat) ContentScale.Crop else ContentScale.FillWidth,
+                                    contentScale = ContentScale.Crop,
                                     modifier =
                                         Modifier
-                                            .size(if (isFlat) 26.dp else 40.dp)
-                                            .clip(if (isFlat) CircleShape else RoundedCornerShape(4.dp)),
+                                            .size(48.dp)
+                                            .clip(RoundedCornerShape(4.dp)),
                                 )
                             }
                             Spacer(modifier = Modifier.width(10.dp))
@@ -469,7 +462,7 @@ fun MiniPlayer(
                                     ) {
                                         Text(
                                             text = (songEntity?.title ?: "").toString(),
-                                            style = if (isFlat) typo().titleSmall else typo().labelSmall,
+                                            style = typo().titleSmall.copy(fontWeight = FontWeight.Bold),
                                             color = textColor,
                                             maxLines = 1,
                                             modifier =
@@ -513,32 +506,37 @@ fun MiniPlayer(
                             }
                         }
                     }
-                    // Flat: 40dp in the 56dp pill leaves an even 8dp ring.
-                    val controlSize = if (isFlat) 40.dp else 48.dp
-                    val playColor = if (isFlat) MaterialTheme.colorScheme.onPrimary else textColor
-                    Spacer(modifier = Modifier.width(if (isFlat) 8.dp else 15.dp))
-                    // background(shape), not clip: the heart's like-burst draws outside its bounds.
+                    val controlSize = 40.dp
+                    val playColor = Color.White
+                    Spacer(modifier = Modifier.width(4.dp))
                     Box(
-                        modifier =
-                            if (isFlat) {
-                                Modifier
-                                    .size(controlSize)
-                                    .background(MaterialTheme.colorScheme.surfaceContainerHighest, CircleShape)
-                            } else {
-                                Modifier
-                            },
+                        modifier = Modifier.size(controlSize),
                         contentAlignment = Alignment.Center,
                     ) {
-                        HeartCheckBox(checked = liked, size = 30, tint = textColor) {
-                            sharedViewModel.onUIEvent(UIEvent.ToggleLike)
+                        if (isPlatformCastAvailable()) {
+                            PlatformCastButton(modifier = Modifier.size(24.dp), tint = playColor)
+                        } else {
+                            IconButton(onClick = onClick, modifier = Modifier.size(controlSize)) {
+                                Icon(
+                                    imageVector = SimpIcons.MusicCast,
+                                    contentDescription = null,
+                                    tint = playColor,
+                                )
+                            }
                         }
                     }
-                    Spacer(modifier = Modifier.width(if (isFlat) 8.dp else 15.dp))
+                    IconButton(
+                        onClick = { sharedViewModel.onUIEvent(UIEvent.ToggleLike) },
+                        modifier = Modifier.size(controlSize),
+                    ) {
+                        Icon(
+                            imageVector = SimpIcons.PlaylistAdd,
+                            contentDescription = null,
+                            tint = if (liked) MaterialTheme.colorScheme.primary else playColor,
+                        )
+                    }
                     Box(
-                        modifier =
-                            Modifier
-                                .size(controlSize)
-                                .then(if (isFlat) Modifier.background(MaterialTheme.colorScheme.primary, CircleShape) else Modifier),
+                        modifier = Modifier.size(controlSize),
                         contentAlignment = Alignment.Center,
                     ) {
                         Crossfade(targetState = loading, label = "") {
@@ -557,36 +555,31 @@ fun MiniPlayer(
                             }
                         }
                     }
-
-                    Spacer(modifier = Modifier.width(if (isFlat) 8.dp else 15.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                 }
-                // The flat card shows progress as the ring around its artwork instead.
-                if (!isFlat) {
-                    Box(
-                        modifier =
-                            Modifier
-                                .wrapContentSize(Alignment.Center)
-                                .padding(
-                                    horizontal = 10.dp,
-                                ).align(Alignment.BottomCenter),
-                    ) {
-                        LeftToRight {
-                            LinearProgressIndicator(
-                                progress = { animatedProgress },
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .height(1.dp)
-                                        .background(
-                                            color = Color.Transparent,
-                                            shape = RoundedCornerShape(4.dp),
-                                        ),
-                                color = textColor,
-                                trackColor = Color.Transparent,
-                                strokeCap = StrokeCap.Round,
-                                drawStopIndicator = {},
-                            )
-                        }
+                Box(
+                    modifier =
+                        Modifier
+                            .wrapContentSize(Alignment.Center)
+                            .padding(horizontal = 8.dp)
+                            .align(Alignment.BottomCenter),
+                ) {
+                    LeftToRight {
+                        LinearProgressIndicator(
+                            progress = { animatedProgress },
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(2.dp)
+                                    .background(
+                                        color = Color.Transparent,
+                                        shape = RoundedCornerShape(4.dp),
+                                    ),
+                            color = Color.White,
+                            trackColor = Color.White.copy(alpha = 0.24f),
+                            strokeCap = StrokeCap.Round,
+                            drawStopIndicator = {},
+                        )
                     }
                 }
             }

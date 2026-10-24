@@ -115,6 +115,29 @@ private fun ColorScheme.withNeutralLightSurfaces(): ColorScheme =
         inverseOnSurface = Color(0xFFF1F1F1),
     )
 
+/** Killmon dark: AMOLED page (#000), raised surface (#121212), compact cards (#2A2A2A). */
+private fun ColorScheme.withKillmonDarkSurfaces(): ColorScheme =
+    copy(
+        background = killmonBlack,
+        onBackground = Color.White,
+        surface = killmonSurface,
+        onSurface = Color.White,
+        surfaceVariant = killmonCard,
+        onSurfaceVariant = Color(0xFFB3B3B3),
+        surfaceTint = primary,
+        surfaceBright = killmonCard,
+        surfaceDim = killmonBlack,
+        surfaceContainerLowest = killmonBlack,
+        surfaceContainerLow = Color(0xFF0A0A0A),
+        surfaceContainer = killmonSurface,
+        surfaceContainerHigh = Color(0xFF1A1A1A),
+        surfaceContainerHighest = killmonCard,
+        outline = Color(0xFF535353),
+        outlineVariant = Color(0xFF2A2A2A),
+        inverseSurface = Color(0xFFE6E6E6),
+        inverseOnSurface = Color(0xFF121212),
+    )
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun AppTheme(
@@ -141,14 +164,18 @@ fun AppTheme(
         }
     // Light pins the neutrals to a neutral-grey ramp (the seed otherwise tints them warm/cream);
     // dark keeps the generated neutrals as they are.
-    val colorScheme =
+    val generatedScheme =
         wallpaperScheme
             ?: rememberDynamicColorScheme(
                 seedColor = seedColor,
                 isDark = isDark,
                 style = PaletteStyle.TonalSpot,
-                modifyColorScheme = { cs -> if (isDark) cs else cs.withNeutralLightSurfaces() },
+                modifyColorScheme = { cs ->
+                    if (isDark) cs.withKillmonDarkSurfaces() else cs.withNeutralLightSurfaces()
+                },
             )
+    val colorScheme =
+        if (isDark && wallpaperScheme != null) generatedScheme.withKillmonDarkSurfaces() else generatedScheme
     // Immersive screens stay dark even at light theme (see [ForceDarkContent]). Resolve their scheme
     // once here instead of letting every such subtree build a palette of its own.
     val forcedDarkScheme =
@@ -159,6 +186,7 @@ fun AppTheme(
                 seedColor = seedColor,
                 isDark = true,
                 style = PaletteStyle.TonalSpot,
+                modifyColorScheme = { cs -> cs.withKillmonDarkSurfaces() },
             )
         }
     SystemBarAppearanceEffect(isDark)

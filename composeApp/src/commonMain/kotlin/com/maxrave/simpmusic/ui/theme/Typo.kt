@@ -23,6 +23,8 @@ import simpmusic.composeapp.generated.resources.poppins_medium
 fun fontFamily(): FontFamily =
     FontFamily(
         Font(Res.font.poppins_medium, FontWeight.Normal, FontStyle.Normal),
+        Font(Res.font.poppins_medium, FontWeight.SemiBold, FontStyle.Normal),
+        Font(Res.font.poppins_medium, FontWeight.Bold, FontStyle.Normal),
     )
 
 /**

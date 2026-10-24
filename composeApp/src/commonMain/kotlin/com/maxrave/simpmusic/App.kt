@@ -426,13 +426,7 @@ fun App(
     }
 
     LaunchedEffect(updateData) {
-        val response = updateData ?: return@LaunchedEffect
-        // Only a NEWER release is offered. This used to compare the tags for inequality, which told a
-        // build ahead of the latest release (dev, beta) to "update" back down to it, and told every
-        // F-Droid-channel user to update on each launch: that channel's tag carries no leading "v".
-        if (viewModel.showedUpdateDialog && VersionManager.isBehind(response.tagName)) {
-            shouldShowUpdateDialog = true
-        }
+        // Killmon: skip changelog / "update available" on launch. Settings still offers a manual check.
     }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -535,24 +529,20 @@ fun App(
                     ) {
                         // On Android both materials go through the folding bar, which draws the mini
                         // player itself. Desktop keeps the always-open flat bar under its own one.
-                        val useFoldingBar = getPlatform() == Platform.Android || isLiquidGlassEnabled == TRUE
+                        // Killmon phone: floating mini-player over a labeled bottom bar (Spotify layout).
+                        val useFoldingBar = getPlatform() != Platform.Android && isLiquidGlassEnabled == TRUE
                         Column {
                             AnimatedVisibility(
-                                isShowMiniPlayer && !useFoldingBar && isLiquidGlassEnabled == DataStoreManager.FALSE,
+                                isShowMiniPlayer && !useFoldingBar,
                                 enter = fadeIn() + slideInHorizontally(),
                                 exit = fadeOut(),
                             ) {
                                 MiniPlayer(
                                     Modifier
-                                        // 56dp card + the 4dp gap below.
-                                        .height(60.dp)
+                                        .height(64.dp)
                                         .fillMaxWidth()
-                                        .padding(
-                                            // The bottom bar's own 16dp, so both edges line up.
-                                            horizontal = 16.dp,
-                                        ).padding(
-                                            bottom = 4.dp,
-                                        ),
+                                        .padding(horizontal = 8.dp)
+                                        .padding(bottom = 8.dp),
                                     backdrop = backdrop,
                                     navController = navController,
                                     onClick = {

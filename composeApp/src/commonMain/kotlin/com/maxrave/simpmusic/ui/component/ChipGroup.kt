@@ -229,12 +229,9 @@ private fun ChipBody(
             colors =
                 FilterChipDefaults.elevatedFilterChipColors(
                     containerColor = containerColor,
-                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                    selectedContainerColor = com.maxrave.simpmusic.ui.theme.killmonGreen,
                     labelColor = labelColor,
-                    // `primary` is a pale #B2C5FF on the dark theme, so the label has to be its
-                    // matching `on` token — a hand-picked white would read on one theme and
-                    // vanish on the other.
-                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                    selectedLabelColor = Color.Black,
                 ),
             onClick = onClick,
             label = {

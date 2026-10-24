@@ -5,10 +5,23 @@ import androidx.compose.ui.graphics.Color
 // ===== Brand =====
 
 /**
+ * Killmon Music accent: green → cyan, taken from the app icon.
+ * The Material 3 ColorScheme is generated from [seed] at runtime — see [AppTheme].
+ */
+val killmonGreen = Color(0xFF39E75F)
+val killmonCyan = Color(0xFF18E0E8)
+val killmonAccentGradient = listOf(killmonGreen, killmonCyan)
+
+/**
  * Brand seed color. The whole Material 3 ColorScheme is generated from this
  * color at runtime — see [AppTheme].
  */
-val seed = Color(0xFF8ECAE6)
+val seed = killmonGreen
+
+/** Spotify-style page and cards (dark theme). */
+val killmonBlack = Color(0xFF000000)
+val killmonSurface = Color(0xFF121212)
+val killmonCard = Color(0xFF2A2A2A)
 
 // ===== Semantic colors (not derivable from the color scheme) =====
 

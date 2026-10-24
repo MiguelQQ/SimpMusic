@@ -4,6 +4,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import com.maxrave.simpmusic.expect.ui.PlatformBackdrop
+import com.maxrave.simpmusic.ui.icon.Add
 import com.maxrave.simpmusic.ui.icon.AutoGraph
 import com.maxrave.simpmusic.ui.icon.Home
 import com.maxrave.simpmusic.ui.icon.LibraryMusic
@@ -19,10 +20,11 @@ import com.maxrave.simpmusic.viewModel.SharedViewModel
 import org.jetbrains.compose.resources.StringResource
 import simpmusic.composeapp.generated.resources.Res
 import simpmusic.composeapp.generated.resources.analytics
+import simpmusic.composeapp.generated.resources.create
 import simpmusic.composeapp.generated.resources.home
-import simpmusic.composeapp.generated.resources.library
 import simpmusic.composeapp.generated.resources.mix
 import simpmusic.composeapp.generated.resources.search
+import simpmusic.composeapp.generated.resources.your_library
 import kotlin.reflect.KClass
 
 @Composable
@@ -73,10 +75,23 @@ sealed class BottomNavScreen(
     data object Library : BottomNavScreen(
         ordinal = 2,
         destination = LibraryDestination,
-        title = Res.string.library,
+        title = Res.string.your_library,
         icon = {
             Icon(
                 imageVector = SimpIcons.LibraryMusic,
+                contentDescription = null,
+            )
+        },
+    )
+
+    /** Opens the Create sheet; not a navigation destination. */
+    data object Create : BottomNavScreen(
+        ordinal = 5,
+        destination = LibraryDestination,
+        title = Res.string.create,
+        icon = {
+            Icon(
+                imageVector = SimpIcons.Add,
                 contentDescription = null,
             )
         },

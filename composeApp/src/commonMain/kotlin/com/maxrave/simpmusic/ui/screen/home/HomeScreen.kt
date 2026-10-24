@@ -133,7 +133,6 @@ import com.maxrave.simpmusic.getPlatform
 import com.maxrave.simpmusic.ui.component.BlogPromoDialog
 import com.maxrave.simpmusic.ui.component.CenterLoadingBox
 import com.maxrave.simpmusic.ui.component.Chip
-import com.maxrave.simpmusic.ui.component.CreateActions
 import com.maxrave.simpmusic.ui.component.DropdownButton
 import com.maxrave.simpmusic.ui.component.EndOfPage
 import com.maxrave.simpmusic.ui.component.ExpandableChip
@@ -157,8 +156,10 @@ import com.maxrave.simpmusic.ui.component.SectionHeaderButton
 import com.maxrave.simpmusic.ui.component.ShareSavedLyricsDialog
 import com.maxrave.simpmusic.ui.component.homeCardAspectRatio
 import com.maxrave.simpmusic.ui.component.rememberHolderPainter
+import androidx.compose.ui.text.font.FontWeight
 import com.maxrave.simpmusic.ui.icon.Notifications
 import com.maxrave.simpmusic.ui.icon.Person
+import com.maxrave.simpmusic.ui.icon.Settings
 import com.maxrave.simpmusic.ui.icon.SimpIcons
 import com.maxrave.simpmusic.ui.navigation.destination.home.HomeDestination
 import com.maxrave.simpmusic.ui.navigation.destination.home.MoodDestination
@@ -219,10 +220,12 @@ import simpmusic.composeapp.generated.resources.good_morning
 import simpmusic.composeapp.generated.resources.good_night
 import simpmusic.composeapp.generated.resources.guest
 import simpmusic.composeapp.generated.resources.let_s_pick_a_playlist_for_you
-import simpmusic.composeapp.generated.resources.let_s_start_with_a_radio
 import simpmusic.composeapp.generated.resources.log_in_to_YouTube
 import simpmusic.composeapp.generated.resources.log_in_warning
 import simpmusic.composeapp.generated.resources.mood
+import simpmusic.composeapp.generated.resources.music
+import simpmusic.composeapp.generated.resources.podcasts
+import simpmusic.composeapp.generated.resources.settings
 import simpmusic.composeapp.generated.resources.notification
 import simpmusic.composeapp.generated.resources.party
 import simpmusic.composeapp.generated.resources.play_all
@@ -247,6 +250,22 @@ private const val PROMO_CLEAR_MS = 400L
 // The height the first item lost with the old app bar (64dp + the 50dp chip row, now one 56dp row) and
 // the Welcome back row (81dp), which Home's top glow still has to cover.
 private val HomeGlowOverflow = 140.dp
+
+private enum class HomeChipFilter { ALL, MUSIC, PODCASTS }
+
+private fun HomeItem.isPodcastShelf(): Boolean {
+    if (moreEndpoint?.pageType == HomeItem.MoreEndpoint.PAGE_TYPE_PODCAST) return true
+    val heading = title.lowercase()
+    if (heading.contains("podcast") || heading.contains("episodio") || heading.contains("episode")) return true
+    return contents.any { content ->
+        content != null &&
+            (
+                content.browseId?.startsWith("MPSP") == true ||
+                    content.playlistId?.startsWith("MPSP") == true ||
+                    content.videoType?.contains("PODCAST", ignoreCase = true) == true
+            )
+    }
+}
 
 // The moods behind the Mood chip, each with the Home params it loads.
 private val homeMoods =
@@ -307,7 +326,15 @@ fun HomeScreen(
     val homeListState by viewModel.homeListState.collectAsStateWithLifecycle()
     val continuation by viewModel.continuation.collectAsStateWithLifecycle()
 
-    val shouldShowLogInAlert by viewModel.showLogInAlert.collectAsStateWithLifecycle()
+    var homeFilter by rememberSaveable { mutableStateOf(HomeChipFilter.ALL) }
+    val visibleShelves =
+        remember(homeShelves, homeFilter) {
+            when (homeFilter) {
+                HomeChipFilter.ALL -> homeShelves
+                HomeChipFilter.MUSIC -> homeShelves.filter { !it.isPodcastShelf() }
+                HomeChipFilter.PODCASTS -> homeShelves.filter { it.isPodcastShelf() }
+            }
+        }
 
     val openAppTime by sharedViewModel.openAppTime.collectAsStateWithLifecycle()
     val shareLyricsPermissions by sharedViewModel.shareSavedLyrics.collectAsStateWithLifecycle()
@@ -447,30 +474,7 @@ fun HomeScreen(
             }
         }
     }
-    LaunchedEffect(openAppTime, shareLyricsPermissions) {
-        Logger.w("HomeScreen", "openAppTime: $openAppTime, shareLyricsPermissions: $shareLyricsPermissions")
-        if (openAppTime >= 10 && openAppTime % 10 == 0 && openAppTime <= 50) {
-            showReviewDialog = true
-        } else if ((openAppTime == 1 || openAppTime % 15 == 0) && openAppTime <= 60 && !shareLyricsPermissions) {
-            showRequestShareLyricsPermissions = true
-        } else if (openAppTime == 5) {
-            // Blog promo: one-shot after 5 app opens, bump key suffix to re-promote later
-            if (sharedViewModel.getString(BLOG_PROMO_KEY) != "true") {
-                showBlogPromoDialog = true
-            }
-        } else if (openAppTime % 10 == 6 &&
-            openAppTime <= 46 &&
-            sharedViewModel.getString(FOOTGUNS_STAR_KEY) != "true"
-        ) {
-            // kotlin-footguns star prompt: 6, 16, 26, 36, 46 - one open after each review milestone,
-            // and clear of the share-lyrics (15, 45) and blog-promo (5) milestones
-            showFootgunsDialog = true
-        } else {
-            showReviewDialog = false
-            showFootgunsDialog = false
-            showRequestShareLyricsPermissions = false
-        }
-    }
+    // Killmon: no review / blog / lyrics-share / star prompts on launch. Home opens directly.
 
     val shouldStartPaginate =
         remember {
@@ -569,12 +573,15 @@ fun HomeScreen(
 
     val otherDialogOpen =
         appDialogOpen || showReviewDialog || showRequestShareLyricsPermissions || showBlogPromoDialog ||
-            showFootgunsDialog || shouldShowLogInAlert
+            showFootgunsDialog
     // The launch banner, decided once per launch. It waits for Home to settle on its own dialogs (the
     // open count and the lyrics-sharing flag load just after the first frame) and for the update check
     // started at launch, however long that takes, so an update dialog comes first. Then it takes the
     // first banner this version has not shown yet.
     LaunchedEffect(Unit) {
+        // Killmon: no launch promo / changelog banner.
+        promoLaunchDecided = true
+        return@LaunchedEffect
         if (promoLaunchDecided) return@LaunchedEffect
         // Marked at the start, not the end: leaving Home cancels this for good (by then the user is
         // busy elsewhere), and a value written while Home is being left would not be saved.
@@ -679,7 +686,7 @@ fun HomeScreen(
         )
     }
 
-    if (shouldShowLogInAlert) {
+    if (false) {
         var doNotShowAgain by rememberSaveable {
             mutableStateOf(false)
         }
@@ -777,9 +784,9 @@ fun HomeScreen(
                     }
                     LazyColumn(
                         state = scrollState,
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
-                        itemsIndexed(homeShelves, key = { _, item ->
+                        itemsIndexed(visibleShelves, key = { _, item ->
                             item.hashCode().toString() + (mainHomeThumbnail ?: "nothumb")
                         }) { index, item ->
                             Box {
@@ -1071,17 +1078,8 @@ fun HomeScreen(
                 // strip, so at rest Create sits at the right edge, and a Mood that opens wide pushes it
                 // along instead of sliding under it. On Desktop and in landscape Create stays put at the
                 // right edge, like the avatar.
-                val createPinned = getPlatform() == Platform.Desktop || getScreenSizeInfo().let { it.wDP >= it.hDP }
                 val chipHeadFade by animateFloatAsState(if (chipRowState.canScrollBackward) 1f else 0f)
                 val chipTailFade by animateFloatAsState(if (chipRowState.canScrollForward) 1f else 0f)
-                // Notifications moved into the avatar menu, Listen Together into the Create sheet.
-                val createActions: @Composable () -> Unit = {
-                    CreateActions(
-                        backdrop = chipBackdrop,
-                        navController = navController,
-                        onSettings = { navController.navigate(SettingsDestination) },
-                    )
-                }
                 Row(
                     modifier =
                         Modifier
@@ -1108,21 +1106,41 @@ fun HomeScreen(
                                     .chipStripEdgeFades(32.dp, start = { chipHeadFade }, end = { chipTailFade })
                                     .horizontalScroll(chipRowState)
                                     .widthIn(min = maxWidth)
-                                    .padding(end = if (createPinned) 0.dp else 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                                    .padding(end = 16.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Chip(
                                     isAnimated = loading,
-                                    isSelected = params == null && !moodExpanded,
+                                    isSelected = homeFilter == HomeChipFilter.ALL && params == null && !moodExpanded,
                                     text = stringResource(Res.string.all),
                                     backdrop = chipBackdrop,
                                 ) {
                                     moodExpanded = false
+                                    homeFilter = HomeChipFilter.ALL
+                                    viewModel.setParams(null)
+                                }
+                                Chip(
+                                    isAnimated = loading,
+                                    isSelected = homeFilter == HomeChipFilter.MUSIC,
+                                    text = stringResource(Res.string.music),
+                                    backdrop = chipBackdrop,
+                                ) {
+                                    moodExpanded = false
+                                    homeFilter = HomeChipFilter.MUSIC
+                                    viewModel.setParams(null)
+                                }
+                                Chip(
+                                    isAnimated = loading,
+                                    isSelected = homeFilter == HomeChipFilter.PODCASTS,
+                                    text = stringResource(Res.string.podcasts),
+                                    backdrop = chipBackdrop,
+                                ) {
+                                    moodExpanded = false
+                                    homeFilter = HomeChipFilter.PODCASTS
                                     viewModel.setParams(null)
                                 }
                                 ExpandableChip(
@@ -1133,19 +1151,14 @@ fun HomeScreen(
                                     onExpandedChange = { moodExpanded = it },
                                     onSelect = { index ->
                                         moodExpanded = false
+                                        homeFilter = HomeChipFilter.ALL
                                         viewModel.setParams(homeMoods[index].second)
                                     },
                                     isAnimated = loading,
                                     backdrop = chipBackdrop,
                                 )
                             }
-                            if (!createPinned) {
-                                Box(Modifier.padding(start = 8.dp)) { createActions() }
-                            }
                         }
-                    }
-                    if (createPinned) {
-                        Box(Modifier.padding(start = 8.dp, end = 16.dp)) { createActions() }
                     }
                 }
             }
@@ -1231,7 +1244,7 @@ private fun HomeAccountButton(
         AccountAvatar(
             signedIn = signedIn,
             thumbnailUrl = thumbnailUrl,
-            // The Create pill's height, as Apple sizes an avatar like the glass buttons beside it.
+            initial = accountName?.firstOrNull()?.uppercaseChar()?.toString(),
             size = 44.dp,
             contentDescription = displayName,
             modifier = Modifier.clickable { menuOpen = true },
@@ -1256,6 +1269,7 @@ private fun HomeAccountButton(
                 AccountAvatar(
                     signedIn = signedIn,
                     thumbnailUrl = thumbnailUrl,
+                    initial = accountName?.firstOrNull()?.uppercaseChar()?.toString(),
                     size = 40.dp,
                     contentDescription = null,
                 )
@@ -1270,6 +1284,14 @@ private fun HomeAccountButton(
                 onClick = {
                     menuOpen = false
                     navController.navigate(NotificationDestination)
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(Res.string.settings), style = typo().bodyMedium) },
+                leadingIcon = { Icon(SimpIcons.Settings, contentDescription = null) },
+                onClick = {
+                    menuOpen = false
+                    navController.navigate(SettingsDestination)
                 },
             )
             if (!signedIn) {
@@ -1294,6 +1316,7 @@ private fun HomeAccountButton(
 private fun AccountAvatar(
     signedIn: Boolean,
     thumbnailUrl: String?,
+    initial: String? = null,
     size: Dp,
     contentDescription: String?,
     modifier: Modifier = Modifier,
@@ -1319,6 +1342,20 @@ private fun AccountAvatar(
             contentScale = ContentScale.Crop,
             modifier = avatarModifier,
         )
+    } else if (signedIn && !initial.isNullOrBlank()) {
+        Box(
+            modifier =
+                avatarModifier.background(
+                    Brush.horizontalGradient(com.maxrave.simpmusic.ui.theme.killmonAccentGradient),
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = initial,
+                color = Color.Black,
+                style = typo().titleMedium.copy(fontWeight = FontWeight.Bold),
+            )
+        }
     } else {
         Box(
             modifier = avatarModifier.background(MaterialTheme.colorScheme.surfaceContainerHighest),
@@ -1354,8 +1391,6 @@ fun QuickPicks(
     navController: NavController,
     viewModel: HomeViewModel = koinViewModel(),
 ) {
-    val lazyListState = rememberLazyGridState()
-    val snapperFlingBehavior = rememberSnapFlingBehavior(SnapLayoutInfoProvider(lazyGridState = lazyListState, snapPosition = SnapPosition.Start))
     val isPortrait = getScreenSizeInfo().let { it.wDP < it.hDP }
     val density = LocalDensity.current
     var widthDp by remember {
@@ -1372,24 +1407,22 @@ fun QuickPicks(
         )
     }
 
+    val picks = remember(homeItem.contents) { homeItem.contents.filterNotNull().take(8) }
     Column(
         Modifier
-            .padding(vertical = 8.dp)
+            .padding(vertical = 4.dp)
             .onGloballyPositioned { coordinates ->
                 with(density) {
                     widthDp = (coordinates.size.width).toDp()
                 }
             },
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(Res.string.let_s_start_with_a_radio),
-                    style = typo().bodySmall,
-                )
-                Text(
                     text = stringResource(Res.string.quick_picks),
-                    style = typo().headlineMedium,
+                    style = typo().headlineMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onBackground,
                     maxLines = 1,
                     modifier =
@@ -1405,47 +1438,45 @@ fun QuickPicks(
                 )
             }
         }
-        LazyHorizontalGrid(
-            rows = GridCells.Fixed(4),
-            modifier = Modifier.height(256.dp),
-            state = lazyListState,
-            flingBehavior = snapperFlingBehavior,
-        ) {
-            items(homeItem.contents, key = { it.hashCode() }) {
-                if (it != null) {
-                    QuickPicksItem(
-                        onClick = {
-                            val firstQueue: Track = it.toTrack()
-                            viewModel.setQueueData(
-                                QueueData.Data(
-                                    listTracks = arrayListOf(firstQueue),
-                                    firstPlayedTrack = firstQueue,
-                                    playlistId = "RDAMVM${it.videoId}",
-                                    playlistName = "\"${it.title}\" Radio",
-                                    playlistType = PlaylistType.RADIO,
-                                    continuation = null,
-                                ),
-                            )
-                            viewModel.loadMediaItem(
-                                firstQueue,
-                                type = Config.SONG_CLICK,
-                            )
-                        },
-                        onLongClick = {
-                            track = it.toTrack()
-                            bottomSheetShow = true
-                        },
-                        data = it,
-                        widthDp = if (isPortrait) widthDp else minOf(widthDp, LandscapeGridItemMaxWidth + 30.dp),
-                    )
+        picks.chunked(2).forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                row.forEach { item ->
+                    Box(Modifier.weight(1f)) {
+                        QuickPicksItem(
+                            onClick = {
+                                val firstQueue: Track = item.toTrack()
+                                viewModel.setQueueData(
+                                    QueueData.Data(
+                                        listTracks = arrayListOf(firstQueue),
+                                        firstPlayedTrack = firstQueue,
+                                        playlistId = "RDAMVM${item.videoId}",
+                                        playlistName = "\"${item.title}\" Radio",
+                                        playlistType = PlaylistType.RADIO,
+                                        continuation = null,
+                                    ),
+                                )
+                                viewModel.loadMediaItem(
+                                    firstQueue,
+                                    type = Config.SONG_CLICK,
+                                )
+                            },
+                            onLongClick = {
+                                track = item.toTrack()
+                                bottomSheetShow = true
+                            },
+                            data = item,
+                            widthDp = if (isPortrait) widthDp else minOf(widthDp, LandscapeGridItemMaxWidth + 30.dp),
+                        )
+                    }
+                }
+                if (row.size == 1) {
+                    Spacer(Modifier.weight(1f))
                 }
             }
         }
-        HorizontalScrollBar(
-            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-            scrollState = lazyListState,
-            flingBehavior = snapperFlingBehavior,
-        )
     }
 }
 
