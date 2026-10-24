@@ -69,7 +69,7 @@
         android:localeConfig="@xml/locale_config"
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
-        android:theme="@style/Theme.SimpMusic"
+        android:theme="@style/Theme.KillmonMusic"
         android:enableOnBackInvokedCallback="true"
         android:requestLegacyExternalStorage="true"
         tools:replace="android:name"
@@ -82,7 +82,7 @@
             android:supportsPictureInPicture="true"
             android:enableOnBackInvokedCallback="true"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.SimpMusic"
+            android:theme="@style/Theme.KillmonMusic"
             tools:ignore="DiscouragedApi,LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

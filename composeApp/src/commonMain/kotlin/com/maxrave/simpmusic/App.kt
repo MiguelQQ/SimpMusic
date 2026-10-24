@@ -496,10 +496,6 @@ fun App(
         // Desktop capsule player is glass by design. Same rule as MiniPlayer's useGlassSurface.
         liquidGlassEnabled = isLiquidGlassEnabled == TRUE || getPlatform() == Platform.Desktop,
     ) {
-        if (!isOfficialBuild) {
-            UnofficialBuildScreen()
-            return@AppTheme
-        }
         // Read inside AppTheme so MaterialTheme reflects the resolved scheme.
         val isLightScheme = MaterialTheme.colorScheme.background.luminance() > 0.5f
 

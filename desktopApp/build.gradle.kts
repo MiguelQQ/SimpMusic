@@ -335,7 +335,7 @@ tasks.register("packageConveyorAppImage") {
     )
 
     doLast {
-        val appName = "SimpMusic"
+        val appName = "KillmonMusic"
         val conveyorOutput = rootDir.resolve("output")
         if (!conveyorOutput.exists()) {
             throw GradleException(

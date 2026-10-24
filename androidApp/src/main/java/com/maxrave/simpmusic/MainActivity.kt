@@ -138,25 +138,9 @@ class MainActivity : AppCompatActivity() {
 
         // Check if the migration has already been done or not
         if (getString(FIRST_TIME_MIGRATION) != STATUS_DONE) {
-            Logger.d("Locale Key", "onCreate: ${Locale.getDefault().toLanguageTag()}")
-            if (SUPPORTED_LANGUAGE.codes.contains(Locale.getDefault().toLanguageTag())) {
-                Logger.d(
-                    "Contains",
-                    "onCreate: ${
-                        SUPPORTED_LANGUAGE.codes.contains(
-                            Locale.getDefault().toLanguageTag(),
-                        )
-                    }",
-                )
-                putString(SELECTED_LANGUAGE, Locale.getDefault().toLanguageTag())
-                if (SUPPORTED_LOCATION.items.contains(Locale.getDefault().country)) {
-                    putString("location", Locale.getDefault().country)
-                } else {
-                    putString("location", "US")
-                }
-            } else {
-                putString(SELECTED_LANGUAGE, "en-US")
-            }
+            // Killmon build: Spanish UI and Colombia content region by default on first launch.
+            putString(SELECTED_LANGUAGE, "es-ES")
+            putString("location", "CO")
             // Fetch the selected language from wherever it was stored. In this case its SharedPref
             getString(SELECTED_LANGUAGE)?.let {
                 Logger.d("Locale Key", "getString: $it")
@@ -254,7 +238,7 @@ class MainActivity : AppCompatActivity() {
         }
         viewModel.getLocation()
 
-        if (!BuildConfig.DEBUG) viewModel.checkOfficialBuild(packageName, signingCertSha256())
+        // Killmon build: official-build signature check removed.
         setContent {
             App(viewModel)
         }

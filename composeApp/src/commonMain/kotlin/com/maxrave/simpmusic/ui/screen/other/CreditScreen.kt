@@ -105,16 +105,6 @@ fun CreditScreen(
             fontSize = 13.sp,
         )
 
-        // Developer - clickable, opens dev blog
-        Text(
-            text = stringResource(Res.string.maxrave_dev),
-            style = typo().bodyMedium,
-            textDecoration = TextDecoration.Underline,
-            modifier =
-                Modifier.clickable {
-                    openUrl("https://maxrave.dev")
-                },
-        )
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -131,83 +121,6 @@ fun CreditScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
-            // Website button
-            TextButton(
-                onClick = {
-                    openUrl("https://simpmusic.org")
-                },
-                modifier =
-                    Modifier
-                        .align(Alignment.Start)
-                        .padding(horizontal = 25.dp)
-                        .defaultMinSize(minHeight = 1.dp, minWidth = 1.dp),
-            ) {
-                Text(text = stringResource(Res.string.website))
-            }
-
-            // Developer blog button
-            TextButton(
-                onClick = {
-                    openUrl("https://www.simpmusic.org/blogs")
-                },
-                modifier =
-                    Modifier
-                        .align(Alignment.Start)
-                        .padding(horizontal = 25.dp)
-                        .defaultMinSize(minHeight = 1.dp, minWidth = 1.dp),
-            ) {
-                Column {
-                    Text(text = stringResource(Res.string.developer_blog))
-                    Text(
-                        text = stringResource(Res.string.developer_blog_tagline),
-                        style = typo().bodySmall,
-                    )
-                }
-            }
-
-            // GitHub button
-            TextButton(
-                onClick = {
-                    openUrl("https://github.com/maxrave-dev/SimpMusic")
-                },
-                modifier =
-                    Modifier
-                        .align(Alignment.Start)
-                        .padding(horizontal = 25.dp)
-                        .defaultMinSize(minHeight = 1.dp, minWidth = 1.dp),
-            ) {
-                Text(text = stringResource(Res.string.github))
-            }
-
-            // Issue tracker button
-            TextButton(
-                onClick = {
-                    openUrl("https://github.com/maxrave-dev/SimpMusic/issues")
-                },
-                modifier =
-                    Modifier
-                        .align(Alignment.Start)
-                        .padding(horizontal = 25.dp)
-                        .defaultMinSize(minHeight = 1.dp, minWidth = 1.dp),
-            ) {
-                Text(text = stringResource(Res.string.issue_tracker))
-            }
-
-            // Buy me a coffee button
-            TextButton(
-                onClick = {
-                    openUrl("https://github.com/sponsors/maxrave-dev")
-                },
-                modifier =
-                    Modifier
-                        .align(Alignment.Start)
-                        .padding(horizontal = 25.dp)
-                        .defaultMinSize(minHeight = 1.dp, minWidth = 1.dp),
-            ) {
-                Text(text = stringResource(Res.string.buy_me_a_coffee))
-            }
-        }
 
         Spacer(modifier = Modifier.height(10.dp))
 
