@@ -149,11 +149,9 @@ import simpmusic.composeapp.generated.resources.update_message
 import simpmusic.composeapp.generated.resources.yes
 import kotlin.time.ExperimentalTime
 
-// Almost opaque black dock; a subtle gradient leaves only a trace of the content.
-private val KillmonBarScrimTop = Color.Black.copy(alpha = 0.92f)
-
-// Slightly darker toward the system gesture.
-private val KillmonBarScrimBottom = Color.Black.copy(alpha = 0.95f)
+// One continuous dock scrim: transparent at the card top, near-black at the nav icons.
+private val KillmonBarScrimTop = Color.Black.copy(alpha = 0f)
+private val KillmonBarScrimBottom = Color.Black.copy(alpha = 0.93f)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class, ExperimentalFoundationApi::class)
 @Composable
@@ -577,27 +575,30 @@ fun App(
                         exit = fadeOut(),
                     ) {
                         // Folding glass bar is desktop-only and draws its own mini player.
-                        // Killmon phone: floating card over a labeled bar, on a black dock.
                         val useFoldingBar = getPlatform() != Platform.Android && isLiquidGlassEnabled == TRUE
-                        Column(Modifier.fillMaxWidth()) {
-                            // Cover the mini-player margins and gap as well as the navigation row.
-                            val showCard = isShowMiniPlayer && !useFoldingBar && !killmonBlocksChrome
-                            if (!useFoldingBar && !showCard) {
-                                Box(
+                        // A single brush spans the card, its margins, the gap and navigation.
+                        // Reach near-black around the icons, then hold it through the labels/inset.
+                        val showCard = isShowMiniPlayer && !useFoldingBar && !killmonBlocksChrome
+                        Column(
+                            Modifier.fillMaxWidth().then(
+                                if (useFoldingBar) {
                                     Modifier
-                                        .fillMaxWidth()
-                                        .height(72.dp)
-                                        .background(
-                                            smoothScrimBrush(
-                                                from = Color.Black.copy(alpha = 0f),
-                                                to = KillmonBarScrimTop,
-                                            ),
+                                } else {
+                                    Modifier.background(
+                                        smoothScrimBrush(
+                                            from = KillmonBarScrimTop,
+                                            to = KillmonBarScrimBottom,
+                                            endFraction = 0.72f,
                                         ),
-                                )
+                                    )
+                                },
+                            ),
+                        ) {
+                            if (!useFoldingBar && !showCard) {
+                                Spacer(Modifier.height(72.dp))
                             }
                             AnimatedVisibility(
                                 showCard,
-                                modifier = Modifier.background(KillmonBarScrimTop),
                                 enter = fadeIn() + slideInHorizontally(),
                                 exit = fadeOut(),
                             ) {
@@ -632,23 +633,12 @@ fun App(
                                     viewModel.reloadDestination(klass)
                                 }
                             } else {
-                                Box(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .background(
-                                            smoothScrimBrush(
-                                                from = KillmonBarScrimTop,
-                                                to = KillmonBarScrimBottom,
-                                            ),
-                                        ),
-                                ) {
-                                    AppBottomNavigationBar(
-                                        navController = navController,
-                                        showAnalyticsTab = showAnalyticsTab,
-                                        showMixForYouTab = showMixForYouTab,
-                                    ) { klass ->
-                                        viewModel.reloadDestination(klass)
-                                    }
+                                AppBottomNavigationBar(
+                                    navController = navController,
+                                    showAnalyticsTab = showAnalyticsTab,
+                                    showMixForYouTab = showMixForYouTab,
+                                ) { klass ->
+                                    viewModel.reloadDestination(klass)
                                 }
                             }
                         }

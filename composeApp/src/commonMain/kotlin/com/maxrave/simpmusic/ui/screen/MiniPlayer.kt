@@ -163,8 +163,8 @@ import simpmusic.composeapp.generated.resources.cd_mini_player
 
 private const val TAG = "MiniPlayer"
 
-/** Spotify-style floating bar: solid dark gray, not an artwork tint. */
-private val MiniPlayerCard = Color(0xFF3A3A3A)
+/** Nearly opaque charcoal card, independent of the continuous dock scrim underneath. */
+private val MiniPlayerCard = Color(0xFF2A2A2A).copy(alpha = 0.97f)
 private val MiniPlayerArtist = Color(0xFFB3B3B3)
 private val MiniPlayerTouch = 48.dp
 private val MiniPlayerIcon = 26.dp
