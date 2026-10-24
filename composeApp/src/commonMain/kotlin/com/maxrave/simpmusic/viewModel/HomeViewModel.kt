@@ -53,6 +53,7 @@ class HomeViewModel(
     val accountInfo: StateFlow<Pair<String?, String?>?> = _accountInfo
 
     private var homeJob: Job? = null
+    private var continuationJob: Job? = null
 
     val showSnackBarErrorState = MutableSharedFlow<String>()
 
@@ -94,7 +95,6 @@ class HomeViewModel(
         homeJob = Job()
         viewModelScope.launch {
             regionCodeChart.value = dataStoreManager.chartKey.first()
-            exploreChart(regionCodeChart.value ?: "ZZ")
             language = dataStoreManager.getString(SELECTED_LANGUAGE).first()
                 ?: SUPPORTED_LANGUAGE.codes.first()
             //  refresh when region change
@@ -102,7 +102,14 @@ class HomeViewModel(
                 launch {
                     dataStoreManager.location.distinctUntilChanged().collect {
                         regionCode = it
-                        getHomeItemList(params.value)
+                        _continuation.value = null
+                        _params.value = null
+                        _homeItemList.value = emptyList()
+                        _chart.value = null
+                        _newRelease.value = emptyList()
+                        _exploreMoodItem.value = null
+                        _homeBackground.value = null
+                        getHomeItemList()
                     }
                 }
             //  refresh when language change
@@ -177,7 +184,9 @@ class HomeViewModel(
     }
 
     fun getHomeItemList(params: String? = null) {
+        continuationJob?.cancel()
         loading.value = true
+        loadingChart.value = true
         _homeListState.value = ListState.LOADING
         language =
             runBlocking {
@@ -234,6 +243,7 @@ class HomeViewModel(
                             _chart.value = null
                         }
                     }
+                    loadingChart.value = false
                     when (newRelease) {
                         is Resource.Success -> {
                             _newRelease.value = newRelease.data ?: arrayListOf()
@@ -286,7 +296,10 @@ class HomeViewModel(
     }
 
     fun getContinueHomeItem(continuation: String?) {
-        viewModelScope.launch {
+        // A continuation belongs to the regional Home response that produced it.
+        if (continuation != _continuation.value) return
+        continuationJob?.cancel()
+        continuationJob = viewModelScope.launch {
             if (continuation.isNullOrEmpty()) {
                 _homeListState.value = ListState.PAGINATION_EXHAUST
                 return@launch
@@ -325,24 +338,8 @@ class HomeViewModel(
 
     fun exploreChart(region: String) {
         viewModelScope.launch {
-            loadingChart.value = true
-            homeRepository
-                .getChartData(
-                    region,
-                ).collect { values ->
-                    regionCodeChart.value = region
-                    dataStoreManager.setChartKey(region)
-                    when (values) {
-                        is Resource.Success -> {
-                            _chart.value = values.data
-                        }
-
-                        else -> {
-                            _chart.value = null
-                        }
-                    }
-                    loadingChart.value = false
-                }
+            dataStoreManager.setChartKey(region)
+            getHomeItemList()
         }
     }
 
@@ -353,6 +350,7 @@ class HomeViewModel(
     override fun onCleared() {
         super.onCleared()
         homeJob?.cancel()
+        continuationJob?.cancel()
     }
 
     companion object {

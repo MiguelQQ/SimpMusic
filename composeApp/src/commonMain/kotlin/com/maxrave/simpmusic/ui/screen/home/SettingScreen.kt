@@ -1021,7 +1021,7 @@ fun SettingScreen(
                                 confirm =
                                     runBlocking { getString(Res.string.change) } to { state ->
                                         viewModel.changeLocation(
-                                            state.selectOne?.getSelected() ?: "US",
+                                            state.selectOne?.getSelected() ?: "CO",
                                         )
                                     },
                                 dismiss = runBlocking { getString(Res.string.cancel) },

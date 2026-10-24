@@ -985,12 +985,14 @@ fun HomeScreen(
                                     Crossfade(targetState = regionChart) {
                                         if (it != null) {
                                             DropdownButton(
-                                                items = CHART_SUPPORTED_COUNTRY.itemsData.toList(),
+                                                items = CHART_SUPPORTED_COUNTRY.itemsData.filterIndexed { index, _ ->
+                                                    CHART_SUPPORTED_COUNTRY.items[index] != "ZZ"
+                                                },
                                                 defaultSelected =
                                                     CHART_SUPPORTED_COUNTRY.itemsData.getOrNull(
                                                         CHART_SUPPORTED_COUNTRY.items.indexOf(it),
                                                     )
-                                                        ?: CHART_SUPPORTED_COUNTRY.itemsData[1],
+                                                        ?: it,
                                             ) {
                                                 viewModel.exploreChart(
                                                     CHART_SUPPORTED_COUNTRY.items[
