@@ -1,8 +1,6 @@
 package com.maxrave.simpmusic.viewModel
 
 import androidx.lifecycle.viewModelScope
-import com.maxrave.common.SELECTED_LANGUAGE
-import com.maxrave.common.SUPPORTED_LANGUAGE
 import com.maxrave.domain.data.entities.SongEntity
 import com.maxrave.domain.data.model.home.HomeDataCombine
 import com.maxrave.domain.data.model.home.HomeItem
@@ -26,7 +24,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import simpmusic.composeapp.generated.resources.Res
 import simpmusic.composeapp.generated.resources.music_video
 import simpmusic.composeapp.generated.resources.new_release
@@ -65,8 +62,6 @@ class HomeViewModel(
 
     val loading = MutableStateFlow<Boolean>(true)
     val loadingChart = MutableStateFlow<Boolean>(true)
-    private var regionCode: String = ""
-    private var language: String = ""
 
     private val _songEntity: MutableStateFlow<SongEntity?> = MutableStateFlow(null)
     val songEntity: StateFlow<SongEntity?> = _songEntity
@@ -92,16 +87,14 @@ class HomeViewModel(
 
     init {
         // Killmon: never prompt to log in on launch. Sign-in stays optional in Settings.
-        homeJob = Job()
         viewModelScope.launch {
-            regionCodeChart.value = dataStoreManager.chartKey.first()
-            language = dataStoreManager.getString(SELECTED_LANGUAGE).first()
-                ?: SUPPORTED_LANGUAGE.codes.first()
-            //  refresh when region change
+            // One regional observer: both country and language invalidate discovery state.
             val job1 =
                 launch {
-                    dataStoreManager.location.distinctUntilChanged().collect {
-                        regionCode = it
+                    combine(dataStoreManager.location, dataStoreManager.language) { country, language ->
+                        country to language
+                    }.distinctUntilChanged().collect { (country, _) ->
+                        regionCodeChart.value = country
                         _continuation.value = null
                         _params.value = null
                         _homeItemList.value = emptyList()
@@ -110,14 +103,6 @@ class HomeViewModel(
                         _exploreMoodItem.value = null
                         _homeBackground.value = null
                         getHomeItemList()
-                    }
-                }
-            //  refresh when language change
-            val job2 =
-                launch {
-                    dataStoreManager.language.distinctUntilChanged().collect {
-                        language = it
-                        getHomeItemList(params.value)
                     }
                 }
             val job3 =
@@ -166,7 +151,6 @@ class HomeViewModel(
                     }
                 }
             job1.join()
-            job2.join()
             job3.join()
             job4.join()
             job5.join()
@@ -188,12 +172,6 @@ class HomeViewModel(
         loading.value = true
         loadingChart.value = true
         _homeListState.value = ListState.LOADING
-        language =
-            runBlocking {
-                dataStoreManager.getString(SELECTED_LANGUAGE).first()
-                    ?: SUPPORTED_LANGUAGE.codes.first()
-            }
-        regionCode = runBlocking { dataStoreManager.location.first() }
         homeJob?.cancel()
         homeJob =
             viewModelScope.launch {
@@ -339,7 +317,6 @@ class HomeViewModel(
     fun exploreChart(region: String) {
         viewModelScope.launch {
             dataStoreManager.setChartKey(region)
-            getHomeItemList()
         }
     }
 
