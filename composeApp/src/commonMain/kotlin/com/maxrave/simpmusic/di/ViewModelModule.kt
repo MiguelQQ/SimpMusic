@@ -9,6 +9,7 @@ import com.maxrave.simpmusic.viewModel.ArtistViewModel
 import com.maxrave.simpmusic.viewModel.BrowseViewModel
 import com.maxrave.simpmusic.viewModel.CommentsViewModel
 import com.maxrave.simpmusic.viewModel.HomeViewModel
+import com.maxrave.simpmusic.viewModel.KillmonAccountViewModel
 import com.maxrave.simpmusic.viewModel.ImportViewModel
 import com.maxrave.simpmusic.viewModel.LibraryDynamicPlaylistViewModel
 import com.maxrave.simpmusic.viewModel.LibrarySidebarViewModel
@@ -231,5 +232,5 @@ val viewModelModule =
                 bridge = get(),
             )
         }
-
+        viewModel { KillmonAccountViewModel(get()) }
     }

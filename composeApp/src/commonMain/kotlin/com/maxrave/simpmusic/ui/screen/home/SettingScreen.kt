@@ -139,7 +139,10 @@ import com.maxrave.simpmusic.ui.icon.PlaylistAdd
 import com.maxrave.simpmusic.ui.icon.SimpIcons
 import com.maxrave.simpmusic.ui.navigation.destination.home.AppLogDestination
 import com.maxrave.simpmusic.ui.navigation.destination.home.CreditDestination
+import com.maxrave.domain.repository.KillmonAccountRepository
 import com.maxrave.simpmusic.ui.navigation.destination.login.DiscordLoginDestination
+import com.maxrave.simpmusic.ui.navigation.destination.login.KillmonAccountDestination
+import com.maxrave.simpmusic.ui.navigation.destination.login.KillmonLoginDestination
 import com.maxrave.simpmusic.ui.navigation.destination.login.LastfmLoginDestination
 import com.maxrave.simpmusic.ui.navigation.destination.login.LoginDestination
 import com.maxrave.simpmusic.ui.navigation.destination.login.SpotifyLoginDestination
@@ -601,6 +604,7 @@ fun SettingScreen(
     val crossfadeDjMode by viewModel.crossfadeDjMode.collectAsStateWithLifecycle()
     val crossfadeSkipAlbum by viewModel.crossfadeSkipAlbum.collectAsStateWithLifecycle()
     val castState by viewModel.castState.collectAsStateWithLifecycle()
+    val killmonSession by koinInject<KillmonAccountRepository>().session.collectAsStateWithLifecycle()
 
     val hazeState =
         rememberHazeState()
@@ -682,10 +686,27 @@ fun SettingScreen(
                         },
                 )
                 // Above every section, and inside item 0 rather than an item of its own, for the
-                // glow reason above.
+                // glow reason above. The height includes the Killmon account row so the pinned
+                // bar still waits until this block has gone under it.
+                Column(Modifier.onSizeChanged { devicesGroupHeightPx = it.height }) {
+                SettingGroup(title = "Cuenta Killmon") {
+                    val killmonUser = killmonSession?.user
+                    SettingItem(
+                        title = killmonUser?.displayName ?: "Iniciar sesión",
+                        subtitle =
+                            killmonUser?.email
+                                ?: "Opcional. Sincroniza idioma, tema y región.",
+                        onClick = {
+                            if (killmonUser == null) {
+                                navController.navigate(KillmonLoginDestination)
+                            } else {
+                                navController.navigate(KillmonAccountDestination)
+                            }
+                        },
+                    )
+                }
                 SettingGroup(
                     title = stringResource(Res.string.login_sync_section),
-                    modifier = Modifier.onSizeChanged { devicesGroupHeightPx = it.height },
                 ) {
                     SettingItem(
                         title =
@@ -702,6 +723,7 @@ fun SettingScreen(
                             ),
                         onClick = { showLoginSyncDialog = true },
                     )
+                }
                 }
                 SettingGroup(title = stringResource(Res.string.user_interface)) {
                     val themeModeLabels =
