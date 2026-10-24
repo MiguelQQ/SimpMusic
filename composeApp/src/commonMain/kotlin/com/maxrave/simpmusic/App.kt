@@ -574,9 +574,12 @@ fun App(
                         // Killmon phone: floating card over a labeled bar, on a black dock.
                         val useFoldingBar = getPlatform() != Platform.Android && isLiquidGlassEnabled == TRUE
                         Column(Modifier.fillMaxWidth()) {
-                            // Home scrolls under the bar. This strip fades the shelves out; from the
-                            // card downward the dock is opaque black, including the nav and the gesture inset.
-                            if (!useFoldingBar) {
+                            // Home scrolls under the bar. The 72dp fade used to sit above the card, so its
+                            // opaque end read as a black shadow on the card's top edge. It only draws while
+                            // the card is hidden. With the card up, the 2dp of air stays clear and the opaque
+                            // black starts at the card's top edge (side gutters, the 12dp gap, the nav).
+                            val showCard = isShowMiniPlayer && !useFoldingBar && !killmonBlocksChrome
+                            if (!useFoldingBar && !showCard) {
                                 Box(
                                     Modifier
                                         .fillMaxWidth()
@@ -594,10 +597,19 @@ fun App(
                             Column(
                                 Modifier
                                     .fillMaxWidth()
-                                    .then(if (!useFoldingBar) Modifier.background(Color.Black) else Modifier),
+                                    .then(
+                                        if (!useFoldingBar) {
+                                            // Padding before the black paint, so the 2dp is not a black lip.
+                                            Modifier
+                                                .padding(top = if (showCard) 2.dp else 0.dp)
+                                                .background(Color.Black)
+                                        } else {
+                                            Modifier
+                                        },
+                                    ),
                             ) {
                                 AnimatedVisibility(
-                                    isShowMiniPlayer && !useFoldingBar && !killmonBlocksChrome,
+                                    showCard,
                                     enter = fadeIn() + slideInHorizontally(),
                                     exit = fadeOut(),
                                 ) {
@@ -605,7 +617,7 @@ fun App(
                                         Modifier
                                             .fillMaxWidth()
                                             .padding(horizontal = 12.dp)
-                                            .padding(top = 2.dp, bottom = 12.dp)
+                                            .padding(bottom = 12.dp)
                                             .height(72.dp),
                                         backdrop = backdrop,
                                         navController = navController,
