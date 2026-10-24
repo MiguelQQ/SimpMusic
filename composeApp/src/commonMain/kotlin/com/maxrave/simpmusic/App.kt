@@ -149,11 +149,11 @@ import simpmusic.composeapp.generated.resources.update_message
 import simpmusic.composeapp.generated.resources.yes
 import kotlin.time.ExperimentalTime
 
-// Top of the nav scrim. Light enough that a shelf passing behind the icons still reads.
-private val KillmonBarScrimTop = Color.Black.copy(alpha = 0.40f)
+// Almost opaque black dock; a subtle gradient leaves only a trace of the content.
+private val KillmonBarScrimTop = Color.Black.copy(alpha = 0.92f)
 
-// Bottom of the nav scrim, over the system gesture. Still short of opaque black.
-private val KillmonBarScrimBottom = Color.Black.copy(alpha = 0.72f)
+// Slightly darker toward the system gesture.
+private val KillmonBarScrimBottom = Color.Black.copy(alpha = 0.95f)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class, ExperimentalFoundationApi::class)
 @Composable
@@ -580,9 +580,7 @@ fun App(
                         // Killmon phone: floating card over a labeled bar, on a black dock.
                         val useFoldingBar = getPlatform() != Platform.Android && isLiquidGlassEnabled == TRUE
                         Column(Modifier.fillMaxWidth()) {
-                            // Home scrolls under this bar. The card paints only its own rectangle:
-                            // nothing opaque sits above it, beside it, or in the 12dp gap, so the
-                            // shelves stay sharp there. The fade lives on the nav row alone.
+                            // Cover the mini-player margins and gap as well as the navigation row.
                             val showCard = isShowMiniPlayer && !useFoldingBar && !killmonBlocksChrome
                             if (!useFoldingBar && !showCard) {
                                 Box(
@@ -599,6 +597,7 @@ fun App(
                             }
                             AnimatedVisibility(
                                 showCard,
+                                modifier = Modifier.background(KillmonBarScrimTop),
                                 enter = fadeIn() + slideInHorizontally(),
                                 exit = fadeOut(),
                             ) {
