@@ -133,6 +133,9 @@ import simpmusic.composeapp.generated.resources.downloading
 import simpmusic.composeapp.generated.resources.no_description
 import simpmusic.composeapp.generated.resources.other_version
 import simpmusic.composeapp.generated.resources.year_and_category
+import simpmusic.composeapp.generated.resources.cd_download
+import simpmusic.composeapp.generated.resources.cd_more
+import simpmusic.composeapp.generated.resources.cd_shuffle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -382,7 +385,7 @@ fun AlbumScreen(
                                                 ) {
                                                     Icon(
                                                         imageVector = SimpIcons.MoreVert,
-                                                        contentDescription = "More",
+                                                        contentDescription = stringResource(Res.string.cd_more),
                                                         tint = Color.White,
                                                     )
                                                 }
@@ -501,7 +504,7 @@ fun AlbumScreen(
                                                             ) {
                                                                 Icon(
                                                                     imageVector = SimpIcons.Shuffle,
-                                                                    contentDescription = "Shuffle",
+                                                                    contentDescription = stringResource(Res.string.cd_shuffle),
                                                                     tint = Color.White,
                                                                     modifier = Modifier.size(22.dp),
                                                                 )
@@ -604,7 +607,7 @@ fun AlbumScreen(
                                                                                 Icon(
                                                                                     imageVector = SimpIcons.DownloadForOffline,
                                                                                     tint = Color.White,
-                                                                                    contentDescription = "Download",
+                                                                                    contentDescription = stringResource(Res.string.cd_download),
                                                                                     modifier = Modifier.size(22.dp),
                                                                                 )
                                                                             }
@@ -664,7 +667,7 @@ fun AlbumScreen(
                                                 ) {
                                                     Icon(
                                                         imageVector = SimpIcons.MoreVert,
-                                                        contentDescription = "More",
+                                                        contentDescription = stringResource(Res.string.cd_more),
                                                         tint = Color.White,
                                                     )
                                                 }
@@ -705,7 +708,7 @@ fun AlbumScreen(
                                                     ) {
                                                         Icon(
                                                             imageVector = SimpIcons.Shuffle,
-                                                            contentDescription = "Shuffle",
+                                                            contentDescription = stringResource(Res.string.cd_shuffle),
                                                             tint = Color.White,
                                                             modifier = Modifier.size(22.dp),
                                                         )
@@ -808,7 +811,7 @@ fun AlbumScreen(
                                                                         Icon(
                                                                             imageVector = SimpIcons.DownloadForOffline,
                                                                             tint = Color.White,
-                                                                            contentDescription = "Download",
+                                                                            contentDescription = stringResource(Res.string.cd_download),
                                                                             modifier = Modifier.size(22.dp),
                                                                         )
                                                                     }

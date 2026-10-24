@@ -300,6 +300,14 @@ import simpmusic.composeapp.generated.resources.your_youtube_cookie
 import simpmusic.composeapp.generated.resources.your_youtube_playlists
 import simpmusic.composeapp.generated.resources.youtube_transcript
 import simpmusic.composeapp.generated.resources.youtube_url
+import simpmusic.composeapp.generated.resources.cd_copy
+import simpmusic.composeapp.generated.resources.cd_decrease_pitch
+import simpmusic.composeapp.generated.resources.cd_decrease_speed
+import simpmusic.composeapp.generated.resources.cd_favorite_off
+import simpmusic.composeapp.generated.resources.cd_favorite_on
+import simpmusic.composeapp.generated.resources.cd_increase_pitch
+import simpmusic.composeapp.generated.resources.cd_increase_speed
+import simpmusic.composeapp.generated.resources.cd_selected
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Sentinel value used by SleepTimerBottomSheet to signal "end of current song"
@@ -2091,13 +2099,13 @@ fun HeartCheckBox(
             if (it) {
                 Image(
                     painter = painterResource(Res.drawable.baseline_favorite_24),
-                    contentDescription = "Favorite checked",
+                    contentDescription = stringResource(Res.string.cd_favorite_on),
                     modifier = Modifier.fillMaxSize().padding(4.dp),
                 )
             } else {
                 Image(
                     imageVector = SimpIcons.FavoriteBorder,
-                    contentDescription = "Favorite unchecked",
+                    contentDescription = stringResource(Res.string.cd_favorite_off),
                     modifier = Modifier.fillMaxSize().padding(4.dp),
                     colorFilter = ColorFilter.tint(tint),
                 )
@@ -2163,7 +2171,7 @@ fun PlaybackSpeedPitchBottomSheet(
                     ) {
                         Icon(
                             SimpIcons.Remove,
-                            contentDescription = "Decrease speed",
+                            contentDescription = stringResource(Res.string.cd_decrease_speed),
                             tint = rememberSurfaceDarkColors().subtitle,
                         )
                     }
@@ -2185,7 +2193,7 @@ fun PlaybackSpeedPitchBottomSheet(
                     ) {
                         Icon(
                             SimpIcons.Add,
-                            contentDescription = "Increase speed",
+                            contentDescription = stringResource(Res.string.cd_increase_speed),
                             tint = rememberSurfaceDarkColors().subtitle,
                         )
                     }
@@ -2216,7 +2224,7 @@ fun PlaybackSpeedPitchBottomSheet(
                         ) {
                             Icon(
                                 SimpIcons.Remove,
-                                contentDescription = "Decrease pitch",
+                                contentDescription = stringResource(Res.string.cd_decrease_pitch),
                                 tint = rememberSurfaceDarkColors().subtitle,
                             )
                         }
@@ -2235,7 +2243,7 @@ fun PlaybackSpeedPitchBottomSheet(
                         ) {
                             Icon(
                                 SimpIcons.Add,
-                                contentDescription = "Increase pitch",
+                                contentDescription = stringResource(Res.string.cd_increase_pitch),
                                 tint = rememberSurfaceDarkColors().subtitle,
                             )
                         }
@@ -3303,7 +3311,7 @@ fun SortPlaylistBottomSheet(
                             if (isSelected) {
                                 Image(
                                     imageVector = SimpIcons.Done,
-                                    contentDescription = "Selected",
+                                    contentDescription = stringResource(Res.string.cd_selected),
                                     colorFilter = ColorFilter.tint(seed),
                                     modifier = Modifier.size(32.dp),
                                 )
@@ -3437,7 +3445,7 @@ fun DevCookieLogInBottomSheet(
                             copyToClipboard(cookie.first, cookie.second ?: "")
                             showToast(copied, ToastGravity.Bottom)
                         }) {
-                            Icon(imageVector = SimpIcons.ContentCopy, contentDescription = "Copy")
+                            Icon(imageVector = SimpIcons.ContentCopy, contentDescription = stringResource(Res.string.cd_copy))
                         }
                     }
                 }

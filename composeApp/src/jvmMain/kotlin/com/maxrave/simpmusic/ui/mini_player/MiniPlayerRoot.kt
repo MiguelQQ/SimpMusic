@@ -1,4 +1,5 @@
 package com.maxrave.simpmusic.ui.mini_player
+import org.jetbrains.compose.resources.stringResource
 
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
@@ -33,6 +34,8 @@ import com.maxrave.simpmusic.ui.icon.SimpIcons
 import com.maxrave.simpmusic.viewModel.SharedViewModel
 import java.awt.Cursor
 import java.awt.MouseInfo
+import simpmusic.composeapp.generated.resources.Res
+import simpmusic.composeapp.generated.resources.cd_close
 
 /**
  * Root composable for the mini player window content.
@@ -135,7 +138,7 @@ fun MiniPlayerRoot(
             ) {
                 Icon(
                     imageVector = SimpIcons.Close,
-                    contentDescription = "Close",
+                    contentDescription = stringResource(Res.string.cd_close),
                     tint = Color.White.copy(alpha = 0.7f),
                     modifier = Modifier.size(16.dp),
                 )

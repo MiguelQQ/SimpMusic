@@ -165,6 +165,7 @@ import simpmusic.composeapp.generated.resources.crossfading
 import simpmusic.composeapp.generated.resources.live_badge
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
+import simpmusic.composeapp.generated.resources.cd_mini_player
 
 private const val TAG = "MiniPlayer"
 
@@ -992,7 +993,7 @@ fun MiniPlayer(
                             Icon(
                                 imageVector = SimpIcons.PictureInPictureAlt,
                                 tint = textColor,
-                                contentDescription = "Mini Player",
+                                contentDescription = stringResource(Res.string.cd_mini_player),
                             )
                         }
                     }

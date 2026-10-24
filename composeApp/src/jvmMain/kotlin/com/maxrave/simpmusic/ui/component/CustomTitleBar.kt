@@ -1,4 +1,5 @@
 package com.maxrave.simpmusic.ui.component
+import org.jetbrains.compose.resources.stringResource
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -49,6 +50,9 @@ import com.maxrave.simpmusic.ui.theme.windowMinimiseButton
 import com.maxrave.simpmusic.ui.theme.windowMinimiseButtonHover
 import java.awt.MouseInfo
 import java.awt.Window
+import simpmusic.composeapp.generated.resources.Res
+import simpmusic.composeapp.generated.resources.cd_close
+import simpmusic.composeapp.generated.resources.cd_minimize
 
 /**
  * Custom title bar for JVM desktop application
@@ -217,7 +221,7 @@ private fun WindowControlButton(
             Box(modifier = Modifier.padding(1.dp)) {
                 when (icon) {
                     WindowControlIcon.Minimize -> {
-                        Icon(SimpIcons.Remove, tint = Color.DarkGray, contentDescription = "Minimize")
+                        Icon(SimpIcons.Remove, tint = Color.DarkGray, contentDescription = stringResource(Res.string.cd_minimize))
                     }
 
                     WindowControlIcon.Maximize -> {
@@ -225,7 +229,7 @@ private fun WindowControlButton(
                             modifier = Modifier.rotate(45f),
                             imageVector = SimpIcons.UnfoldMore,
                             tint = Color.DarkGray,
-                            contentDescription = "Minimize",
+                            contentDescription = stringResource(Res.string.cd_minimize),
                         )
                     }
 
@@ -234,7 +238,7 @@ private fun WindowControlButton(
                             modifier = Modifier.rotate(45f),
                             imageVector = SimpIcons.UnfoldLess,
                             tint = Color.DarkGray,
-                            contentDescription = "Minimize",
+                            contentDescription = stringResource(Res.string.cd_minimize),
                         )
                     }
 
@@ -242,7 +246,7 @@ private fun WindowControlButton(
                         Icon(
                             imageVector = SimpIcons.Close,
                             tint = Color.DarkGray,
-                            contentDescription = "Close",
+                            contentDescription = stringResource(Res.string.cd_close),
                         )
                     }
                 }

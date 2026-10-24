@@ -1,4 +1,5 @@
 package com.maxrave.simpmusic.ui.screen.home
+import org.jetbrains.compose.resources.stringResource
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,8 @@ import com.maxrave.simpmusic.viewModel.MoodViewModel
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import simpmusic.composeapp.generated.resources.*
+import simpmusic.composeapp.generated.resources.Res
+import simpmusic.composeapp.generated.resources.cd_back
 
 @Composable
 fun MoodScreen(
@@ -53,7 +56,7 @@ fun MoodScreen(
                 IconButton(onClick = { navController.navigateUp() }) {
                     Icon(
                         SimpIcons.ArrowBackIosNew,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(Res.string.cd_back),
                     )
                 }
             },

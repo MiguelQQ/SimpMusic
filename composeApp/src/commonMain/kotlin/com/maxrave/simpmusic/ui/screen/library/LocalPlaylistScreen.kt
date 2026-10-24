@@ -208,6 +208,11 @@ import simpmusic.composeapp.generated.resources.warning
 import simpmusic.composeapp.generated.resources.yes
 import simpmusic.composeapp.generated.resources.your_playlist
 import simpmusic.composeapp.generated.resources.search
+import simpmusic.composeapp.generated.resources.cd_download
+import simpmusic.composeapp.generated.resources.cd_more
+import simpmusic.composeapp.generated.resources.cd_search_in_playlist
+import simpmusic.composeapp.generated.resources.cd_shuffle
+import simpmusic.composeapp.generated.resources.cd_sort_playlist
 
 private const val TAG = "LocalPlaylistScreen"
 
@@ -687,7 +692,7 @@ fun LocalPlaylistScreen(
                                         ) {
                                             Icon(
                                                 imageVector = SimpIcons.Search,
-                                                contentDescription = "Search in playlist",
+                                                contentDescription = stringResource(Res.string.cd_search_in_playlist),
                                                 tint = Color.White,
                                             )
                                         }
@@ -696,7 +701,7 @@ fun LocalPlaylistScreen(
                                         ) {
                                             Icon(
                                                 imageVector = SimpIcons.MoreVert,
-                                                contentDescription = "More",
+                                                contentDescription = stringResource(Res.string.cd_more),
                                                 tint = Color.White,
                                             )
                                         }
@@ -825,7 +830,7 @@ fun LocalPlaylistScreen(
                                                 ) {
                                                     Icon(
                                                         imageVector = SimpIcons.Shuffle,
-                                                        contentDescription = "Shuffle",
+                                                        contentDescription = stringResource(Res.string.cd_shuffle),
                                                         tint = Color.White,
                                                         modifier = Modifier.size(22.dp),
                                                     )
@@ -929,7 +934,7 @@ fun LocalPlaylistScreen(
                                                                     Icon(
                                                                         imageVector = SimpIcons.DownloadForOffline,
                                                                         tint = Color.White,
-                                                                        contentDescription = "Download",
+                                                                        contentDescription = stringResource(Res.string.cd_download),
                                                                         modifier = Modifier.size(22.dp),
                                                                     )
                                                                 }
@@ -1019,7 +1024,7 @@ fun LocalPlaylistScreen(
                                     ) {
                                         Icon(
                                             imageVector = SimpIcons.Search,
-                                            contentDescription = "Search in playlist",
+                                            contentDescription = stringResource(Res.string.cd_search_in_playlist),
                                             tint = Color.White,
                                         )
                                     }
@@ -1028,7 +1033,7 @@ fun LocalPlaylistScreen(
                                     ) {
                                         Icon(
                                             imageVector = SimpIcons.MoreVert,
-                                            contentDescription = "More",
+                                            contentDescription = stringResource(Res.string.cd_more),
                                             tint = Color.White,
                                         )
                                     }
@@ -1072,7 +1077,7 @@ fun LocalPlaylistScreen(
                                         ) {
                                             Icon(
                                                 imageVector = SimpIcons.Shuffle,
-                                                contentDescription = "Shuffle",
+                                                contentDescription = stringResource(Res.string.cd_shuffle),
                                                 tint = Color.White,
                                                 modifier = Modifier.size(22.dp),
                                             )
@@ -1176,7 +1181,7 @@ fun LocalPlaylistScreen(
                                                             Icon(
                                                                 imageVector = SimpIcons.DownloadForOffline,
                                                                 tint = Color.White,
-                                                                contentDescription = "Download",
+                                                                contentDescription = stringResource(Res.string.cd_download),
                                                                 modifier = Modifier.size(22.dp),
                                                             )
                                                         }
@@ -1285,7 +1290,7 @@ fun LocalPlaylistScreen(
                                         ) {
                                             Icon(
                                                 imageVector = SimpIcons.Sort,
-                                                contentDescription = "Sort playlist",
+                                                contentDescription = stringResource(Res.string.cd_sort_playlist),
                                                 tint = Color.White,
                                                 modifier = Modifier.size(20.dp),
                                             )

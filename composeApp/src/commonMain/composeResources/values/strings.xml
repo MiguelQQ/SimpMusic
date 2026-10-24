@@ -250,7 +250,7 @@
     <string name="sleep_timer_set_error">Please set the correct format time</string>
     <string name="sleep_timer_warning">Remove sleep timer?</string>
     <string name="yes">Yes</string>
-    <string name="notification_channel_name" translatable="false">Killmon Music Playback Notification</string>
+    <string name="notification_channel_name">Killmon Music Playback Notification</string>
     <string name="welcome_back">Welcome back,</string>
     <string name="upload_your_listening_history_to_youtube_music_server_it_will_make_yt_music_recommendation_system_better_working_only_if_logged_in">Upload your listening history to YouTube Music server, it will make YT Music recommendation system better. Working only if logged in</string>
     <string name="send_back_listening_data_to_google">Send back listening data to Google</string>
@@ -1034,4 +1034,38 @@
     <string name="search_in_your_library">Search in Your library</string>
     <string name="collapse_your_library">Collapse Your library</string>
     <string name="expand_your_library">Expand Your library</string>
+    <string name="will_play_next">Playing next</string>
+    <string name="clear_recent_searches">Clear recent searches</string>
+    <string name="added_to_library">Added to your library</string>
+    <string name="recent_kind_playlist">Playlist</string>
+    <string name="cd_back">Back</string>
+    <string name="cd_search">Search</string>
+    <string name="cd_clear_search">Clear search</string>
+    <string name="cd_search_suggestion">Search suggestion</string>
+    <string name="cd_search_history">Search history</string>
+    <string name="cd_add_to_playlist">Add to playlist</string>
+    <string name="cd_remove_recent">Remove from recent searches</string>
+    <string name="cd_explicit">Explicit</string>
+    <string name="cd_previous">Previous</string>
+    <string name="cd_next">Next</string>
+    <string name="cd_favorite_on">Marked as favorite</string>
+    <string name="cd_favorite_off">Not a favorite</string>
+    <string name="cd_decrease_speed">Decrease speed</string>
+    <string name="cd_increase_speed">Increase speed</string>
+    <string name="cd_decrease_pitch">Decrease pitch</string>
+    <string name="cd_increase_pitch">Increase pitch</string>
+    <string name="cd_selected">Selected</string>
+    <string name="cd_copy">Copy</string>
+    <string name="cd_mini_player">Mini player</string>
+    <string name="cd_search_in_playlist">Search in playlist</string>
+    <string name="cd_more">More</string>
+    <string name="cd_shuffle">Shuffle</string>
+    <string name="cd_download">Download</string>
+    <string name="cd_sort_playlist">Sort playlist</string>
+    <string name="cd_radio">Radio</string>
+    <string name="cd_app_icon">App icon</string>
+    <string name="cd_minimize">Minimize</string>
+    <string name="cd_close">Close</string>
+    <string name="cd_album_art">Album art</string>
+    <string name="cd_like">Like</string>
 </resources>

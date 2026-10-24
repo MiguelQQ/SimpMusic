@@ -136,6 +136,7 @@ import simpmusic.composeapp.generated.resources.unavailable
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
+import simpmusic.composeapp.generated.resources.cd_mini_player
 
 // The gutter this sheet has always used for its lyrics column.
 private val FULLSCREEN_LYRICS_GUTTER = 50.dp
@@ -1028,7 +1029,7 @@ private fun FullscreenLyricsDesktopChrome(
             IconButton(onClick = { toggleMiniPlayer() }) {
                 Icon(
                     imageVector = SimpIcons.PictureInPictureAlt,
-                    contentDescription = "Mini Player",
+                    contentDescription = stringResource(Res.string.cd_mini_player),
                     tint = Color.White,
                 )
             }

@@ -172,6 +172,9 @@ import simpmusic.composeapp.generated.resources.share
 import simpmusic.composeapp.generated.resources.singles
 import simpmusic.composeapp.generated.resources.unknown
 import simpmusic.composeapp.generated.resources.videos
+import simpmusic.composeapp.generated.resources.cd_back
+import simpmusic.composeapp.generated.resources.cd_radio
+import simpmusic.composeapp.generated.resources.cd_shuffle
 
 @Composable
 @ExperimentalMaterial3Api
@@ -607,7 +610,7 @@ fun ArtistScreen(
                                     ) {
                                         Icon(
                                             imageVector = SimpIcons.Sensors,
-                                            contentDescription = "Radio",
+                                            contentDescription = stringResource(Res.string.cd_radio),
                                             tint = artistAccent,
                                             modifier = Modifier.size(22.dp),
                                         )
@@ -633,7 +636,7 @@ fun ArtistScreen(
                                     ) {
                                         Icon(
                                             imageVector = SimpIcons.Shuffle,
-                                            contentDescription = "Shuffle",
+                                            contentDescription = stringResource(Res.string.cd_shuffle),
                                             tint = mutedPaletteBg,
                                             modifier = Modifier.size(28.dp),
                                         )
@@ -711,7 +714,7 @@ fun ArtistScreen(
                                     IconButton(onClick = { navController.navigateUp() }) {
                                         Icon(
                                             imageVector = SimpIcons.ArrowBackIosNew,
-                                            contentDescription = "Back",
+                                            contentDescription = stringResource(Res.string.cd_back),
                                             tint = Color.White,
                                             modifier = Modifier.size(20.dp),
                                         )

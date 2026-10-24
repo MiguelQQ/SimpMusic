@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -250,7 +251,7 @@ class PlaylistsWidget :
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Image(
                                     provider = ImageProvider(R.drawable.rounded_skip_previous_24),
-                                    contentDescription = "Previous",
+                                    contentDescription = stringResource(R.string.cd_previous),
                                     colorFilter = ColorFilter.tint(ColorProvider(Color.White)),
                                     modifier =
                                         GlanceModifier
@@ -279,7 +280,7 @@ class PlaylistsWidget :
                                 Spacer(GlanceModifier.width(16.dp))
                                 Image(
                                     provider = ImageProvider(R.drawable.rounded_skip_next_24),
-                                    contentDescription = "Next",
+                                    contentDescription = stringResource(R.string.cd_next),
                                     colorFilter = ColorFilter.tint(ColorProvider(Color.White)),
                                     modifier =
                                         GlanceModifier

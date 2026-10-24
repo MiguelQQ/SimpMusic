@@ -78,6 +78,7 @@ import com.maxrave.domain.repository.SongRepository
 import com.maxrave.domain.utils.connectArtists
 import com.maxrave.domain.utils.isLive
 import com.maxrave.domain.utils.toListName
+import com.maxrave.domain.utils.toTrack
 import com.maxrave.simpmusic.ui.icon.Add
 import com.maxrave.simpmusic.ui.icon.Check
 import com.maxrave.simpmusic.ui.icon.DownloadForOffline
@@ -90,6 +91,7 @@ import com.maxrave.simpmusic.ui.icon.SkipNext
 import com.maxrave.simpmusic.ui.theme.LocalForceDarkText
 import com.maxrave.simpmusic.ui.theme.seed
 import com.maxrave.simpmusic.ui.theme.typo
+import com.maxrave.simpmusic.viewModel.SharedViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -133,10 +135,8 @@ fun SongFullWidthItems(
 ) {
     val contentColor = if (forceDark) Color.White else MaterialTheme.colorScheme.onSurface
     val subtitleColor = if (forceDark) Color(0xC4FFFFFF) else MaterialTheme.colorScheme.onSurfaceVariant
-    val maxOffset = 360f
-    val coroutineScope = rememberCoroutineScope()
-    val density = LocalDensity.current
     val songRepository: SongRepository = koinInject<SongRepository>()
+    val sharedViewModel: SharedViewModel = koinInject()
     val storedSong by songRepository
         .getSongAsFlow(songEntity?.videoId ?: track?.videoId ?: "")
         .collectAsState(initial = null)
@@ -144,46 +144,21 @@ fun SongFullWidthItems(
     // The list's own model says what its source said; the stored row adds what playback learned
     // since, which is the only way a queue row is marked — the queue response shows no LIVE chip.
     val isLive = track?.isLive == true || songEntity?.isLive == true || storedSong?.isLive == true
-    val offsetX = remember { Animatable(initialValue = 0f) }
-    var heightDp by remember { mutableStateOf(0.dp) }
+    val itemVideoId = track?.videoId ?: songEntity?.videoId ?: ""
+    val playable = track ?: songEntity?.toTrack()
 
-    Box(
-        modifier =
-        modifier,
+    PlayNextSwipeBox(
+        enabled = !isPlaying && !selectionMode && !shouldShowDragHandle && playable != null,
+        onPlayNext = { playable?.let { sharedViewModel.playNext(it) } },
+        modifier = modifier,
     ) {
-        Crossfade(
-            offsetX.value >= maxOffset / 2,
-        ) { shouldShowAddToQueue ->
-            if (shouldShowAddToQueue) {
-                // Where Add to queue is blocked the swipe plays the song next instead
-                // (SharedViewModel.addListToQueue), so the icon shows what will happen.
-                val playsNext = rememberAddToQueueBlock() != null
-                Box(
-                    modifier =
-                        Modifier
-                            .height(heightDp)
-                            .aspectRatio(1f)
-                            .padding(start = 15.dp)
-                            .align(Alignment.CenterStart),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        tint = contentColor,
-                        imageVector = if (playsNext) SimpIcons.SkipNext else SimpIcons.QueueMusic,
-                        contentDescription =
-                            stringResource(if (playsNext) Res.string.play_next else Res.string.add_to_queue),
-                    )
-                }
-            }
-        }
-        val itemVideoId = track?.videoId ?: songEntity?.videoId ?: ""
         Box(
             modifier =
-                modifier
-                    .offset { IntOffset(offsetX.value.roundToInt(), 0) }
-                    .background(
-                        if (isSelected) seed.copy(alpha = 0.18f) else Color.Transparent,
-                    ).combinedClickable(
+                Modifier
+                    .fillMaxWidth()
+                    .background(if (forceDark) Color.Black else MaterialTheme.colorScheme.background)
+                    .background(if (isSelected) seed.copy(alpha = 0.18f) else Color.Transparent)
+                    .combinedClickable(
                         onClick = {
                             if (selectionMode) {
                                 onSelectToggle?.invoke(itemVideoId)
@@ -197,39 +172,7 @@ fun SongFullWidthItems(
                             } else {
                                 null
                             },
-                    ).animateContentSize()
-                    // Keyed on selectionMode so the swipe detector is torn down when selection
-                    // starts — keyed on Unit it would keep running with the stale flag captured.
-                    .pointerInput(selectionMode) {
-                        if (!isPlaying && onAddToQueue != null && !selectionMode) {
-                            detectHorizontalDragGestures(
-                                onHorizontalDrag = { change, dragAmount ->
-                                    if (offsetX.value + dragAmount > 0) {
-                                        change.consume()
-                                        coroutineScope.launch {
-                                            offsetX.snapTo(
-                                                (offsetX.value + dragAmount).coerceAtMost(maxOffset),
-                                            )
-                                        }
-                                    }
-                                },
-                                onDragEnd = {
-                                    if (offsetX.value == maxOffset) {
-                                        onAddToQueue(
-                                            track?.videoId ?: songEntity?.videoId ?: "",
-                                        )
-                                    }
-                                    coroutineScope.launch {
-                                        offsetX.animateTo(0f)
-                                    }
-                                },
-                            )
-                        }
-                    }.onGloballyPositioned { coordinates ->
-                        with(density) {
-                            heightDp = coordinates.size.height.toDp()
-                        }
-                    },
+                    ).animateContentSize(),
         ) {
             Row(
                 Modifier

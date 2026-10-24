@@ -2,6 +2,9 @@ package com.maxrave.simpmusic.viewModel
 
 import androidx.lifecycle.viewModelScope
 import com.maxrave.common.SELECTED_LANGUAGE
+import com.maxrave.domain.data.entities.AlbumEntity
+import com.maxrave.domain.data.entities.PlaylistEntity
+import com.maxrave.domain.data.entities.RecentSearchItem
 import com.maxrave.domain.data.entities.SearchHistory
 import com.maxrave.domain.data.model.searchResult.albums.AlbumsResult
 import com.maxrave.domain.data.model.searchResult.artists.ArtistsResult
@@ -11,7 +14,10 @@ import com.maxrave.domain.data.model.mood.Mood
 import com.maxrave.domain.data.model.searchResult.videos.VideosResult
 import com.maxrave.domain.data.type.SearchResultType
 import com.maxrave.domain.manager.DataStoreManager
+import com.maxrave.domain.extension.now
+import com.maxrave.domain.repository.AlbumRepository
 import com.maxrave.domain.repository.HomeRepository
+import com.maxrave.domain.repository.PlaylistRepository
 import com.maxrave.domain.repository.SearchRepository
 import com.maxrave.domain.utils.Resource
 import com.maxrave.domain.utils.toQueryList
@@ -36,6 +42,7 @@ import simpmusic.composeapp.generated.resources.featured_playlists
 import simpmusic.composeapp.generated.resources.playlists
 import simpmusic.composeapp.generated.resources.podcasts
 import simpmusic.composeapp.generated.resources.songs
+import simpmusic.composeapp.generated.resources.added_to_library
 import simpmusic.composeapp.generated.resources.videos
 
 // State cho tìm kiếm
@@ -92,6 +99,8 @@ class SearchViewModel(
     private val dataStoreManager: DataStoreManager,
     private val searchRepository: SearchRepository,
     private val homeRepository: HomeRepository,
+    private val albumRepository: AlbumRepository,
+    private val playlistRepository: PlaylistRepository,
 ) : BaseViewModel() {
     private val _searchScreenUIState = MutableStateFlow<SearchScreenUIState>(SearchScreenUIState.Empty)
     val searchScreenUIState: StateFlow<SearchScreenUIState> get() = _searchScreenUIState.asStateFlow()
@@ -101,6 +110,9 @@ class SearchViewModel(
 
     private val _searchHistory: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
     val searchHistory: StateFlow<List<String>> get() = _searchHistory.asStateFlow()
+
+    private val _recentSearches: MutableStateFlow<List<RecentSearchItem>> = MutableStateFlow(emptyList())
+    val recentSearches: StateFlow<List<RecentSearchItem>> get() = _recentSearches.asStateFlow()
 
     /** Browse categories shown on the empty search screen, the way YouTube Music itself does. */
     private val _moodAndGenres: MutableStateFlow<Mood?> = MutableStateFlow(null)
@@ -119,6 +131,7 @@ class SearchViewModel(
         regionCode = runBlocking { dataStoreManager.location.first() }
         language = runBlocking { dataStoreManager.getString(SELECTED_LANGUAGE).first() }
         getSearchHistory()
+        refreshRecentSearches()
         getMoodAndGenres()
     }
 
@@ -184,6 +197,82 @@ class SearchViewModel(
             searchRepository.deleteSearchHistory()
             delay(1000)
             getSearchHistory()
+        }
+    }
+
+    private fun refreshRecentSearches() {
+        viewModelScope.launch {
+            searchRepository.getRecentSearches().collect { values ->
+                _recentSearches.value = values
+            }
+        }
+    }
+
+    fun rememberRecent(item: RecentSearchItem) {
+        viewModelScope.launch {
+            searchRepository.upsertRecentSearch(item)
+            refreshRecentSearches()
+        }
+    }
+
+    fun deleteRecent(id: String) {
+        viewModelScope.launch {
+            searchRepository.deleteRecentSearch(id)
+            refreshRecentSearches()
+        }
+    }
+
+    fun clearRecentSearches() {
+        viewModelScope.launch {
+            searchRepository.deleteAllRecentSearches()
+            refreshRecentSearches()
+        }
+    }
+
+    /** Saves an album or playlist from Recents into the local library. */
+    fun addRecentToLibrary(item: RecentSearchItem) {
+        viewModelScope.launch {
+            val browseId = item.browseId ?: return@launch
+            when (item.kind) {
+                RecentSearchItem.ALBUM -> {
+                    albumRepository
+                        .insertAlbum(
+                            AlbumEntity(
+                                browseId = browseId,
+                                artistName = item.subtitle.takeIf { it.isNotBlank() }?.let { listOf(it) },
+                                audioPlaylistId = browseId,
+                                description = "",
+                                duration = null,
+                                durationSeconds = 0,
+                                thumbnails = item.thumbnail,
+                                title = item.title,
+                                trackCount = 0,
+                                type = "Album",
+                                year = null,
+                                liked = true,
+                                inLibrary = now(),
+                            ),
+                        ).first()
+                    albumRepository.updateAlbumLiked(browseId, 1)
+                }
+
+                RecentSearchItem.PLAYLIST, RecentSearchItem.PODCAST -> {
+                    playlistRepository.insertPlaylist(
+                        PlaylistEntity(
+                            id = browseId,
+                            author = item.subtitle,
+                            thumbnails = item.thumbnail.orEmpty(),
+                            title = item.title,
+                            liked = true,
+                            inLibrary = now(),
+                        ),
+                    )
+                    playlistRepository.updatePlaylistLiked(browseId, 1)
+                }
+
+                else -> return@launch
+            }
+            makeToast(getString(Res.string.added_to_library))
         }
     }
 

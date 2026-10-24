@@ -161,6 +161,9 @@ import simpmusic.composeapp.generated.resources.playlist
 import simpmusic.composeapp.generated.resources.radio
 import simpmusic.composeapp.generated.resources.search
 import simpmusic.composeapp.generated.resources.unlimited
+import simpmusic.composeapp.generated.resources.cd_download
+import simpmusic.composeapp.generated.resources.cd_more
+import simpmusic.composeapp.generated.resources.cd_shuffle
 
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -545,7 +548,7 @@ fun PlaylistScreen(
                                                         ) {
                                                             Icon(
                                                                 imageVector = SimpIcons.MoreVert,
-                                                                contentDescription = "More",
+                                                                contentDescription = stringResource(Res.string.cd_more),
                                                                 tint = Color.White,
                                                             )
                                                         }
@@ -667,7 +670,7 @@ fun PlaylistScreen(
                                                                     ) {
                                                                         Icon(
                                                                             imageVector = SimpIcons.Shuffle,
-                                                                            contentDescription = "Shuffle",
+                                                                            contentDescription = stringResource(Res.string.cd_shuffle),
                                                                             tint = Color.White,
                                                                             modifier = Modifier.size(22.dp),
                                                                         )
@@ -772,7 +775,7 @@ fun PlaylistScreen(
                                                                                         Icon(
                                                                                             imageVector = SimpIcons.DownloadForOffline,
                                                                                             tint = Color.White,
-                                                                                            contentDescription = "Download",
+                                                                                            contentDescription = stringResource(Res.string.cd_download),
                                                                                             modifier = Modifier.size(22.dp),
                                                                                         )
                                                                                     }
@@ -842,7 +845,7 @@ fun PlaylistScreen(
                                                     ) {
                                                         Icon(
                                                             imageVector = SimpIcons.MoreVert,
-                                                            contentDescription = "More",
+                                                            contentDescription = stringResource(Res.string.cd_more),
                                                             tint = Color.White,
                                                         )
                                                     }
@@ -882,7 +885,7 @@ fun PlaylistScreen(
                                                             ) {
                                                                 Icon(
                                                                     imageVector = SimpIcons.Shuffle,
-                                                                    contentDescription = "Shuffle",
+                                                                    contentDescription = stringResource(Res.string.cd_shuffle),
                                                                     tint = Color.White,
                                                                     modifier = Modifier.size(22.dp),
                                                                 )
@@ -987,7 +990,7 @@ fun PlaylistScreen(
                                                                                 Icon(
                                                                                     imageVector = SimpIcons.DownloadForOffline,
                                                                                     tint = Color.White,
-                                                                                    contentDescription = "Download",
+                                                                                    contentDescription = stringResource(Res.string.cd_download),
                                                                                     modifier = Modifier.size(22.dp),
                                                                                 )
                                                                             }

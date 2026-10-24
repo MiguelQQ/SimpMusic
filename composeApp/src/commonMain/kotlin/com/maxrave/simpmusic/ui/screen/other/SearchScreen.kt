@@ -99,6 +99,7 @@ import com.maxrave.domain.data.type.SearchResultType
 import com.maxrave.domain.mediaservice.handler.PlaylistType
 import com.maxrave.domain.mediaservice.handler.QueueData
 import com.maxrave.domain.utils.connectArtists
+import com.maxrave.domain.data.entities.RecentSearchItem
 import com.maxrave.domain.utils.toSongEntity
 import com.maxrave.domain.utils.toTrack
 import com.maxrave.simpmusic.Platform
@@ -120,7 +121,11 @@ import com.maxrave.simpmusic.ui.component.EndOfPage
 import com.maxrave.simpmusic.ui.component.NowPlayingBottomSheet
 import com.maxrave.simpmusic.ui.component.PlaylistFullWidthItems
 import com.maxrave.simpmusic.ui.component.ShimmerSearchItem
+import com.maxrave.simpmusic.ui.component.RecentSearchRow
 import com.maxrave.simpmusic.ui.component.SongFullWidthItems
+import com.maxrave.simpmusic.ui.component.toPlayableTrack
+import com.maxrave.simpmusic.ui.component.toRecentSearchItem
+import com.maxrave.simpmusic.ui.component.toSongEntity
 import com.maxrave.simpmusic.ui.component.selection.SelectedSongsBottomSheet
 import com.maxrave.simpmusic.ui.component.selection.SongSelectionTopAppBar
 import com.maxrave.simpmusic.ui.component.selection.rememberSongSelectionState
@@ -156,18 +161,24 @@ import org.koin.compose.viewmodel.koinViewModel
 import simpmusic.composeapp.generated.resources.Res
 import simpmusic.composeapp.generated.resources.albums
 import simpmusic.composeapp.generated.resources.artists
-import simpmusic.composeapp.generated.resources.clear_search_history
+import simpmusic.composeapp.generated.resources.cd_back
+import simpmusic.composeapp.generated.resources.cd_clear_search
+import simpmusic.composeapp.generated.resources.cd_search
+import simpmusic.composeapp.generated.resources.cd_search_suggestion
+import simpmusic.composeapp.generated.resources.clear_recent_searches
 import simpmusic.composeapp.generated.resources.error_occurred
 import simpmusic.composeapp.generated.resources.everything_you_need
 import simpmusic.composeapp.generated.resources.in_search
 import simpmusic.composeapp.generated.resources.no_results_found
 import simpmusic.composeapp.generated.resources.playlists
+import simpmusic.composeapp.generated.resources.recents
 import simpmusic.composeapp.generated.resources.podcasts
 import simpmusic.composeapp.generated.resources.retry
 import simpmusic.composeapp.generated.resources.search_for
 import simpmusic.composeapp.generated.resources.search_for_songs_artists_albums_playlists_and_more
 import simpmusic.composeapp.generated.resources.song
 import simpmusic.composeapp.generated.resources.videos
+import simpmusic.composeapp.generated.resources.unknown
 import simpmusic.composeapp.generated.resources.what_do_you_want_to_listen_to
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -181,7 +192,7 @@ fun SearchScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val searchScreenState by searchViewModel.searchScreenState.collectAsStateWithLifecycle()
     val uiState by searchViewModel.searchScreenUIState.collectAsStateWithLifecycle()
-    val searchHistory by searchViewModel.searchHistory.collectAsStateWithLifecycle()
+    val recentSearches by searchViewModel.recentSearches.collectAsStateWithLifecycle()
     val moodAndGenres by searchViewModel.moodAndGenres.collectAsStateWithLifecycle()
     val moodArtwork by searchViewModel.moodArtwork.collectAsStateWithLifecycle()
 
@@ -238,37 +249,6 @@ fun SearchScreen(
         }
     }
 
-    val searchForString = stringResource(Res.string.search_for)
-    val songString = stringResource(Res.string.song).lowercase()
-    val artistString = stringResource(Res.string.artists).lowercase()
-    val albumString = stringResource(Res.string.albums).lowercase()
-    val playlistString = stringResource(Res.string.playlists).lowercase()
-    val videoString = stringResource(Res.string.videos).lowercase()
-    val podcastString = stringResource(Res.string.podcasts).lowercase()
-
-    // Animated Placeholder
-    val placeholderTexts =
-        remember {
-            listOf(
-                "$searchForString $songString...",
-                "$searchForString $artistString...",
-                "$searchForString $albumString...",
-                "$searchForString $playlistString...",
-                "$searchForString $videoString...",
-                "$searchForString $podcastString...",
-            )
-        }
-
-    var currentPlaceholderIndex by remember { mutableIntStateOf(0) }
-
-    // Animate placeholder - pause when focused
-    LaunchedEffect(isFocused) {
-        while (!isFocused) {
-            delay(3000) // Change every 3 seconds
-            currentPlaceholderIndex = (currentPlaceholderIndex + 1) % placeholderTexts.size
-        }
-    }
-
     var sheetSong by remember { mutableStateOf<SongEntity?>(null) }
     var showBottomSheet by remember { mutableStateOf(false) }
 
@@ -283,6 +263,48 @@ fun SearchScreen(
     val onMoreClick: (SongEntity) -> Unit = { song ->
         sheetSong = song
         showBottomSheet = true
+    }
+
+    val rememberResult: (SearchResultType) -> Unit = { result ->
+        result.toRecentSearchItem()?.let { searchViewModel.rememberRecent(it) }
+    }
+
+    val openRecent: (RecentSearchItem) -> Unit = { item ->
+        searchViewModel.rememberRecent(item)
+        when (item.kind) {
+            RecentSearchItem.ARTIST -> {
+                item.browseId?.let { navController.navigate(ArtistDestination(it)) }
+            }
+
+            RecentSearchItem.ALBUM -> {
+                item.browseId?.let { navController.navigate(AlbumDestination(it)) }
+            }
+
+            RecentSearchItem.PODCAST -> {
+                item.browseId?.let { navController.navigate(PodcastDestination(it)) }
+            }
+
+            RecentSearchItem.PLAYLIST -> {
+                item.browseId?.let { navController.navigate(PlaylistDestination(it)) }
+            }
+
+            else -> {
+                val firstTrack = item.toPlayableTrack()
+                if (firstTrack != null) {
+                searchViewModel.setQueueData(
+                    QueueData.Data(
+                        listTracks = arrayListOf(firstTrack),
+                        firstPlayedTrack = firstTrack,
+                        playlistId = "RDAMVM${firstTrack.videoId}",
+                        playlistName = "\"${item.title}\" ${getStringBlocking(Res.string.in_search)}",
+                        playlistType = PlaylistType.RADIO,
+                        continuation = null,
+                    ),
+                )
+                searchViewModel.loadMediaItem(firstTrack, type = Config.SONG_CLICK)
+                }
+            }
+        }
     }
 
     LaunchedEffect(searchText) {
@@ -408,6 +430,7 @@ fun SearchScreen(
                             SuggestItemRow(
                                 searchResult = item,
                                 onItemClick = { item ->
+                                    rememberResult(item)
                                     when (item) {
                                         is SongsResult, is VideosResult -> {
                                             val firstTrack: Track = (item as? SongsResult)?.toTrack() ?: (item as VideosResult).toTrack()
@@ -488,7 +511,7 @@ fun SearchScreen(
                                 ) {
                                     Icon(
                                         imageVector = SimpIcons.ArrowOutward,
-                                        contentDescription = "Search suggestion",
+                                        contentDescription = stringResource(Res.string.cd_search_suggestion),
                                         modifier = Modifier.size(24.dp),
                                     )
                                 }
@@ -503,94 +526,61 @@ fun SearchScreen(
                 }
 
                 SearchUIType.SEARCH_HISTORY -> {
-                    // Search history state
-                    Column(
+                    LazyColumn(
                         modifier =
                             Modifier
                                 .fillMaxSize()
-                                .padding(horizontal = 16.dp),
+                                .padding(horizontal = 8.dp),
+                        state = historyState,
+                        contentPadding = PaddingValues(top = searchBarHeight, bottom = 24.dp),
                     ) {
-                        LazyColumn(
-                            state = historyState,
-                            contentPadding = PaddingValues(top = searchBarHeight, bottom = 10.dp),
-                        ) {
-                            stickyHeader {
-                                Crossfade(
-                                    targetState = searchHistory.isNotEmpty(),
-                                ) {
-                                    if (it) {
-                                        Row(
-                                            modifier =
-                                                Modifier
-                                                    .fillMaxWidth()
-                                                    .background(MaterialTheme.colorScheme.background),
-                                        ) {
-                                            TextButton(
-                                                onClick = { searchViewModel.deleteSearchHistory() },
-                                            ) {
-                                                Text(
-                                                    text = stringResource(Res.string.clear_search_history),
-                                                    color = MaterialTheme.colorScheme.onBackground,
-                                                )
+                        item {
+                            Text(
+                                text = stringResource(Res.string.recents),
+                                style = typo().titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            )
+                        }
+                        items(recentSearches, key = { it.id }) { item ->
+                            RecentSearchRow(
+                                item = item,
+                                onClick = { openRecent(item) },
+                                onAdd =
+                                    if (item.kind == RecentSearchItem.ARTIST) {
+                                        null
+                                    } else {
+                                        {
+                                            when (item.kind) {
+                                                RecentSearchItem.SONG -> {
+                                                    item.toSongEntity()?.let { song ->
+                                                        sheetSong = song
+                                                        showBottomSheet = true
+                                                    }
+                                                }
+
+                                                else -> searchViewModel.addRecentToLibrary(item)
                                             }
                                         }
-                                    }
-                                }
-                            }
-                            items(searchHistory) { historyItem ->
-                                Row(
-                                    modifier =
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                searchText = historyItem
-                                                focusManager.clearFocus()
-                                                isSearchSubmitted = true
-                                                searchViewModel.insertSearchHistory(historyItem)
-                                                when (searchScreenState.searchType) {
-                                                    SearchType.ALL -> searchViewModel.searchAll(historyItem)
-                                                    SearchType.SONGS -> searchViewModel.searchSongs(historyItem)
-                                                    SearchType.VIDEOS -> searchViewModel.searchVideos(historyItem)
-                                                    SearchType.ALBUMS -> searchViewModel.searchAlbums(historyItem)
-                                                    SearchType.ARTISTS -> searchViewModel.searchArtists(historyItem)
-                                                    SearchType.PLAYLISTS -> searchViewModel.searchPlaylists(historyItem)
-                                                    SearchType.FEATURED_PLAYLISTS -> searchViewModel.searchFeaturedPlaylist(historyItem)
-                                                    SearchType.PODCASTS -> searchViewModel.searchPodcast(historyItem)
-                                                }
-                                            }.padding(horizontal = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Icon(
-                                        imageVector = SimpIcons.History,
-                                        contentDescription = "Search history",
-                                        modifier = Modifier.size(24.dp),
-                                    )
-                                    Spacer(modifier = Modifier.padding(horizontal = 12.dp))
-                                    Text(
-                                        text = historyItem,
-                                        style = typo().bodyMedium,
-                                    )
-                                    Spacer(modifier = Modifier.weight(1f))
-                                    IconButton(
-                                        onClick = {
-                                            searchText = historyItem
-                                            focusRequester.requestFocus()
-                                        },
-                                    ) {
-                                        Icon(
-                                            imageVector = SimpIcons.ArrowOutward,
-                                            contentDescription = "Search suggestion",
-                                            modifier = Modifier.size(24.dp),
-                                        )
-                                    }
-                                }
-                            }
+                                    },
+                                onRemove = { searchViewModel.deleteRecent(item.id) },
+                            )
+                        }
+                        if (recentSearches.isNotEmpty()) {
                             item {
-                                EndOfPage(
-                                    withoutCredit = true,
-                                )
+                                TextButton(
+                                    onClick = { searchViewModel.clearRecentSearches() },
+                                    modifier = Modifier.padding(horizontal = 4.dp),
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.clear_recent_searches),
+                                        color = MaterialTheme.colorScheme.onBackground,
+                                    )
+                                }
                             }
                         }
+                        item { Spacer(modifier = Modifier.height(120.dp)) }
                     }
                 }
 
@@ -786,6 +776,7 @@ fun SearchScreen(
                                                                             onMoreClick(result.toTrack().toSongEntity())
                                                                         },
                                                                         onClickListener = {
+                                                                            rememberResult(result)
                                                                             val firstTrack = result.toTrack()
                                                                             searchViewModel.setQueueData(
                                                                                 QueueData.Data(
@@ -825,6 +816,7 @@ fun SearchScreen(
                                                                             onMoreClick(result.toTrack().toSongEntity())
                                                                         },
                                                                         onClickListener = {
+                                                                            rememberResult(result)
                                                                             val firstTrack = result.toTrack()
                                                                             searchViewModel.setQueueData(
                                                                                 QueueData.Data(
@@ -859,6 +851,7 @@ fun SearchScreen(
                                                                     PlaylistFullWidthItems(
                                                                         data = result,
                                                                         onClickListener = {
+                                                                            rememberResult(result)
                                                                             navController.navigate(
                                                                                 AlbumDestination(
                                                                                     result.browseId,
@@ -872,6 +865,7 @@ fun SearchScreen(
                                                                     ArtistFullWidthItems(
                                                                         data = result,
                                                                         onClickListener = {
+                                                                            rememberResult(result)
                                                                             navController.navigate(
                                                                                 ArtistDestination(
                                                                                     result.browseId,
@@ -885,6 +879,7 @@ fun SearchScreen(
                                                                     PlaylistFullWidthItems(
                                                                         data = result,
                                                                         onClickListener = {
+                                                                            rememberResult(result)
                                                                             if (result.resultType == "Podcast") {
                                                                                 navController.navigate(
                                                                                     PodcastDestination(
@@ -1059,25 +1054,10 @@ fun SearchScreen(
                     onExpandedChange = {},
                     enabled = true,
                     placeholder = {
-                        // Animated placeholder text
-                        AnimatedContent(
-                            targetState = currentPlaceholderIndex,
-                            transitionSpec = {
-                                (
-                                    fadeIn(animationSpec = tween(500)) +
-                                        slideInVertically { height -> height }
-                                ).togetherWith(
-                                    fadeOut(animationSpec = tween(500)) +
-                                        slideOutVertically { height -> -height },
-                                )
-                            },
-                            label = "placeholder_animation",
-                        ) { index ->
-                            Text(
-                                text = placeholderTexts[index],
-                                style = typo().labelMedium,
-                            )
-                        }
+                        Text(
+                            text = stringResource(Res.string.what_do_you_want_to_listen_to),
+                            style = typo().labelMedium,
+                        )
                     },
                     leadingIcon = {
                         Crossfade(
@@ -1097,13 +1077,13 @@ fun SearchScreen(
                                     ) {
                                         Icon(
                                             imageVector = SimpIcons.ArrowBackIosNew,
-                                            contentDescription = "Back",
+                                            contentDescription = stringResource(Res.string.cd_back),
                                         )
                                     }
                                 } else {
                                     Icon(
                                         imageVector = SimpIcons.Search,
-                                        contentDescription = "Search",
+                                        contentDescription = stringResource(Res.string.cd_search),
                                     )
                                 }
                             }
@@ -1121,7 +1101,7 @@ fun SearchScreen(
                             ) {
                                 Icon(
                                     imageVector = SimpIcons.Close,
-                                    contentDescription = "Clear search",
+                                    contentDescription = stringResource(Res.string.cd_clear_search),
                                 )
                             }
                         }
@@ -1137,7 +1117,7 @@ fun SearchScreen(
                     .onFocusChanged {
                         isFocused = it.isFocused
                     }.padding(horizontal = 16.dp),
-            shape = RoundedCornerShape(8.dp),
+            shape = RoundedCornerShape(24.dp),
             // See the note on SongSelectionTopAppBar above — the Column owns the status-bar inset.
             windowInsets = WindowInsets(0),
             content = {},
@@ -1273,7 +1253,7 @@ fun SuggestItemRow(
                     else -> {
                         null
                     }
-                } ?: "Unknown"
+                } ?: stringResource(Res.string.unknown)
 
             Text(
                 text = title,
@@ -1291,7 +1271,7 @@ fun SuggestItemRow(
                     is ArtistsResult -> stringResource(Res.string.artists)
                     is VideosResult -> searchResult.artists?.map { it.name }?.connectArtists()
                     else -> null
-                } ?: "Unknown"
+                } ?: stringResource(Res.string.unknown)
 
             if (subtitle.isNotEmpty()) {
                 Text(

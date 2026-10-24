@@ -150,6 +150,7 @@ import com.maxrave.simpmusic.ui.component.NowPlayingBottomSheet
 import com.maxrave.simpmusic.ui.component.OfflineErrorState
 import com.maxrave.simpmusic.ui.component.PromoBanner
 import com.maxrave.simpmusic.ui.component.PromoBannerData
+import com.maxrave.simpmusic.ui.component.PlayNextSwipeBox
 import com.maxrave.simpmusic.ui.component.QuickPicksItem
 import com.maxrave.simpmusic.ui.component.ReviewDialog
 import com.maxrave.simpmusic.ui.component.SectionHeaderButton
@@ -1392,6 +1393,7 @@ fun QuickPicks(
     homeItem: HomeItem,
     navController: NavController,
     viewModel: HomeViewModel = koinViewModel(),
+    sharedViewModel: SharedViewModel = koinInject(),
 ) {
     val isPortrait = getScreenSizeInfo().let { it.wDP < it.hDP }
     val density = LocalDensity.current
@@ -1446,7 +1448,11 @@ fun QuickPicks(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 row.forEach { item ->
-                    Box(Modifier.weight(1f)) {
+                    PlayNextSwipeBox(
+                        enabled = !item.videoId.isNullOrEmpty(),
+                        onPlayNext = { sharedViewModel.playNext(item.toTrack()) },
+                        modifier = Modifier.weight(1f),
+                    ) {
                         QuickPicksItem(
                             onClick = {
                                 val firstQueue: Track = item.toTrack()

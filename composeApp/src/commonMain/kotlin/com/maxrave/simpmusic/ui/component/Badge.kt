@@ -24,6 +24,7 @@ import com.maxrave.simpmusic.ui.theme.typo
 import org.jetbrains.compose.resources.stringResource
 import simpmusic.composeapp.generated.resources.Res
 import simpmusic.composeapp.generated.resources.ai
+import simpmusic.composeapp.generated.resources.cd_explicit
 
 @Composable
 fun ExplicitBadge(modifier: Modifier = Modifier) {
@@ -33,7 +34,7 @@ fun ExplicitBadge(modifier: Modifier = Modifier) {
     ) {
         Icon(
             imageVector = SimpIcons.Explicit,
-            "Explicit",
+            stringResource(Res.string.cd_explicit),
             tint = Color.LightGray,
         )
     }

@@ -1,4 +1,5 @@
 package com.maxrave.simpmusic.ui.mini_player
+import org.jetbrains.compose.resources.stringResource
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -81,6 +82,8 @@ import com.maxrave.simpmusic.viewModel.UIEvent
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import simpmusic.composeapp.generated.resources.Res
+import simpmusic.composeapp.generated.resources.cd_album_art
+import simpmusic.composeapp.generated.resources.cd_like
 
 @Composable
 private fun MiniPlayerSeekBar(
@@ -290,7 +293,7 @@ fun MediumMiniLayout(
                     // Smaller artwork with hover effect
                     AsyncImage(
                         model = nowPlayingData.thumbnailURL,
-                        contentDescription = "Album Art",
+                        contentDescription = stringResource(Res.string.cd_album_art),
                         placeholder = rememberHolderPainter(),
                         error = rememberHolderPainter(),
                         contentScale = ContentScale.Crop,
@@ -327,7 +330,7 @@ fun MediumMiniLayout(
                                             } else {
                                                 SimpIcons.FavoriteBorder
                                             },
-                                        contentDescription = "Like",
+                                        contentDescription = stringResource(Res.string.cd_like),
                                         tint =
                                             if (controllerState.isLiked) {
                                                 Color(0xFFFF4081)
@@ -512,7 +515,7 @@ fun SquareMiniLayout(
             // Large centered album artwork
             AsyncImage(
                 model = nowPlayingData.thumbnailURL,
-                contentDescription = "Album Art",
+                contentDescription = stringResource(Res.string.cd_album_art),
                 placeholder = rememberHolderPainter(),
                 error = rememberHolderPainter(),
                 contentScale = ContentScale.Crop,
@@ -636,7 +639,7 @@ fun SquareMiniLayout(
                                 } else {
                                     SimpIcons.FavoriteBorder
                                 },
-                            contentDescription = "Like",
+                            contentDescription = stringResource(Res.string.cd_like),
                             tint =
                                 if (controllerState.isLiked) {
                                     Color(0xFFFF4081)
@@ -778,7 +781,7 @@ fun ExpandedMiniLayout(
                 // Album artwork with hover animation
                 AsyncImage(
                     model = nowPlayingData.thumbnailURL,
-                    contentDescription = "Album Art",
+                    contentDescription = stringResource(Res.string.cd_album_art),
                     placeholder = rememberHolderPainter(),
                     error = rememberHolderPainter(),
                     contentScale = ContentScale.Crop,
@@ -837,7 +840,7 @@ fun ExpandedMiniLayout(
                                         } else {
                                             SimpIcons.FavoriteBorder
                                         },
-                                    contentDescription = "Like",
+                                    contentDescription = stringResource(Res.string.cd_like),
                                     tint =
                                         if (controllerState.isLiked) {
                                             Color(0xFFFF4081)

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_turntable_label">Tocadiscos</string>
+    <string name="widget_turntable_description">Carátula con reproducir y saltar</string>
+    <string name="widget_playlists_label">Listas</string>
+    <string name="widget_playlists_description">Reproducción actual con controles, sobre lo que añadiste hace poco</string>
+    <string name="widget_insights_label">Estadísticas de escucha</string>
+    <string name="widget_insights_description">Tiempo de escucha, reproducciones y tus canciones y artistas top de 30 días</string>
+    <string name="widget_insights_time">tiempo de escucha</string>
+    <string name="widget_insights_plays">reproducciones</string>
+    <string name="widget_insights_top_songs">Canciones top · 30 días</string>
+    <string name="widget_insights_top_artists">Artistas top · 30 días</string>
+    <string name="widget_recently_added">Añadido recientemente</string>
+    <string name="cd_previous">Anterior</string>
+    <string name="cd_next">Siguiente</string>
+    <string name="notif_artists_channel">Novedades de artistas que sigues</string>
+    <string name="notif_artists_channel_desc">Avisos cuando los artistas que sigues publican música nueva</string>
+    <string name="notif_blog_channel">Novedades del blog</string>
+    <string name="notif_blog_channel_desc">Avisa cuando se publica una entrada nueva del blog</string>
+</resources>

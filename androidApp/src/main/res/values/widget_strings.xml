@@ -16,4 +16,10 @@
     <string name="widget_insights_top_songs">Top songs · 30 days</string>
     <string name="widget_insights_top_artists">Top artists · 30 days</string>
     <string name="widget_recently_added">Recently added</string>
+    <string name="cd_previous">Previous</string>
+    <string name="cd_next">Next</string>
+    <string name="notif_artists_channel">Followed artist updates</string>
+    <string name="notif_artists_channel_desc">Notifies when artists you follow release new music</string>
+    <string name="notif_blog_channel">Blog updates</string>
+    <string name="notif_blog_channel_desc">Notifies when a new blog post is published</string>
 </resources>

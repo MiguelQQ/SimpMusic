@@ -130,6 +130,7 @@ import simpmusic.composeapp.generated.resources.comments
 import simpmusic.composeapp.generated.resources.crossfading
 import simpmusic.composeapp.generated.resources.now_playing_upper
 import simpmusic.composeapp.generated.resources.radio_mix_upper
+import simpmusic.composeapp.generated.resources.cd_add_to_playlist
 
 /**
  * The Material 3 Expressive ("Tonal pills") Now Playing style.
@@ -1054,7 +1055,7 @@ private fun ExpressiveConnectedGroup(
         ) {
             Icon(
                 imageVector = SimpIcons.PlaylistAdd,
-                contentDescription = "Add to Playlist",
+                contentDescription = stringResource(Res.string.cd_add_to_playlist),
                 tint = colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(22.dp),
             )

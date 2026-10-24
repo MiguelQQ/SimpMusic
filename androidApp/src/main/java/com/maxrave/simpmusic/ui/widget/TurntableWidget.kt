@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.glance.ColorFilter
@@ -193,7 +194,7 @@ class TurntableWidget :
                     val previous: @Composable () -> Unit = {
                         Image(
                             provider = ImageProvider(R.drawable.rounded_fast_rewind_24),
-                            contentDescription = "Previous",
+                            contentDescription = stringResource(R.string.cd_previous),
                             colorFilter = ColorFilter.tint(ColorProvider(Color.White)),
                             modifier =
                                 GlanceModifier
@@ -207,7 +208,7 @@ class TurntableWidget :
                     val next: @Composable () -> Unit = {
                         Image(
                             provider = ImageProvider(R.drawable.rounded_fast_forward_24),
-                            contentDescription = "Next",
+                            contentDescription = stringResource(R.string.cd_next),
                             colorFilter = ColorFilter.tint(ColorProvider(Color.White)),
                             modifier =
                                 GlanceModifier

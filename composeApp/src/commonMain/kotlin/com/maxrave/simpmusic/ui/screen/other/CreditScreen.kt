@@ -59,6 +59,8 @@ import dev.chrisbanes.haze.rememberHazeState
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import simpmusic.composeapp.generated.resources.*
+import simpmusic.composeapp.generated.resources.Res
+import simpmusic.composeapp.generated.resources.cd_app_icon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,7 +84,7 @@ fun CreditScreen(
         // App icon
         Image(
             painter = painterResource(Res.drawable.app_icon),
-            contentDescription = "App Icon",
+            contentDescription = stringResource(Res.string.cd_app_icon),
             modifier =
                 Modifier
                     .size(150.dp)

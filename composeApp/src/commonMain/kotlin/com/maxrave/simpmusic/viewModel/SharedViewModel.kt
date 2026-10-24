@@ -122,6 +122,7 @@ import simpmusic.composeapp.generated.resources.removed_from_youtube_liked
 import simpmusic.composeapp.generated.resources.shared
 import simpmusic.composeapp.generated.resources.updated
 import simpmusic.composeapp.generated.resources.vote_submitted
+import simpmusic.composeapp.generated.resources.will_play_next
 import java.io.FileOutputStream
 import kotlin.math.abs
 import kotlin.reflect.KClass
@@ -1898,6 +1899,14 @@ class SharedViewModel(
 
     fun activityRecreateDone() {
         _recreateActivity.value = false
+    }
+
+    /** Inserts [track] immediately after the current one and tells the user. */
+    fun playNext(track: Track) {
+        viewModelScope.launch {
+            mediaPlayerHandler.playNext(track)
+            makeToast(getString(Res.string.will_play_next))
+        }
     }
 
     fun addListToQueue(listTrack: ArrayList<Track>) {

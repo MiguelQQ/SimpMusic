@@ -185,6 +185,7 @@ import simpmusic.composeapp.generated.resources.share_lyrics
 import simpmusic.composeapp.generated.resources.show
 import simpmusic.composeapp.generated.resources.unsynced
 import simpmusic.composeapp.generated.resources.view_count
+import simpmusic.composeapp.generated.resources.cd_add_to_playlist
 
 // stripRichSyncTimestamps() lives in NowPlayingContentState.kt (same package) so both
 // content styles share one copy.
@@ -1144,7 +1145,7 @@ fun NowPlayingContentSpotify(
                                                     Icon(
                                                         imageVector = SimpIcons.PlaylistAdd,
                                                         tint = Color.White,
-                                                        contentDescription = "Add to Playlist",
+                                                        contentDescription = stringResource(Res.string.cd_add_to_playlist),
                                                     )
                                                 }
 
