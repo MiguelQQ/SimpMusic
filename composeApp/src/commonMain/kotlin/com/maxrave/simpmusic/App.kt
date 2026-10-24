@@ -581,7 +581,7 @@ fun App(
                                 MiniPlayer(
                                     Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 8.dp)
+                                        .padding(horizontal = 12.dp)
                                         .padding(bottom = 8.dp)
                                         .height(72.dp),
                                     backdrop = backdrop,

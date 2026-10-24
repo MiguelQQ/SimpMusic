@@ -102,18 +102,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.navigation.NavController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.kmpalette.loader.rememberNetworkLoader
-import com.kmpalette.rememberDominantColorState
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.http.Url
 import com.maxrave.domain.data.entities.SongEntity
 import com.maxrave.domain.manager.DataStoreManager
 import com.maxrave.domain.utils.connectArtists
@@ -122,7 +116,6 @@ import com.maxrave.simpmusic.Platform
 import com.maxrave.simpmusic.expect.toggleMiniPlayer
 import com.maxrave.simpmusic.expect.ui.PlatformBackdrop
 import com.maxrave.simpmusic.extension.LeftToRight
-import com.maxrave.simpmusic.extension.rgbFactor
 import com.maxrave.simpmusic.extension.elapsedLabel
 import com.maxrave.simpmusic.extension.formatDuration
 import com.maxrave.simpmusic.getPlatform
@@ -139,7 +132,7 @@ import com.maxrave.simpmusic.expect.ui.isPlatformCastAvailable
 import com.maxrave.simpmusic.ui.icon.Close
 import com.maxrave.simpmusic.ui.icon.Headphones
 import com.maxrave.simpmusic.ui.icon.AddCircleOutline
-import com.maxrave.simpmusic.ui.icon.CheckCircle
+import com.maxrave.simpmusic.ui.icon.Check
 import com.maxrave.simpmusic.ui.icon.MusicCast
 import com.maxrave.simpmusic.ui.icon.OpenInFull
 import com.maxrave.simpmusic.ui.icon.Pause
@@ -151,6 +144,7 @@ import com.maxrave.simpmusic.ui.icon.VolumeOff
 import com.maxrave.simpmusic.ui.icon.VolumeUp
 import com.maxrave.simpmusic.ui.screen.player.content.toAudioQualityLabel
 import com.maxrave.simpmusic.ui.theme.LocalIsDarkTheme
+import com.maxrave.simpmusic.ui.theme.killmonGreen
 import com.maxrave.simpmusic.ui.theme.typo
 import com.maxrave.simpmusic.viewModel.SharedViewModel
 import com.maxrave.simpmusic.viewModel.UIEvent
@@ -169,32 +163,81 @@ import simpmusic.composeapp.generated.resources.cd_mini_player
 
 private const val TAG = "MiniPlayer"
 
-/** Solid cover tint, darkened so white type stays readable (Spotify mini-player). */
-private fun Color.miniPlayerBackground(): Color {
-    val factor = if (luminance() > 0.35f) 0.42f else 0.72f
-    return rgbFactor(factor).copy(alpha = 1f)
-}
+/** Spotify-style floating bar: solid dark gray, not an artwork tint. */
+private val MiniPlayerCard = Color(0xFF3A3A3A)
+private val MiniPlayerArtist = Color(0xFFB3B3B3)
+private val MiniPlayerTouch = 48.dp
+private val MiniPlayerIcon = 26.dp
 
-/** 28dp glyph with no circular background. The play control is a filled triangle. */
+/** Glyph centred in a 48dp target so the three controls stay apart. */
 @Composable
 private fun MiniPlayerGlyph(
     imageVector: ImageVector,
     tint: Color,
     onClick: () -> Unit,
+    iconSize: Dp = MiniPlayerIcon,
 ) {
-    Icon(
-        imageVector = imageVector,
-        contentDescription = null,
-        tint = tint,
+    Box(
         modifier =
             Modifier
-                .size(28.dp)
+                .size(MiniPlayerTouch)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
                     onClick = onClick,
                 ),
-    )
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = imageVector,
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(iconSize),
+        )
+    }
+}
+
+/** Outline plus when the song is not saved; green disc with a white check when it is. */
+@Composable
+private fun MiniPlayerSaveButton(
+    liked: Boolean,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier =
+            Modifier
+                .size(MiniPlayerTouch)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onClick,
+                ),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (liked) {
+            Box(
+                modifier =
+                    Modifier
+                        .size(MiniPlayerIcon)
+                        .background(killmonGreen, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = SimpIcons.Check,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp),
+                )
+            }
+        } else {
+            Icon(
+                imageVector = SimpIcons.AddCircleOutline,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(MiniPlayerIcon),
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -300,27 +343,15 @@ fun MiniPlayer(
         job4.join()
     }
 
-    val artworkLoader = rememberNetworkLoader(remember { HttpClient(CIO) })
-    val artworkColorState =
-        rememberDominantColorState(
-            defaultColor = Color(0xFF2A2A2A),
-            defaultOnColor = Color.White,
-            loader = artworkLoader,
-        )
-    LaunchedEffect(songEntity?.thumbnails) {
-        val url = songEntity?.thumbnails ?: return@LaunchedEffect
-        runCatching { artworkColorState.updateFrom(Url(url)) }
-    }
-
     if (getPlatform() == Platform.Android) {
-        val miniPlayerShape = RoundedCornerShape(10.dp)
-        val cardColor = artworkColorState.color.miniPlayerBackground()
+        val miniPlayerShape = RoundedCornerShape(14.dp)
         Card(
             shape = miniPlayerShape,
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             colors =
                 CardDefaults.cardColors(
-                    containerColor = cardColor,
-                    disabledContainerColor = cardColor,
+                    containerColor = MiniPlayerCard,
+                    disabledContainerColor = MiniPlayerCard,
                 ),
             modifier =
                 modifier
@@ -368,7 +399,7 @@ fun MiniPlayer(
                         Modifier
                             .fillMaxSize(),
                 ) {
-                    Spacer(modifier = Modifier.size(8.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                     Box(modifier = Modifier.weight(1F)) {
                         Row(
                             modifier =
@@ -416,7 +447,7 @@ fun MiniPlayer(
                             Box(
                                 modifier =
                                     Modifier
-                                        .size(48.dp)
+                                        .size(52.dp)
                                         .align(Alignment.CenterVertically),
                                 contentAlignment = Alignment.Center,
                             ) {
@@ -433,11 +464,11 @@ fun MiniPlayer(
                                     contentScale = ContentScale.Crop,
                                     modifier =
                                         Modifier
-                                            .size(48.dp)
+                                            .size(52.dp)
                                             .clip(RoundedCornerShape(4.dp)),
                                 )
                             }
-                            Spacer(modifier = Modifier.width(10.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
                             AnimatedContent(
                                 targetState = songEntity,
                                 modifier = Modifier.weight(1F).fillMaxHeight(),
@@ -474,15 +505,16 @@ fun MiniPlayer(
                                 if (target != null) {
                                     Column(
                                         Modifier
+                                            .fillMaxWidth()
                                             .wrapContentHeight()
                                             .align(Alignment.CenterVertically),
                                     ) {
                                         Text(
-                                            text = (songEntity?.title ?: "").toString(),
+                                            text = (target.title).toString(),
                                             style =
                                                 typo().titleSmall.copy(
                                                     fontWeight = FontWeight.Bold,
-                                                    fontSize = 16.sp,
+                                                    fontSize = 15.sp,
                                                     color = Color.White,
                                                 ),
                                             color = Color.White,
@@ -497,25 +529,27 @@ fun MiniPlayer(
                                                         animationMode = MarqueeAnimationMode.Immediately,
                                                     ).focusable(),
                                         )
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            androidx.compose.animation.AnimatedVisibility(visible = songEntity?.isExplicit == true) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            androidx.compose.animation.AnimatedVisibility(visible = target.isExplicit) {
                                                 ExplicitBadge(
                                                     modifier =
                                                         Modifier
                                                             .size(20.dp)
-                                                            .padding(end = 4.dp)
-                                                            .weight(1f),
+                                                            .padding(end = 4.dp),
                                                 )
                                             }
                                             Text(
-                                                text = (songEntity?.artistName?.connectArtists() ?: ""),
+                                                text = target.artistName?.connectArtists().orEmpty(),
                                                 style =
                                                     typo().bodySmall.copy(
-                                                        fontSize = 14.sp,
-                                                        color = Color.White.copy(alpha = 0.72f),
+                                                        fontSize = 13.sp,
+                                                        color = MiniPlayerArtist,
                                                     ),
                                                 maxLines = 1,
-                                                color = Color.White.copy(alpha = 0.72f),
+                                                color = MiniPlayerArtist,
                                                 modifier =
                                                     Modifier
                                                         .weight(1f)
@@ -532,11 +566,9 @@ fun MiniPlayer(
                             }
                         }
                     }
-                    val iconSize = 28.dp
                     val playColor = Color.White
-                    Spacer(modifier = Modifier.width(4.dp))
                     if (isPlatformCastAvailable()) {
-                        PlatformCastButton(modifier = Modifier.size(iconSize), tint = playColor)
+                        PlatformCastButton(modifier = Modifier.size(MiniPlayerTouch), tint = playColor)
                     } else {
                         MiniPlayerGlyph(
                             imageVector = SimpIcons.MusicCast,
@@ -544,16 +576,13 @@ fun MiniPlayer(
                             onClick = onClick,
                         )
                     }
-                    Spacer(modifier = Modifier.width(6.dp))
-                    MiniPlayerGlyph(
-                        imageVector = if (liked) SimpIcons.CheckCircle else SimpIcons.AddCircleOutline,
-                        tint = playColor,
+                    MiniPlayerSaveButton(
+                        liked = liked,
                         onClick = { sharedViewModel.onUIEvent(UIEvent.ToggleLike) },
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
                     Crossfade(targetState = loading, label = "") {
                         if (it) {
-                            Box(modifier = Modifier.size(iconSize), contentAlignment = Alignment.Center) {
+                            Box(modifier = Modifier.size(MiniPlayerTouch), contentAlignment = Alignment.Center) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(22.dp),
                                     color = playColor,
@@ -565,10 +594,11 @@ fun MiniPlayer(
                                 imageVector = if (isPlaying) SimpIcons.Pause else SimpIcons.PlayArrow,
                                 tint = playColor,
                                 onClick = { sharedViewModel.onUIEvent(UIEvent.PlayPause) },
+                                iconSize = 30.dp,
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                 }
                 Box(
                     modifier =
