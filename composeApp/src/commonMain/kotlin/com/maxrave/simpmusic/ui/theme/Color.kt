@@ -9,6 +9,9 @@ import androidx.compose.ui.graphics.Color
  * The Material 3 ColorScheme is generated from [seed] at runtime — see [AppTheme].
  */
 val killmonGreen = Color(0xFF39E75F)
+
+/** Label and spinner on a [killmonGreen] primary button. Never a gray "disabled" tone. */
+val killmonOnGreen = Color(0xFF000000)
 val killmonCyan = Color(0xFF18E0E8)
 val killmonAccentGradient = listOf(killmonGreen, killmonCyan)
 

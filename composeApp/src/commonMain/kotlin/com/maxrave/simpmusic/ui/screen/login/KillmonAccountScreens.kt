@@ -20,8 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -55,6 +53,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph
 import com.maxrave.simpmusic.expect.finishApp
 import com.maxrave.simpmusic.expect.ui.PlatformBackHandler
+import com.maxrave.simpmusic.ui.component.KillmonPrimaryButton
 import com.maxrave.simpmusic.ui.icon.ArrowBackIosNew
 import com.maxrave.simpmusic.ui.icon.SimpIcons
 import com.maxrave.simpmusic.ui.navigation.destination.home.HomeDestination
@@ -121,7 +120,7 @@ fun KillmonLoginScreen(
         KillmonField(password, { password = it }, "Contraseña", KeyboardType.Password, password = true)
         ErrorText(error)
         Spacer(Modifier.height(20.dp))
-        KillmonButton("Iniciar sesión", loading) {
+        KillmonPrimaryButton("Iniciar sesión", loading) {
             loading = true
             error = null
             viewModel.login(email, password) { message ->
@@ -171,7 +170,7 @@ fun KillmonRegisterScreen(
         KillmonField(password, { password = it }, "Contraseña", KeyboardType.Password, password = true)
         ErrorText(error)
         Spacer(Modifier.height(20.dp))
-        KillmonButton("Crear cuenta", loading) {
+        KillmonPrimaryButton("Crear cuenta", loading) {
             loading = true
             error = null
             viewModel.register(name, email, password) { message ->
@@ -203,7 +202,8 @@ fun KillmonAccountScreen(
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
     var deletePassword by rememberSaveable { mutableStateOf("") }
     var error by rememberSaveable { mutableStateOf<String?>(null) }
-    var loading by rememberSaveable { mutableStateOf(false) }
+    var logoutLoading by rememberSaveable { mutableStateOf(false) }
+    var deleteLoading by rememberSaveable { mutableStateOf(false) }
 
     KillmonScaffold(
         title = "Cuenta Killmon",
@@ -219,7 +219,7 @@ fun KillmonAccountScreen(
             Text(user.email, color = Color(0xFFB3B3B3), fontSize = 16.sp)
             ErrorText(error)
             Spacer(Modifier.height(28.dp))
-            KillmonButton("Cerrar sesión", false) { confirmLogout = true }
+            KillmonPrimaryButton("Cerrar sesión", false) { confirmLogout = true }
             Spacer(Modifier.height(12.dp))
             TextButton(onClick = { confirmDelete = true }, modifier = Modifier.fillMaxWidth()) {
                 Text("Eliminar cuenta", color = Color(0xFFFF5A5A), fontWeight = FontWeight.SemiBold)
@@ -229,27 +229,35 @@ fun KillmonAccountScreen(
 
     if (confirmLogout) {
         AlertDialog(
-            onDismissRequest = { confirmLogout = false },
+            onDismissRequest = { if (!logoutLoading) confirmLogout = false },
             containerColor = Color(0xFF1E1E1E),
             title = { Text("Cerrar sesión", color = Color.White) },
             text = { Text("Se cierra la sesión solo en este dispositivo.", color = Color(0xFFB3B3B3)) },
             confirmButton = {
-                TextButton(
-                    onClick = {
+                KillmonPrimaryButton(
+                    text = "Cerrar sesión",
+                    loading = logoutLoading,
+                    expanded = false,
+                ) {
+                    logoutLoading = true
+                    viewModel.logout {
+                        logoutLoading = false
                         confirmLogout = false
-                        viewModel.logout { }
-                    },
-                ) { Text("Cerrar sesión", color = killmonGreen) }
+                    }
+                }
             },
             dismissButton = {
-                TextButton(onClick = { confirmLogout = false }) { Text("Cancelar", color = Color.White) }
+                TextButton(
+                    enabled = !logoutLoading,
+                    onClick = { confirmLogout = false },
+                ) { Text("Cancelar", color = Color.White) }
             },
         )
     }
 
     if (confirmDelete) {
         AlertDialog(
-            onDismissRequest = { if (!loading) confirmDelete = false },
+            onDismissRequest = { if (!deleteLoading) confirmDelete = false },
             containerColor = Color(0xFF1E1E1E),
             title = { Text("Eliminar cuenta", color = Color.White) },
             text = {
@@ -270,24 +278,25 @@ fun KillmonAccountScreen(
                 }
             },
             confirmButton = {
-                TextButton(
-                    enabled = !loading,
-                    onClick = {
-                        loading = true
-                        error = null
-                        viewModel.deleteAccount(deletePassword) { message ->
-                            loading = false
-                            if (message == null) {
-                                confirmDelete = false
-                            } else {
-                                error = message
-                            }
+                KillmonPrimaryButton(
+                    text = "Eliminar",
+                    loading = deleteLoading,
+                    expanded = false,
+                ) {
+                    deleteLoading = true
+                    error = null
+                    viewModel.deleteAccount(deletePassword) { message ->
+                        deleteLoading = false
+                        if (message == null) {
+                            confirmDelete = false
+                        } else {
+                            error = message
                         }
-                    },
-                ) { Text(if (loading) "Eliminando…" else "Eliminar", color = Color(0xFFFF5A5A)) }
+                    }
+                }
             },
             dismissButton = {
-                TextButton(enabled = !loading, onClick = { confirmDelete = false }) {
+                TextButton(enabled = !deleteLoading, onClick = { confirmDelete = false }) {
                     Text("Cancelar", color = Color.White)
                 }
             },
@@ -363,33 +372,6 @@ private fun KillmonField(
         keyboardOptions = KeyboardOptions(keyboardType = keyboard),
         colors = fieldColors,
     )
-}
-
-@Composable
-private fun KillmonButton(
-    text: String,
-    loading: Boolean,
-    onClick: () -> Unit,
-) {
-    Button(
-        onClick = onClick,
-        enabled = !loading,
-        modifier = Modifier.fillMaxWidth().height(52.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors =
-            ButtonDefaults.buttonColors(
-                containerColor = killmonGreen,
-                contentColor = Color.Black,
-                disabledContainerColor = killmonGreen.copy(alpha = 0.4f),
-                disabledContentColor = Color.Black.copy(alpha = 0.6f),
-            ),
-    ) {
-        if (loading) {
-            CircularProgressIndicator(color = Color.Black, strokeWidth = 2.dp, modifier = Modifier.size(22.dp))
-        } else {
-            Text(text, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-        }
-    }
 }
 
 @Composable
