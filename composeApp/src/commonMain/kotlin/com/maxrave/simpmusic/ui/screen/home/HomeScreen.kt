@@ -48,13 +48,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -78,6 +76,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
@@ -112,6 +111,7 @@ import com.maxrave.domain.data.model.home.chart.Chart
 import com.maxrave.domain.data.model.intent.GenericIntent
 import com.maxrave.domain.data.model.mood.Mood
 import com.maxrave.domain.extension.now
+import com.maxrave.domain.repository.KillmonAccountRepository
 import com.maxrave.domain.manager.DataStoreManager.Values.TRUE
 import com.maxrave.domain.mediaservice.handler.PlaylistType
 import com.maxrave.domain.mediaservice.handler.QueueData
@@ -166,6 +166,7 @@ import com.maxrave.simpmusic.ui.navigation.destination.home.HomeDestination
 import com.maxrave.simpmusic.ui.navigation.destination.home.MoodDestination
 import com.maxrave.simpmusic.ui.navigation.destination.home.NotificationDestination
 import com.maxrave.simpmusic.ui.navigation.destination.home.SettingsDestination
+import com.maxrave.simpmusic.ui.navigation.destination.login.KillmonAccountDestination
 import com.maxrave.simpmusic.ui.navigation.destination.library.LibraryDynamicPlaylistDestination
 import com.maxrave.simpmusic.ui.navigation.destination.list.ArtistDestination
 import com.maxrave.simpmusic.ui.navigation.destination.list.PodcastDestination
@@ -220,9 +221,7 @@ import simpmusic.composeapp.generated.resources.good_afternoon
 import simpmusic.composeapp.generated.resources.good_evening
 import simpmusic.composeapp.generated.resources.good_morning
 import simpmusic.composeapp.generated.resources.good_night
-import simpmusic.composeapp.generated.resources.guest
 import simpmusic.composeapp.generated.resources.let_s_pick_a_playlist_for_you
-import simpmusic.composeapp.generated.resources.log_in_to_YouTube
 import simpmusic.composeapp.generated.resources.log_in_warning
 import simpmusic.composeapp.generated.resources.mood
 import simpmusic.composeapp.generated.resources.music
@@ -299,6 +298,7 @@ fun HomeScreen(
     val scrollState = rememberLazyListState()
     val isScrollingUp by scrollState.isScrollingUp()
     val accountInfo by viewModel.accountInfo.collectAsStateWithLifecycle()
+    val killmonUser by koinInject<KillmonAccountRepository>().session.collectAsStateWithLifecycle()
     val homeData by viewModel.homeItemList.collectAsStateWithLifecycle()
     // Any shelf YouTube heads with the listener's own avatar over its title (Listen again is one of
     // several). Home's header already shows the avatar, so those shelves drop it and keep their name
@@ -1092,8 +1092,8 @@ fun HomeScreen(
                 ) {
                     Box(Modifier.padding(start = 16.dp, end = 8.dp)) {
                         HomeAccountButton(
-                            accountName = accountInfo?.first,
-                            thumbnailUrl = accountInfo?.second,
+                            displayName = killmonUser?.user?.displayName,
+                            email = killmonUser?.user?.email,
                             navController = navController,
                         )
                     }
@@ -1219,20 +1219,21 @@ private fun chipFadeStops(
 private const val CHIP_FADE_STEPS = 24
 
 /**
- * The avatar at the start of Home's header. It opens a menu showing who is signed in and the
- * greeting the old app bar used to show. Signed out, the avatar is a person glyph and the menu
- * offers the log-in.
+ * The avatar at the start of Home's header. The name, the greeting and the photo initial all come
+ * from the Killmon account. YouTube sign-in stays in Settings.
  */
 @Composable
 private fun HomeAccountButton(
-    accountName: String?,
-    thumbnailUrl: String?,
+    displayName: String?,
+    email: String?,
     navController: NavController,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
-    // Sign-out blanks the stored account name, so a blank name is the signed-out state.
-    val signedIn = !accountName.isNullOrBlank()
-    val displayName = if (signedIn) accountName.orEmpty() else stringResource(Res.string.guest)
+    val name = displayName?.takeIf { it.isNotBlank() }.orEmpty()
+    val signedIn = name.isNotBlank() || !email.isNullOrBlank()
+    val initial =
+        name.firstOrNull()?.uppercaseChar()?.toString()
+            ?: email?.firstOrNull()?.uppercaseChar()?.toString()
     val hour = remember { now().time.hour }
     val greeting =
         stringResource(
@@ -1246,10 +1247,10 @@ private fun HomeAccountButton(
     Box {
         AccountAvatar(
             signedIn = signedIn,
-            thumbnailUrl = thumbnailUrl,
-            initial = accountName?.firstOrNull()?.uppercaseChar()?.toString(),
+            thumbnailUrl = null,
+            initial = initial,
             size = 44.dp,
-            contentDescription = displayName,
+            contentDescription = name.ifBlank { email },
             modifier = Modifier.clickable { menuOpen = true },
         )
         DropdownMenu(
@@ -1271,16 +1272,37 @@ private fun HomeAccountButton(
             ) {
                 AccountAvatar(
                     signedIn = signedIn,
-                    thumbnailUrl = thumbnailUrl,
-                    initial = accountName?.firstOrNull()?.uppercaseChar()?.toString(),
+                    thumbnailUrl = null,
+                    initial = initial,
                     size = 40.dp,
                     contentDescription = null,
                 )
                 Column {
-                    Text(text = displayName, style = typo().titleSmall, maxLines = 1)
-                    Text(text = greeting, style = typo().bodySmall)
+                    Text(
+                        text = name,
+                        style = typo().titleSmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (!email.isNullOrBlank()) {
+                        Text(
+                            text = email,
+                            style = typo().bodySmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    Text(text = greeting, style = typo().bodySmall, maxLines = 1)
                 }
             }
+            DropdownMenuItem(
+                text = { Text("Cuenta Killmon", style = typo().bodyMedium) },
+                leadingIcon = { Icon(SimpIcons.Person, contentDescription = null) },
+                onClick = {
+                    menuOpen = false
+                    navController.navigate(KillmonAccountDestination)
+                },
+            )
             DropdownMenuItem(
                 text = { Text(stringResource(Res.string.notification), style = typo().bodyMedium) },
                 leadingIcon = { Icon(SimpIcons.Notifications, contentDescription = null) },
@@ -1297,20 +1319,6 @@ private fun HomeAccountButton(
                     navController.navigate(SettingsDestination)
                 },
             )
-            if (!signedIn) {
-                Button(
-                    onClick = {
-                        menuOpen = false
-                        navController.navigate(LoginDestination)
-                    },
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
-                ) {
-                    Text(stringResource(Res.string.log_in_to_YouTube), color = LocalContentColor.current)
-                }
-            }
         }
     }
 }

@@ -66,6 +66,7 @@ import com.maxrave.common.LibraryChipType
 import com.maxrave.domain.data.player.GenericMediaItem
 import com.maxrave.domain.manager.DataStoreManager
 import com.maxrave.domain.manager.DataStoreManager.Values.TRUE
+import com.maxrave.domain.repository.KillmonAccountRepository
 import com.maxrave.logger.Logger
 import com.maxrave.simpmusic.expect.Orientation
 import com.maxrave.simpmusic.expect.currentOrientation
@@ -82,6 +83,8 @@ import com.maxrave.simpmusic.ui.component.LocalUserStarted
 import com.maxrave.simpmusic.ui.icon.ArrowForwardIos
 import com.maxrave.simpmusic.ui.icon.SimpIcons
 import com.maxrave.simpmusic.ui.navigation.destination.home.AnalyticsDestination
+import com.maxrave.simpmusic.ui.navigation.destination.login.KillmonLoginDestination
+import com.maxrave.simpmusic.ui.navigation.destination.login.KillmonRegisterDestination
 import com.maxrave.simpmusic.ui.navigation.destination.home.HomeDestination
 import com.maxrave.simpmusic.ui.navigation.destination.home.NotificationDestination
 import com.maxrave.simpmusic.ui.navigation.destination.home.WrappedDestination
@@ -94,6 +97,8 @@ import com.maxrave.simpmusic.ui.navigation.destination.list.PlaylistDestination
 import com.maxrave.simpmusic.ui.navigation.destination.player.FullscreenDestination
 import com.maxrave.simpmusic.ui.navigation.graph.AppNavigationGraph
 import com.maxrave.simpmusic.ui.screen.MiniPlayer
+import com.maxrave.simpmusic.ui.screen.login.KillmonBootScreen
+import com.maxrave.simpmusic.ui.screen.login.resetTo
 import com.maxrave.simpmusic.ui.screen.other.UnofficialBuildScreen
 import com.maxrave.simpmusic.ui.screen.player.NowPlayingScreen
 import com.maxrave.simpmusic.ui.screen.player.NowPlayingScreenContent
@@ -151,6 +156,17 @@ fun App(
 ) {
     val windowSize = currentWindowAdaptiveInfo().windowSizeClass
     val navController = rememberNavController()
+    val killmonAccount = koinInject<KillmonAccountRepository>()
+    val killmonReady by killmonAccount.ready.collectAsStateWithLifecycle()
+    val killmonSession by killmonAccount.session.collectAsStateWithLifecycle()
+    // Latched once. Home is composed only after the stored session has been checked, so a missing
+    // session never paints Home for a frame.
+    var killmonStart by remember { mutableStateOf<Any?>(null) }
+    LaunchedEffect(killmonReady) {
+        if (killmonReady && killmonStart == null) {
+            killmonStart = if (killmonAccount.session.value != null) HomeDestination else KillmonLoginDestination
+        }
+    }
     val isDesktopShell = getPlatform() == Platform.Desktop
 
     val sleepTimerState by viewModel.sleepTimerState.collectAsStateWithLifecycle()
@@ -225,7 +241,8 @@ fun App(
     val hazeState =
         rememberHazeState()
 
-    LaunchedEffect(intent) {
+    LaunchedEffect(intent, killmonStart) {
+        if (killmonStart == null) return@LaunchedEffect
         val intent = intent ?: return@LaunchedEffect
         val data = intent.data
         Logger.d("MainActivity", "onCreate: $data")
@@ -429,6 +446,29 @@ fun App(
     }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val killmonDestination = navBackStackEntry?.destination
+    val onKillmonGate =
+        killmonDestination?.hasRoute(KillmonLoginDestination::class) == true ||
+            killmonDestination?.hasRoute(KillmonRegisterDestination::class) == true
+    // Also the frame before NavHost attaches its start destination, when that start is the gate.
+    val killmonBlocksChrome =
+        killmonStart == null ||
+            onKillmonGate ||
+            (killmonStart == KillmonLoginDestination && killmonDestination == null)
+    LaunchedEffect(killmonSession, killmonStart, navBackStackEntry) {
+        if (killmonStart == null || killmonSession != null) return@LaunchedEffect
+        val destination = navBackStackEntry?.destination ?: return@LaunchedEffect
+        if (
+            destination.hasRoute(KillmonLoginDestination::class) ||
+            destination.hasRoute(KillmonRegisterDestination::class)
+        ) {
+            return@LaunchedEffect
+        }
+        navController.resetTo(KillmonLoginDestination)
+    }
+    LaunchedEffect(killmonBlocksChrome) {
+        if (killmonBlocksChrome) isShowNowPlaylistScreen = false
+    }
     LaunchedEffect(navBackStackEntry) {
         Logger.d("MainActivity", "Current destination: ${navBackStackEntry?.destination?.route}")
         if (navBackStackEntry?.destination?.route?.contains("FullscreenDestination") == true) {
@@ -522,7 +562,7 @@ fun App(
             bottomBar = {
                 if (!isTablet) {
                     AnimatedVisibility(
-                        isNavBarVisible,
+                        isNavBarVisible && !killmonBlocksChrome,
                         enter = fadeIn() + slideInHorizontally(),
                         exit = fadeOut(),
                     ) {
@@ -532,7 +572,7 @@ fun App(
                         val useFoldingBar = getPlatform() != Platform.Android && isLiquidGlassEnabled == TRUE
                         Column {
                             AnimatedVisibility(
-                                isShowMiniPlayer && !useFoldingBar,
+                                isShowMiniPlayer && !useFoldingBar && !killmonBlocksChrome,
                                 enter = fadeIn() + slideInHorizontally(),
                                 exit = fadeOut(),
                             ) {
@@ -593,7 +633,7 @@ fun App(
                 ) {
                     val tabletMiniPlayer: @Composable (Modifier) -> Unit = { modifier ->
                         androidx.compose.animation.AnimatedVisibility(
-                            visible = isShowMiniPlayer && isTablet && !isInFullscreen,
+                            visible = isShowMiniPlayer && isTablet && !isInFullscreen && !killmonBlocksChrome,
                             modifier = modifier,
                             enter = fadeIn() + slideInHorizontally(),
                             exit = fadeOut(),
@@ -719,27 +759,32 @@ fun App(
                                                 },
                                             ).hazeSource(hazeState),
                                     ) {
-                                        CompositionLocalProvider(
-                                            LocalAppDialogOpen provides appDialogOpen,
-                                            LocalNowPlayingOpen provides isShowNowPlaylistScreen,
-                                            LocalUserStarted provides userStarted,
-                                        ) {
-                                            AppNavigationGraph(
-                                                innerPadding = innerPadding,
-                                                navController = navController,
-                                                hideNavBar = {
-                                                    isNavBarVisible = false
-                                                },
-                                                showNavBar = {
-                                                    isNavBarVisible = true
-                                                },
-                                                showNowPlayingSheet = {
-                                                    isShowNowPlaylistScreen = true
-                                                },
-                                                onScrolling = {
-                                                    isScrolledToTop = it
-                                                },
-                                            )
+                                        if (killmonStart == null) {
+                                            KillmonBootScreen()
+                                        } else {
+                                            CompositionLocalProvider(
+                                                LocalAppDialogOpen provides appDialogOpen,
+                                                LocalNowPlayingOpen provides isShowNowPlaylistScreen,
+                                                LocalUserStarted provides userStarted,
+                                            ) {
+                                                AppNavigationGraph(
+                                                    innerPadding = innerPadding,
+                                                    navController = navController,
+                                                    startDestination = killmonStart ?: HomeDestination,
+                                                    hideNavBar = {
+                                                        isNavBarVisible = false
+                                                    },
+                                                    showNavBar = {
+                                                        isNavBarVisible = true
+                                                    },
+                                                    showNowPlayingSheet = {
+                                                        isShowNowPlaylistScreen = true
+                                                    },
+                                                    onScrolling = {
+                                                        isScrolledToTop = it
+                                                    },
+                                                )
+                                            }
                                         }
                                     }
                                     if (!isDesktopShell) {
@@ -751,7 +796,7 @@ fun App(
                                 tabletMiniPlayer(Modifier.padding(innerPadding).align(Alignment.BottomCenter))
                             }
                         }
-                        if (isTablet && isTabletLandscape && !isInFullscreen) {
+                        if (isTablet && isTabletLandscape && !isInFullscreen && !killmonBlocksChrome) {
                             AnimatedVisibility(
                                 isShowNowPlaylistScreen,
                                 enter = expandHorizontally() + fadeIn(),
@@ -822,7 +867,7 @@ fun App(
                     }
                 }
 
-                if (isShowNowPlaylistScreen && !isTabletLandscape) {
+                if (isShowNowPlaylistScreen && !isTabletLandscape && !killmonBlocksChrome) {
                     ForceDarkContent {
                         NowPlayingScreen(
                             navController = navController,

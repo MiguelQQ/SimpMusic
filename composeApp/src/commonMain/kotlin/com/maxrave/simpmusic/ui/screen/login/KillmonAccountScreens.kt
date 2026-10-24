@@ -1,14 +1,20 @@
 package com.maxrave.simpmusic.ui.screen.login
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -33,8 +39,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -43,17 +52,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph
+import com.maxrave.simpmusic.expect.finishApp
+import com.maxrave.simpmusic.expect.ui.PlatformBackHandler
 import com.maxrave.simpmusic.ui.icon.ArrowBackIosNew
 import com.maxrave.simpmusic.ui.icon.SimpIcons
-import com.maxrave.simpmusic.ui.navigation.destination.login.KillmonAccountDestination
-import com.maxrave.simpmusic.ui.navigation.destination.login.KillmonLoginDestination
+import com.maxrave.simpmusic.ui.navigation.destination.home.HomeDestination
 import com.maxrave.simpmusic.ui.navigation.destination.login.KillmonRegisterDestination
+import com.maxrave.simpmusic.ui.theme.killmonAccentGradient
 import com.maxrave.simpmusic.ui.theme.killmonBlack
 import com.maxrave.simpmusic.ui.theme.killmonCyan
 import com.maxrave.simpmusic.ui.theme.killmonGreen
 import com.maxrave.simpmusic.ui.theme.killmonSurface
 import com.maxrave.simpmusic.viewModel.KillmonAccountViewModel
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import simpmusic.composeapp.generated.resources.Res
+import simpmusic.composeapp.generated.resources.app_icon
+import simpmusic.composeapp.generated.resources.app_name
+import simpmusic.composeapp.generated.resources.cd_app_icon
 
 private val fieldColors
     @Composable get() =
@@ -82,18 +100,18 @@ fun KillmonLoginScreen(
     viewModel: KillmonAccountViewModel = koinViewModel(),
 ) {
     HideBottomBar(hideBottomNavigation, showBottomNavigation)
+    LeaveAppWhenRoot(navController)
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var error by rememberSaveable { mutableStateOf<String?>(null) }
     var loading by rememberSaveable { mutableStateOf(false) }
 
-    KillmonScaffold(
-        title = "Iniciar sesión",
+    KillmonGate(
         innerPadding = innerPadding,
-        onBack = { navController.navigateUp() },
+        onBack = { leaveGate(navController) },
     ) {
         Text(
-            "Entra para sincronizar idioma, tema y región. La cuenta es opcional.",
+            "Inicia sesión para continuar.",
             color = Color(0xFFB3B3B3),
             fontSize = 14.sp,
         )
@@ -108,7 +126,7 @@ fun KillmonLoginScreen(
             error = null
             viewModel.login(email, password) { message ->
                 loading = false
-                if (message == null) openAccount(navController) else error = message
+                if (message == null) navController.resetTo(HomeDestination) else error = message
             }
         }
         TextButton(
@@ -136,10 +154,9 @@ fun KillmonRegisterScreen(
     var error by rememberSaveable { mutableStateOf<String?>(null) }
     var loading by rememberSaveable { mutableStateOf(false) }
 
-    KillmonScaffold(
-        title = "Crear cuenta",
+    KillmonGate(
         innerPadding = innerPadding,
-        onBack = { navController.navigateUp() },
+        onBack = { leaveGate(navController) },
     ) {
         Text(
             "La contraseña debe tener entre 8 y 128 caracteres.",
@@ -159,11 +176,11 @@ fun KillmonRegisterScreen(
             error = null
             viewModel.register(name, email, password) { message ->
                 loading = false
-                if (message == null) openAccount(navController) else error = message
+                if (message == null) navController.resetTo(HomeDestination) else error = message
             }
         }
         TextButton(
-            onClick = { navController.navigateUp() },
+            onClick = { leaveGate(navController) },
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text("Ya tengo cuenta", color = killmonCyan, fontWeight = FontWeight.SemiBold)
@@ -189,19 +206,13 @@ fun KillmonAccountScreen(
     var loading by rememberSaveable { mutableStateOf(false) }
 
     KillmonScaffold(
-        title = "Cuenta",
+        title = "Cuenta Killmon",
         innerPadding = innerPadding,
         onBack = { navController.navigateUp() },
     ) {
         val user = session?.user
         if (user == null) {
-            Text("No has iniciado sesión.", color = Color.White)
-            Spacer(Modifier.height(16.dp))
-            KillmonButton("Iniciar sesión", false) {
-                navController.navigate(KillmonLoginDestination) {
-                    popUpTo(KillmonAccountDestination) { inclusive = true }
-                }
-            }
+            Box(Modifier.fillMaxSize().background(killmonBlack))
         } else {
             Text(user.displayName, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(4.dp))
@@ -226,7 +237,7 @@ fun KillmonAccountScreen(
                 TextButton(
                     onClick = {
                         confirmLogout = false
-                        viewModel.logout { navController.navigateUp() }
+                        viewModel.logout { }
                     },
                 ) { Text("Cerrar sesión", color = killmonGreen) }
             },
@@ -268,7 +279,6 @@ fun KillmonAccountScreen(
                             loading = false
                             if (message == null) {
                                 confirmDelete = false
-                                navController.navigateUp()
                             } else {
                                 error = message
                             }
@@ -390,8 +400,98 @@ private fun ErrorText(error: String?) {
     }
 }
 
-private fun openAccount(navController: NavController) {
-    navController.navigate(KillmonAccountDestination) {
-        popUpTo(KillmonLoginDestination) { inclusive = true }
+/** Replaces the whole back stack. Sign-in, sign-out and account deletion all land on one screen. */
+fun NavController.resetTo(destination: Any) {
+    navigate(destination) {
+        popUpTo(graph.id) { inclusive = true }
+        launchSingleTop = true
     }
+}
+
+@Composable
+fun KillmonBootScreen() {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(killmonBlack),
+    ) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.statusBars),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            KillmonBrand()
+            Spacer(Modifier.height(28.dp))
+            CircularProgressIndicator(color = killmonCyan, strokeWidth = 3.dp, modifier = Modifier.size(28.dp))
+        }
+    }
+}
+
+@Composable
+private fun LeaveAppWhenRoot(navController: NavController) {
+    PlatformBackHandler(enabled = isGateRoot(navController)) {
+        finishApp()
+    }
+}
+
+/** The graph itself sits under the start destination, so "nothing behind login" is that entry too. */
+private fun isGateRoot(navController: NavController): Boolean {
+    val previous = navController.previousBackStackEntry?.destination
+    return previous == null || previous is NavGraph
+}
+
+private fun leaveGate(navController: NavController) {
+    if (isGateRoot(navController) || !navController.popBackStack()) finishApp()
+}
+
+@Composable
+private fun KillmonGate(
+    innerPadding: PaddingValues,
+    onBack: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(killmonBlack)
+            .padding(top = innerPadding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding()),
+    ) {
+        IconButton(onClick = onBack) {
+            Icon(SimpIcons.ArrowBackIosNew, contentDescription = "Atrás", tint = Color.White)
+        }
+        Column(
+            Modifier
+                .fillMaxSize()
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            KillmonBrand()
+            Spacer(Modifier.height(28.dp))
+            content()
+        }
+    }
+}
+
+@Composable
+private fun KillmonBrand() {
+    androidx.compose.foundation.Image(
+        painter = painterResource(Res.drawable.app_icon),
+        contentDescription = stringResource(Res.string.cd_app_icon),
+        modifier = Modifier.size(200.dp),
+    )
+    Spacer(Modifier.height(12.dp))
+    Text(
+        text = stringResource(Res.string.app_name),
+        style =
+            TextStyle(
+                brush = Brush.horizontalGradient(killmonAccentGradient),
+                fontWeight = FontWeight.Bold,
+                fontSize = 34.sp,
+            ),
+    )
 }

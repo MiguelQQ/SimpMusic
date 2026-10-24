@@ -695,7 +695,7 @@ fun SettingScreen(
                         title = killmonUser?.displayName ?: "Iniciar sesión",
                         subtitle =
                             killmonUser?.email
-                                ?: "Opcional. Sincroniza idioma, tema y región.",
+                                ?: "Inicia sesión para usar Killmon Music.",
                         onClick = {
                             if (killmonUser == null) {
                                 navController.navigate(KillmonLoginDestination)
