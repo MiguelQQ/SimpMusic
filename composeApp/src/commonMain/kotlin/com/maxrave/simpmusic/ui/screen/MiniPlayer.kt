@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.LinearEasing
@@ -103,7 +102,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.navigation.NavController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
@@ -122,6 +122,7 @@ import com.maxrave.simpmusic.Platform
 import com.maxrave.simpmusic.expect.toggleMiniPlayer
 import com.maxrave.simpmusic.expect.ui.PlatformBackdrop
 import com.maxrave.simpmusic.extension.LeftToRight
+import com.maxrave.simpmusic.extension.rgbFactor
 import com.maxrave.simpmusic.extension.elapsedLabel
 import com.maxrave.simpmusic.extension.formatDuration
 import com.maxrave.simpmusic.getPlatform
@@ -137,10 +138,13 @@ import com.maxrave.simpmusic.expect.ui.PlatformCastButton
 import com.maxrave.simpmusic.expect.ui.isPlatformCastAvailable
 import com.maxrave.simpmusic.ui.icon.Close
 import com.maxrave.simpmusic.ui.icon.Headphones
+import com.maxrave.simpmusic.ui.icon.AddCircleOutline
+import com.maxrave.simpmusic.ui.icon.CheckCircle
 import com.maxrave.simpmusic.ui.icon.MusicCast
 import com.maxrave.simpmusic.ui.icon.OpenInFull
+import com.maxrave.simpmusic.ui.icon.Pause
 import com.maxrave.simpmusic.ui.icon.PictureInPictureAlt
-import com.maxrave.simpmusic.ui.icon.PlaylistAdd
+import com.maxrave.simpmusic.ui.icon.PlayArrow
 import com.maxrave.simpmusic.ui.icon.QueueMusic
 import com.maxrave.simpmusic.ui.icon.SimpIcons
 import com.maxrave.simpmusic.ui.icon.VolumeOff
@@ -163,6 +167,34 @@ import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 private const val TAG = "MiniPlayer"
+
+/** Solid cover tint, darkened so white type stays readable (Spotify mini-player). */
+private fun Color.miniPlayerBackground(): Color {
+    val factor = if (luminance() > 0.35f) 0.42f else 0.72f
+    return rgbFactor(factor).copy(alpha = 1f)
+}
+
+/** 28dp glyph with no circular background. The play control is a filled triangle. */
+@Composable
+private fun MiniPlayerGlyph(
+    imageVector: ImageVector,
+    tint: Color,
+    onClick: () -> Unit,
+) {
+    Icon(
+        imageVector = imageVector,
+        contentDescription = null,
+        tint = tint,
+        modifier =
+            Modifier
+                .size(28.dp)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onClick,
+                ),
+    )
+}
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -195,18 +227,6 @@ fun MiniPlayer(
     val luminance = rememberGlassLuminance(layer, enabled = useGlassSurface && isVisible)
 
     val isDarkTheme = LocalIsDarkTheme.current
-    val textColor by animateColorAsState(
-        // With liquid glass the surface follows the theme (light = frosted white → black text);
-        // without it, the card is a theme surface, so its foreground token.
-        targetValue =
-            if (useGlassSurface) {
-                if (isDarkTheme) Color.White else Color.Black
-            } else {
-                MaterialTheme.colorScheme.onSurface
-            },
-        label = "MiniPlayerTextColor",
-        animationSpec = tween(500),
-    )
 
     val (songEntity, setSongEntity) =
         remember {
@@ -292,12 +312,8 @@ fun MiniPlayer(
     }
 
     if (getPlatform() == Platform.Android) {
-        val miniPlayerShape = RoundedCornerShape(8.dp)
-        val cardColor =
-            artworkColorState.color
-                .copy(alpha = 0.55f)
-                .compositeOver(Color(0xFF121212))
-        val isFlat = true
+        val miniPlayerShape = RoundedCornerShape(10.dp)
+        val cardColor = artworkColorState.color.miniPlayerBackground()
         Card(
             shape = miniPlayerShape,
             colors =
@@ -462,8 +478,13 @@ fun MiniPlayer(
                                     ) {
                                         Text(
                                             text = (songEntity?.title ?: "").toString(),
-                                            style = typo().titleSmall.copy(fontWeight = FontWeight.Bold),
-                                            color = textColor,
+                                            style =
+                                                typo().titleSmall.copy(
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 16.sp,
+                                                    color = Color.White,
+                                                ),
+                                            color = Color.White,
                                             maxLines = 1,
                                             modifier =
                                                 Modifier
@@ -487,9 +508,13 @@ fun MiniPlayer(
                                             }
                                             Text(
                                                 text = (songEntity?.artistName?.connectArtists() ?: ""),
-                                                style = if (isFlat) typo().bodySmall.copy(fontSize = 10.sp) else typo().bodySmall,
+                                                style =
+                                                    typo().bodySmall.copy(
+                                                        fontSize = 14.sp,
+                                                        color = Color.White.copy(alpha = 0.72f),
+                                                    ),
                                                 maxLines = 1,
-                                                color = if (isFlat) MaterialTheme.colorScheme.onSurfaceVariant else textColor,
+                                                color = Color.White.copy(alpha = 0.72f),
                                                 modifier =
                                                     Modifier
                                                         .weight(1f)
@@ -506,62 +531,48 @@ fun MiniPlayer(
                             }
                         }
                     }
-                    val controlSize = 40.dp
+                    val iconSize = 28.dp
                     val playColor = Color.White
                     Spacer(modifier = Modifier.width(4.dp))
-                    Box(
-                        modifier = Modifier.size(controlSize),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        if (isPlatformCastAvailable()) {
-                            PlatformCastButton(modifier = Modifier.size(24.dp), tint = playColor)
-                        } else {
-                            IconButton(onClick = onClick, modifier = Modifier.size(controlSize)) {
-                                Icon(
-                                    imageVector = SimpIcons.MusicCast,
-                                    contentDescription = null,
-                                    tint = playColor,
-                                )
-                            }
-                        }
-                    }
-                    IconButton(
-                        onClick = { sharedViewModel.onUIEvent(UIEvent.ToggleLike) },
-                        modifier = Modifier.size(controlSize),
-                    ) {
-                        Icon(
-                            imageVector = SimpIcons.PlaylistAdd,
-                            contentDescription = null,
-                            tint = if (liked) MaterialTheme.colorScheme.primary else playColor,
+                    if (isPlatformCastAvailable()) {
+                        PlatformCastButton(modifier = Modifier.size(iconSize), tint = playColor)
+                    } else {
+                        MiniPlayerGlyph(
+                            imageVector = SimpIcons.MusicCast,
+                            tint = playColor,
+                            onClick = onClick,
                         )
                     }
-                    Box(
-                        modifier = Modifier.size(controlSize),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Crossfade(targetState = loading, label = "") {
-                            if (it) {
-                                Box(modifier = Modifier.size(controlSize), contentAlignment = Alignment.Center) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(18.dp),
-                                        color = playColor,
-                                        strokeWidth = 3.dp,
-                                    )
-                                }
-                            } else {
-                                PlayPauseButton(isPlaying = isPlaying, modifier = Modifier.size(controlSize), tint = playColor) {
-                                    sharedViewModel.onUIEvent(UIEvent.PlayPause)
-                                }
+                    Spacer(modifier = Modifier.width(6.dp))
+                    MiniPlayerGlyph(
+                        imageVector = if (liked) SimpIcons.CheckCircle else SimpIcons.AddCircleOutline,
+                        tint = playColor,
+                        onClick = { sharedViewModel.onUIEvent(UIEvent.ToggleLike) },
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Crossfade(targetState = loading, label = "") {
+                        if (it) {
+                            Box(modifier = Modifier.size(iconSize), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(22.dp),
+                                    color = playColor,
+                                    strokeWidth = 2.dp,
+                                )
                             }
+                        } else {
+                            MiniPlayerGlyph(
+                                imageVector = if (isPlaying) SimpIcons.Pause else SimpIcons.PlayArrow,
+                                tint = playColor,
+                                onClick = { sharedViewModel.onUIEvent(UIEvent.PlayPause) },
+                            )
                         }
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                 }
                 Box(
                     modifier =
                         Modifier
-                            .wrapContentSize(Alignment.Center)
-                            .padding(horizontal = 8.dp)
+                            .fillMaxWidth()
                             .align(Alignment.BottomCenter),
                 ) {
                     LeftToRight {
@@ -570,14 +581,11 @@ fun MiniPlayer(
                             modifier =
                                 Modifier
                                     .fillMaxWidth()
-                                    .height(2.dp)
-                                    .background(
-                                        color = Color.Transparent,
-                                        shape = RoundedCornerShape(4.dp),
-                                    ),
+                                    .height(2.dp),
                             color = Color.White,
-                            trackColor = Color.White.copy(alpha = 0.24f),
-                            strokeCap = StrokeCap.Round,
+                            trackColor = Color.White.copy(alpha = 0.28f),
+                            strokeCap = StrokeCap.Butt,
+                            gapSize = 0.dp,
                             drawStopIndicator = {},
                         )
                     }

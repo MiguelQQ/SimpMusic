@@ -75,6 +75,7 @@ import com.maxrave.simpmusic.ui.icon.SimpIcons
 import com.maxrave.simpmusic.ui.navigation.destination.list.AlbumDestination
 import com.maxrave.simpmusic.ui.navigation.destination.list.ArtistDestination
 import com.maxrave.simpmusic.ui.theme.typo
+import com.maxrave.simpmusic.utils.isVisibleProjectLink
 import com.maxrave.simpmusic.viewModel.NotificationViewModel
 import dev.chrisbanes.haze.HazeInput
 import dev.chrisbanes.haze.blur.hazeBlur
@@ -317,8 +318,8 @@ fun BlogNotificationItem(notification: NotificationEntity) {
         Row(
             Modifier
                 .fillMaxWidth()
-                .clickable(enabled = !link.isNullOrEmpty()) {
-                    link?.let { uriHandler.openUri(it) }
+                .clickable(enabled = !link.isNullOrEmpty() && link?.isVisibleProjectLink() != true) {
+                    link?.takeUnless { it.isVisibleProjectLink() }?.let { uriHandler.openUri(it) }
                 },
         ) {
             Box(

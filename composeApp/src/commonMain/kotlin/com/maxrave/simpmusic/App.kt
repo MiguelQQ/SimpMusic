@@ -69,7 +69,6 @@ import com.maxrave.domain.manager.DataStoreManager.Values.TRUE
 import com.maxrave.logger.Logger
 import com.maxrave.simpmusic.expect.Orientation
 import com.maxrave.simpmusic.expect.currentOrientation
-import com.maxrave.simpmusic.expect.openUrl
 import com.maxrave.simpmusic.expect.ui.layerBackdrop
 import com.maxrave.simpmusic.expect.ui.rememberBackdrop
 import com.maxrave.simpmusic.extension.copy
@@ -539,10 +538,10 @@ fun App(
                             ) {
                                 MiniPlayer(
                                     Modifier
-                                        .height(64.dp)
                                         .fillMaxWidth()
                                         .padding(horizontal = 8.dp)
-                                        .padding(bottom = 8.dp),
+                                        .padding(bottom = 8.dp)
+                                        .height(72.dp),
                                     backdrop = backdrop,
                                     navController = navController,
                                     onClick = {
@@ -602,14 +601,10 @@ fun App(
                             MiniPlayer(
                                 if (getPlatform() == Platform.Android) {
                                     Modifier
-                                        // Glass keeps its 52dp card; the flat one is 56dp.
-                                        .height(if (isLiquidGlassEnabled == TRUE) 56.dp else 60.dp)
                                         .fillMaxWidth(0.8f)
-                                        .padding(
-                                            horizontal = 12.dp,
-                                        ).padding(
-                                            bottom = 4.dp,
-                                        )
+                                        .padding(horizontal = 8.dp)
+                                        .padding(bottom = 8.dp)
+                                        .height(72.dp)
                                 } else {
                                     // Floating capsule, Apple Music style: a fixed size so it never
                                     // stretches to the window width, and no haze at all — the capsule
@@ -890,7 +885,6 @@ fun App(
                                 onClick = {
                                     shouldShowUpdateDialog = false
                                     viewModel.showedUpdateDialog = false
-                                    openUrl("https://simpmusic.org/download")
                                 },
                             ) {
                                 Text(

@@ -353,6 +353,6 @@
     <string name="go_to_log_in_page">الذهاب إلى صفحة تسجيل الدخول</string>
     <string name="proxy_host"></string>
     <string name="download_speed">سرعة التحميل %1$s </string>
-    <string name="import_invalid_file">هذا الملف ليس ملف استيراد Killmon Music صالح. حول مكتبتك علي simpmusic.org أولا.</string>
+    <string name="import_invalid_file">هذا الملف ليس ملف استيراد Killmon Music صالح. حول مكتبتك علي  أولا.</string>
     <!-- Listen Together -->
 </resources>

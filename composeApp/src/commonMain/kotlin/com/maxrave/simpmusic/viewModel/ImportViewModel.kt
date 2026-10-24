@@ -5,6 +5,7 @@ import com.eygraber.uri.Uri
 import com.maxrave.domain.repository.ImportProgress
 import com.maxrave.domain.repository.ImportRepository
 import com.maxrave.logger.LogLevel
+import com.maxrave.simpmusic.utils.withoutVisibleProjectLinks
 import com.maxrave.simpmusic.viewModel.base.BaseViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -38,7 +39,7 @@ class ImportViewModel(
         importJob =
             viewModelScope.launch {
                 _importState.value = ImportProgress.Preparing
-                val invalidFileMessage = getString(Res.string.import_invalid_file)
+                val invalidFileMessage = getString(Res.string.import_invalid_file).withoutVisibleProjectLinks()
                 val json =
                     withContext(Dispatchers.IO) {
                         runCatching { readPickedFile(uri).decodeToString() }

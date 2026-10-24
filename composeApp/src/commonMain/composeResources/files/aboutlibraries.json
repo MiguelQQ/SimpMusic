@@ -5762,16 +5762,16 @@
             "artifactVersion": "6.0.1",
             "name": "FFMPEG Android 16KB",
             "description": "FFmpeg Kit Audio for Android.",
-            "website": "https://github.com/maxrave-dev/ffmpeg-kit-16KB",
+            "website": "",
             "developers": [
                 {
                     "name": "Minh Nguyen"
                 }
             ],
             "scm": {
-                "connection": "scm:git@github.com:maxrave-dev/ffmpeg-kit-16KB.git",
-                "developerConnection": "scm:git@github.com:maxrave-dev/ffmpeg-kit-16KB.git",
-                "url": "https://github.com/maxrave-dev/ffmpeg-kit-16KB"
+                "connection": "",
+                "developerConnection": "",
+                "url": ""
             },
             "licenses": [
                 "c398818ee178152d6b9561ab9daa823a"
@@ -8833,16 +8833,16 @@
             "artifactVersion": "4.0.2",
             "name": "OpenAI API Kotlin Client",
             "description": "Fork for Gemini",
-            "website": "https://github.com/maxrave-dev/gemini-kotlin",
+            "website": "",
             "developers": [
                 {
                     "name": "Nguyen Duc Tuan Minh"
                 }
             ],
             "scm": {
-                "connection": "scm:git:git://github.com/maxrave-dev/gemini-kotlin.git",
-                "developerConnection": "scm:git:ssh://github.com/maxrave-dev/gemini-kotlin.git",
-                "url": "https://github.com/maxrave-dev/gemini-kotlin"
+                "connection": "",
+                "developerConnection": "",
+                "url": ""
             },
             "licenses": [
                 "MIT"
@@ -8856,16 +8856,16 @@
             "artifactVersion": "4.0.2",
             "name": "OpenAI API Kotlin Client Core",
             "description": "Fork for Gemini",
-            "website": "https://github.com/maxrave-dev/gemini-kotlin",
+            "website": "",
             "developers": [
                 {
                     "name": "Nguyen Duc Tuan Minh"
                 }
             ],
             "scm": {
-                "connection": "scm:git:git://github.com/maxrave-dev/gemini-kotlin.git",
-                "developerConnection": "scm:git:ssh://github.com/maxrave-dev/gemini-kotlin.git",
-                "url": "https://github.com/maxrave-dev/gemini-kotlin"
+                "connection": "",
+                "developerConnection": "",
+                "url": ""
             },
             "licenses": [
                 "MIT"
@@ -8879,16 +8879,16 @@
             "artifactVersion": "0.0.3",
             "name": "JMTC",
             "description": "JMTC forked version",
-            "website": "https://github.com/maxrave-dev/NowPlayingCenter",
+            "website": "",
             "developers": [
                 {
                     "name": "Nguyen Duc Tuan Minh"
                 }
             ],
             "scm": {
-                "connection": "scm:git:git://github.com/maxrave-dev/NowPlayingCenter.git",
-                "developerConnection": "scm:git:ssh://git@github.com/maxrave-dev/NowPlayingCenter.git",
-                "url": "https://github.com/maxrave-dev/NowPlayingCenter"
+                "connection": "",
+                "developerConnection": "",
+                "url": ""
             },
             "licenses": [
                 "MIT"
@@ -8902,16 +8902,16 @@
             "artifactVersion": "0.0.3",
             "name": "NowPlayingCenter",
             "description": "Wrapper MacOS API's MPNowPlayingCenter to JMTC libray",
-            "website": "https://github.com/maxrave-dev/NowPlayingCenter",
+            "website": "",
             "developers": [
                 {
                     "name": "Nguyen Duc Tuan Minh"
                 }
             ],
             "scm": {
-                "connection": "scm:git:git://github.com/maxrave-dev/NowPlayingCenter.git",
-                "developerConnection": "scm:git:ssh://git@github.com/maxrave-dev/NowPlayingCenter.git",
-                "url": "https://github.com/maxrave-dev/NowPlayingCenter"
+                "connection": "",
+                "developerConnection": "",
+                "url": ""
             },
             "licenses": [
                 "MIT"

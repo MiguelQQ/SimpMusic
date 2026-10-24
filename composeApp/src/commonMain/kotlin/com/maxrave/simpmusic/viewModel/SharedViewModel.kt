@@ -136,6 +136,7 @@ const val FOOTGUNS_STAR_KEY = "footguns_starred"
 class SharedViewModel(
     private val dataStoreManager: DataStoreManager,
     private val streamRepository: StreamRepository,
+    @Suppress("unused")
     private val updateRepository: UpdateRepository,
     private val songRepository: SongRepository,
     private val albumRepository: AlbumRepository,
@@ -1190,51 +1191,9 @@ class SharedViewModel(
     val updateResponse: StateFlow<UpdateData?> = _updateResponse
 
     fun checkForUpdate() {
-        // Raised before the coroutine starts, so Home's launch banner, which reads it right after
-        // startup, can never miss a check that is already under way but not yet marked.
-        _isCheckingUpdate.value = true
-        viewModelScope.launch {
-            val updateChannel = dataStoreManager.updateChannel.first()
-            dataStoreManager.putString(
-                "CheckForUpdateAt",
-                System.currentTimeMillis().toString(),
-            )
-            if (updateChannel == DataStoreManager.GITHUB) {
-                updateRepository.checkForGithubReleaseUpdate().collectLatest { response ->
-                    val data = response.data
-                    when (response) {
-                        is Resource.Success if (data != null) -> {
-                            _updateResponse.value = data
-                            showedUpdateDialog = true
-                        }
-
-                        else -> {
-                            log("Check for update error: ${response.message}", LogLevel.WARN)
-                        }
-                    }
-                    _isCheckingUpdate.value = false
-                }
-            } else if (updateChannel == DataStoreManager.FDROID) {
-                updateRepository.checkForFdroidUpdate().collectLatest { response ->
-                    val data = response.data
-                    when (response) {
-                        is Resource.Success if (data != null) -> {
-                            _updateResponse.value = data
-                            showedUpdateDialog = true
-                        }
-
-                        else -> {
-                            log("Check for update error: ${response.message}", LogLevel.WARN)
-                        }
-                    }
-                    _isCheckingUpdate.value = false
-                }
-            }
-        }.invokeOnCompletion {
-            // Also for a channel neither branch handles, and for a check that throws: the launch
-            // banner waits for this flag, so it must never stay raised.
-            _isCheckingUpdate.value = false
-        }
+        // Killmon does not check GitHub or F-Droid releases. Nothing is fetched and no dialog opens.
+        _isCheckingUpdate.value = false
+        _updateResponse.value = null
     }
 
     /**

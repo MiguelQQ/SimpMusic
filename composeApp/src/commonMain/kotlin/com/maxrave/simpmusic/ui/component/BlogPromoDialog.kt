@@ -6,8 +6,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
+import com.maxrave.simpmusic.utils.withoutVisibleProjectLinks
 import androidx.compose.ui.window.DialogProperties
 import com.maxrave.simpmusic.ui.theme.typo
 import org.jetbrains.compose.resources.painterResource
@@ -25,7 +25,6 @@ fun BlogPromoDialog(
     onDismissRequest: () -> Unit,
     onVisitBlog: () -> Unit,
 ) {
-    val uriHandler = LocalUriHandler.current
     AlertDialog(
         properties =
             DialogProperties(
@@ -38,7 +37,6 @@ fun BlogPromoDialog(
         confirmButton = {
             TextButton(onClick = {
                 onVisitBlog.invoke()
-                uriHandler.openUri("https://www.simpmusic.org/blogs")
             }) {
                 Text(
                     stringResource(Res.string.visit_blog),
@@ -67,7 +65,7 @@ fun BlogPromoDialog(
         },
         text = {
             Text(
-                stringResource(Res.string.blog_promo_message),
+                stringResource(Res.string.blog_promo_message).withoutVisibleProjectLinks(),
                 textAlign = TextAlign.Center,
                 style = typo().bodySmall,
             )

@@ -143,7 +143,7 @@
     <string name="developer_blog">Utvecklarblogg</string>
     <string name="developer_blog_tagline">Läs utvecklaranteckningar, guider &amp; material bakom kulisserna</string>
     <string name="blog_promo_title">Nytt från utvecklaren</string>
-    <string name="blog_promo_message">Jag har precis startat Killmon Music-bloggen på simpmusic.org. Där berättar jag om hur Killmon Music kom till, fördjupar mig i musikteknik och delar anteckningar från utvecklingen. Ta en titt om du är nyfiken ✨</string>
+    <string name="blog_promo_message">Jag har precis startat Killmon Music-bloggen på . Där berättar jag om hur Killmon Music kom till, fördjupar mig i musikteknik och delar anteckningar från utvecklingen. Ta en titt om du är nyfiken ✨</string>
     <string name="visit_blog">Besök bloggen</string>
     <string name="paypal">PayPal</string>
     <string name="title">Titel</string>
@@ -740,13 +740,13 @@
     <string name="audio_output_hdmi">HDMI</string>
     <string name="import_data">Importera spellistor</string>
     <string name="import_playlists_from_other_apps">Importera spellistor från en annan app</string>
-    <string name="import_data_intro">Med importfunktionen kan du importera spellistor som har konverterats från Spotify eller en annan YouTube Music-klient.\nKonverteringsverktyg: https://www.simpmusic.org/tools\nI Killmon Music kan endast spellistefiler i Killmon Music eget format importeras</string>
+    <string name="import_data_intro">Med importfunktionen kan du importera spellistor som har konverterats från Spotify eller en annan YouTube Music-klient.\nKonverteringsverktyg: \nI Killmon Music kan endast spellistefiler i Killmon Music eget format importeras</string>
     <string name="import_reading_file">Läser filen…</string>
     <string name="import_progress_songs">Låtar: %1$d av %2$d</string>
     <string name="import_result">Skapade spellistor: %1$d. Importerade låtar: %2$d.</string>
     <string name="import_result_skipped">Poster som hoppades över eftersom motsvarande låt saknades i filen: %1$d.</string>
     <string name="import_failed">Importen misslyckades</string>
-    <string name="import_invalid_file">Filen är inte en giltig Killmon Music-importfil. Konvertera först ditt bibliotek på simpmusic.org.</string>
+    <string name="import_invalid_file">Filen är inte en giltig Killmon Music-importfil. Konvertera först ditt bibliotek på .</string>
     <string name="analytics">Statistik</string>
     <string name="select_all">Markera alla</string>
     <string name="n_selected">Markerade: %1$d</string>
@@ -917,7 +917,7 @@
     <string name="login_sync_code_expired">Koden på datorn har gått ut. Visa en ny kod och skanna igen.</string>
     <string name="login_sync_failed">Något gick fel. Försök igen.</string>
     <string name="modified_build_title">Inofficiell app</string>
-    <string name="modified_build_message">Du använder en inofficiell kopia av Killmon Music som har ändrats eller paketerats om av någon annan. Den kan inte användas. Hämta den officiella versionen från simpmusic.org.</string>
+    <string name="modified_build_message">Du använder en inofficiell kopia av Killmon Music som har ändrats eller paketerats om av någon annan. Den kan inte användas. Hämta den officiella versionen från .</string>
     <string name="taste_title">Vilken musiksmak har du?</string>
     <string name="taste_invite">Låt AI analysera vad du har lyssnat på de senaste 12 månaderna och ge dig svaret.</string>
     <string name="taste_loading_title">Analyserar din musiksmak…</string>

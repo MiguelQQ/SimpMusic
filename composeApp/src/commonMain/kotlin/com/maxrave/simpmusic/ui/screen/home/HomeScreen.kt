@@ -175,6 +175,7 @@ import com.maxrave.simpmusic.ui.theme.LocalLiquidGlassEnabled
 import com.maxrave.simpmusic.ui.theme.desktopPanelDark
 import com.maxrave.simpmusic.ui.theme.typo
 import com.maxrave.simpmusic.utils.VersionManager
+import com.maxrave.simpmusic.utils.isVisibleProjectLink
 import com.maxrave.simpmusic.utils.eligiblePromos
 import com.maxrave.simpmusic.viewModel.FOOTGUNS_STAR_KEY
 import com.maxrave.simpmusic.viewModel.HomeViewModel
@@ -667,7 +668,8 @@ fun HomeScreen(
                     }
 
                     // openUrl rather than LocalUriHandler, which throws where no browser answers.
-                    link.startsWith("https://", ignoreCase = true) -> {
+                    // Project site, repo, blog and donation links stay closed.
+                    link.startsWith("https://", ignoreCase = true) && !link.isVisibleProjectLink() -> {
                         runCatching { openUrl(link) }
                     }
                     // Anything else is a mistake in the config: ignoring it beats crashing on a tap.

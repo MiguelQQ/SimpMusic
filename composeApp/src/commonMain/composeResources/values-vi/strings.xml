@@ -141,7 +141,7 @@
     <string name="developer_blog">Blog của nhà phát triển</string>
     <string name="developer_blog_tagline">Đọc các ghi chép của nhà phát triển, hướng dẫn &amp; đằng sau các tính năng</string>
     <string name="blog_promo_title">Một vài điều mới đến từ nhà phát triển</string>
-    <string name="blog_promo_message">Tôi vừa ra mắt blog cá nhân của mình tại simpmusic.org — nơi chia sẻ câu chuyện đằng sau Killmon Music, những phân tích chuyên sâu về công nghệ âm nhạc và những ghi chú kỹ thuật. Hãy ghé thăm nếu bạn tò mò nhé ✨</string>
+    <string name="blog_promo_message">Tôi vừa ra mắt blog cá nhân của mình tại  — nơi chia sẻ câu chuyện đằng sau Killmon Music, những phân tích chuyên sâu về công nghệ âm nhạc và những ghi chú kỹ thuật. Hãy ghé thăm nếu bạn tò mò nhé ✨</string>
     <string name="visit_blog">Ghé thăm blog</string>
     <string name="paypal">PayPal</string>
     <string name="title">Tiêu đề</string>
@@ -737,13 +737,13 @@
     <string name="audio_output_hdmi">HDMI</string>
     <string name="import_data">Nhập danh sách phát</string>
     <string name="import_playlists_from_other_apps">Nhập danh sách phát từ ứng dụng khác</string>
-    <string name="import_data_intro">Tính năng nhập sẽ thêm các danh sách phát đã chuyển đổi từ Spotify hoặc một ứng dụng YT Music khác.\nCông cụ chuyển đổi: https://www.simpmusic.org/tools\nKillmon Music chỉ nhập được tệp danh sách phát theo định dạng riêng của Killmon Music</string>
+    <string name="import_data_intro">Tính năng nhập sẽ thêm các danh sách phát đã chuyển đổi từ Spotify hoặc một ứng dụng YT Music khác.\nCông cụ chuyển đổi: \nKillmon Music chỉ nhập được tệp danh sách phát theo định dạng riêng của Killmon Music</string>
     <string name="import_reading_file">Đang đọc tệp…</string>
     <string name="import_progress_songs">%1$d / %2$d bài hát</string>
     <string name="import_result">Đã tạo %1$d danh sách phát và nhập %2$d bài hát.</string>
     <string name="import_result_skipped">%1$d mục đã bị bỏ qua do thiếu bài hát tương ứng trong tệp.</string>
     <string name="import_failed">Nhập dữ liệu thất bại</string>
-    <string name="import_invalid_file">Tệp này không phải là tệp nhập Killmon Music hợp lệ. Hãy chuyển đổi thư viện của bạn tại simpmusic.org trước.</string>
+    <string name="import_invalid_file">Tệp này không phải là tệp nhập Killmon Music hợp lệ. Hãy chuyển đổi thư viện của bạn tại  trước.</string>
     <string name="analytics">Thống kê</string>
     <string name="select_all">Chọn tất cả</string>
     <string name="n_selected">Đã chọn %1$d</string>
@@ -914,7 +914,7 @@
     <string name="login_sync_code_expired">Mã trên máy tính của bạn đã hết hạn. Hãy tạo mã mới rồi quét lại.</string>
     <string name="login_sync_failed">Đã xảy ra lỗi. Vui lòng thử lại.</string>
     <string name="modified_build_title">Ứng dụng không chính thức</string>
-    <string name="modified_build_message">Bạn đang dùng một bản Killmon Music không chính thức do người khác chỉnh sửa hoặc đóng gói lại. Bản này không thể sử dụng. Hãy tải bản chính thức tại simpmusic.org.</string>
+    <string name="modified_build_message">Bạn đang dùng một bản Killmon Music không chính thức do người khác chỉnh sửa hoặc đóng gói lại. Bản này không thể sử dụng. Hãy tải bản chính thức tại .</string>
     <string name="taste_title">Gu nhạc của bạn là gì?</string>
     <string name="taste_invite">Để AI đọc 12 tháng nghe nhạc gần nhất của bạn và nói cho bạn biết.</string>
     <string name="taste_loading_title">Đang đọc gu nhạc của bạn…</string>

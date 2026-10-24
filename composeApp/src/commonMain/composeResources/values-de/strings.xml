@@ -143,7 +143,7 @@
     <string name="developer_blog">Entwickler-Blog</string>
     <string name="developer_blog_tagline">Lesen Sie Entwicklernotizen, Tutorials &amp; hinter den Kulissen</string>
     <string name="blog_promo_title">Neues vom Entwickler</string>
-    <string name="blog_promo_message">Ich habe gerade den Killmon Music-Blog unter simpmusic.org gestartet – dort erzähle ich die Geschichte hinter Killmon Music, gehe ausführlich auf Musiktechnologie ein und teile technische Einblicke. Schaut doch mal rein, wenn ihr neugierig seid ✨</string>
+    <string name="blog_promo_message">Ich habe gerade den Killmon Music-Blog unter  gestartet – dort erzähle ich die Geschichte hinter Killmon Music, gehe ausführlich auf Musiktechnologie ein und teile technische Einblicke. Schaut doch mal rein, wenn ihr neugierig seid ✨</string>
     <string name="visit_blog">Blog besuchen</string>
     <string name="paypal">PayPal</string>
     <string name="title">Titel</string>
@@ -739,14 +739,14 @@
     <string name="audio_output_hdmi">HDMI</string>
     <string name="import_data">Playlists importieren</string>
     <string name="import_playlists_from_other_apps">Playlisten von einer anderen App importieren</string>
-    <string name="import_data_intro">Mit der Importfunktion kannst Du Playlists einlesen, die aus Spotify oder einer anderen YT Music-Client-App konvertiert wurden. Konvertierungstool: https://www.simpmusic.org/tools 
+    <string name="import_data_intro">Mit der Importfunktion kannst Du Playlists einlesen, die aus Spotify oder einer anderen YT Music-Client-App konvertiert wurden. Konvertierungstool:  
 In Killmon Music können nur Playlist-Dateien in unserem eigenen Format importiert werden</string>
     <string name="import_reading_file">Datei wird gelesen…</string>
     <string name="import_progress_songs">%1$d von %2$d Songs</string>
     <string name="import_result">%1$d Playlisten erstellt und %2$d Songs importiert.</string>
     <string name="import_result_skipped">%1$d Einträge wurden übersprungen, da der entsprechende Titel in der Datei fehlte.</string>
     <string name="import_failed">Import fehlgeschlagen</string>
-    <string name="import_invalid_file">Diese Datei ist keine gültige Killmon Music Importdatei. Konvertiere zuerst deine Bibliothek auf simpmusic.org.</string>
+    <string name="import_invalid_file">Diese Datei ist keine gültige Killmon Music Importdatei. Konvertiere zuerst deine Bibliothek auf .</string>
     <string name="analytics">Statistiken</string>
     <string name="select_all">Alles auswählen</string>
     <string name="n_selected">%1$d ausgewählt</string>
@@ -917,7 +917,7 @@ In Killmon Music können nur Playlist-Dateien in unserem eigenen Format importie
     <string name="login_sync_code_expired">Der Code auf Ihrem Computer ist abgelaufen. Zeige einen neuen und scanne erneut.</string>
     <string name="login_sync_failed">Etwas ist schiefgelaufen. Bitte versuche es erneut.</string>
     <string name="modified_build_title">Inoffizielle App</string>
-    <string name="modified_build_message">Du verwendest eine inoffizielle Kopie von Killmon Music die von jemand anderem modifiziert oder neu verpackt wurde. Es kann nicht benutzt werden. Laden Sie die offizielle Version von simpmusic.org herunter.</string>
+    <string name="modified_build_message">Du verwendest eine inoffizielle Kopie von Killmon Music die von jemand anderem modifiziert oder neu verpackt wurde. Es kann nicht benutzt werden. Laden Sie die offizielle Version von  herunter.</string>
     <string name="taste_title">Was ist dein Musikgeschmack?</string>
     <string name="taste_invite">Lass die KI deine Hörgewohnheiten der letzten 12 Monate analysieren und dir das Ergebnis mitteilen.</string>
     <string name="taste_loading_title">Deinen Musikgeschmack analysieren…</string>

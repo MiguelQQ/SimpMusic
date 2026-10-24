@@ -147,7 +147,7 @@
     <string name="developer_blog">Блог разработчика</string>
     <string name="developer_blog_tagline">Читайте заметки разработчика, руководства и информацию о процессе разработки</string>
     <string name="blog_promo_title">Что-то новое из разработки</string>
-    <string name="blog_promo_message">Я только что запустил свой персональный блог на simpmusic.org — поделитесь историей за Killmon Music, музыкальными погружениями и инженерными заметками. Читайте, если интересно ✨</string>
+    <string name="blog_promo_message">Я только что запустил свой персональный блог на  — поделитесь историей за Killmon Music, музыкальными погружениями и инженерными заметками. Читайте, если интересно ✨</string>
     <string name="visit_blog">Посетить блог</string>
     <string name="paypal">PayPal</string>
     <string name="title">Название</string>
@@ -747,13 +747,13 @@
     <string name="audio_output_hdmi">HDMI</string>
     <string name="import_data">Импортировать плейлист</string>
     <string name="import_playlists_from_other_apps">Импортирует плейлисты из других приложений</string>
-    <string name="import_data_intro">Импорт добавляет плейлисты из Spotify или другого YTMusic клиента. \nИнструмент для конвертирования: https://www.simpmusic.org/tools\n В Killmon Music можно импортировать файлы плейлистов только нашего формата</string>
+    <string name="import_data_intro">Импорт добавляет плейлисты из Spotify или другого YTMusic клиента. \nИнструмент для конвертирования: \n В Killmon Music можно импортировать файлы плейлистов только нашего формата</string>
     <string name="import_reading_file">Чтение файла…</string>
     <string name="import_progress_songs">%1$d из %2$d песен</string>
     <string name="import_result">Создано %1$d плейлистов и импортировано %2$d песен.</string>
     <string name="import_result_skipped">%1$d записей было пропущено, потому что такой песни нет в файле.</string>
     <string name="import_failed">Сбой импорта</string>
-    <string name="import_invalid_file">Этот файл не является допустимым файлом импорта Killmon Music. Сначала конвертируйте вашу библиотеку на simpmusic.org.</string>
+    <string name="import_invalid_file">Этот файл не является допустимым файлом импорта Killmon Music. Сначала конвертируйте вашу библиотеку на .</string>
     <string name="analytics">Статистика</string>
     <string name="select_all">Выделить все</string>
     <string name="n_selected">%1$d выбрано</string>
@@ -924,7 +924,7 @@
     <string name="login_sync_code_expired">Срок действия кода на вашем компьютере истек. Покажите новый и просканируйте снова.</string>
     <string name="login_sync_failed">Произошла ошибка. Повторите попытку.</string>
     <string name="modified_build_title">Неофициальное приложение</string>
-    <string name="modified_build_message">Вы используете неофициальную версию Killmon Music, которая была модифицирована или пересобрана посторонними людьми. Оно не может быть использовано. Загрузите официальную версию с simpmusic.org.</string>
+    <string name="modified_build_message">Вы используете неофициальную версию Killmon Music, которая была модифицирована или пересобрана посторонними людьми. Оно не может быть использовано. Загрузите официальную версию с .</string>
     <string name="taste_title">Какой Ваш музыкальный вкус?</string>
     <string name="taste_invite">Позвольте ИИ посмотреть Вашу историю прослушивания за 12 месяцев и рассказать Вам.</string>
     <string name="taste_loading_title">Читаем историю прослушивания...</string>

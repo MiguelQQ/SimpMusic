@@ -141,7 +141,7 @@
     <string name="developer_blog">開発者ブログ</string>
     <string name="developer_blog_tagline">開発ノートやチュートリアル &amp; 開発秘話を読む</string>
     <string name="blog_promo_title">開発者からの新着情報</string>
-    <string name="blog_promo_message">Killmon Musicのブログを simpmusic.org で公開しました！Killmon Musicの開発の裏話や、音楽テクノロジーの掘り下げた解説、エンジニアリングに関する記事などを発信しています。興味があれば、ぜひ読んでみてください ✨</string>
+    <string name="blog_promo_message">Killmon Musicのブログを  で公開しました！Killmon Musicの開発の裏話や、音楽テクノロジーの掘り下げた解説、エンジニアリングに関する記事などを発信しています。興味があれば、ぜひ読んでみてください ✨</string>
     <string name="visit_blog">ブログを見る</string>
     <string name="paypal">PayPal</string>
     <string name="title">題名</string>
@@ -737,13 +737,13 @@
     <string name="audio_output_hdmi">HDMI</string>
     <string name="import_data">プレイリストをインポート</string>
     <string name="import_playlists_from_other_apps">別のアプリからプレイリストをインポート</string>
-    <string name="import_data_intro">インポートでは、Spotifyや他のYT Musicクライアントアプリから変換したプレイリストを取り込めます。\n変換ツール: https://www.simpmusic.org/tools\nKillmon Musicでは、独自形式のプレイリストファイルのみインポートできます</string>
+    <string name="import_data_intro">インポートでは、Spotifyや他のYT Musicクライアントアプリから変換したプレイリストを取り込めます。\n変換ツール: \nKillmon Musicでは、独自形式のプレイリストファイルのみインポートできます</string>
     <string name="import_reading_file">ファイルを読み込み中…</string>
     <string name="import_progress_songs">%2$d曲中%1$d曲</string>
     <string name="import_result">%1$d個のプレイリストを作成し、%2$d曲をインポートしました。</string>
     <string name="import_result_skipped">曲がファイルに存在しなかったため、%1$d件の項目をスキップしました。</string>
     <string name="import_failed">インポートに失敗しました</string>
-    <string name="import_invalid_file">このファイルは有効なKillmon Musicインポートファイルではありません。まず、simpmusic.orgでライブラリを変換してください。</string>
+    <string name="import_invalid_file">このファイルは有効なKillmon Musicインポートファイルではありません。まず、でライブラリを変換してください。</string>
     <string name="analytics">統計</string>
     <string name="select_all">すべて選択</string>
     <string name="n_selected">%1$d件選択済み</string>
@@ -914,7 +914,7 @@
     <string name="login_sync_code_expired">お使いのコンピューターのコードの有効期限が切れています。新しいコードを表示して再度スキャンしてください。</string>
     <string name="login_sync_failed">問題が発生しました。もう一度やり直してください。</string>
     <string name="modified_build_title">非公式アプリ</string>
-    <string name="modified_build_message">あなたは、他の誰かによって修正または再パッケージ化されたKillmon Musicの非公式コピーを使用しています。 使用できません。simpmusic.org から公式バージョンをダウンロードしてください。</string>
+    <string name="modified_build_message">あなたは、他の誰かによって修正または再パッケージ化されたKillmon Musicの非公式コピーを使用しています。 使用できません。 から公式バージョンをダウンロードしてください。</string>
     <string name="taste_title">あなたの音楽の好みは？</string>
     <string name="taste_invite">AIに過去12か月間のあなたの聴き方を分析してもらいましょう。</string>
     <string name="taste_loading_title">あなたの音楽の好みを分析中…</string>
