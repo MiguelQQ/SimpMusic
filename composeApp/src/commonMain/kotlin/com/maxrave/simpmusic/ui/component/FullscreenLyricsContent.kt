@@ -132,7 +132,7 @@ import org.jetbrains.compose.resources.stringResource
 import simpmusic.composeapp.generated.resources.Res
 import simpmusic.composeapp.generated.resources.crossfading
 import simpmusic.composeapp.generated.resources.share_lyrics
-import simpmusic.composeapp.generated.resources.unavailable
+import simpmusic.composeapp.generated.resources.lyrics_unavailable
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -495,6 +495,7 @@ fun FullscreenLyricsContent(
                     ) {
                         FullscreenLyricsList(
                             lyricsData = screenDataState.lyricsData,
+                            unavailable = screenDataState.lyricsUnavailable,
                             sharedViewModel = sharedViewModel,
                             color = color,
                             backdrop = backdrop,
@@ -962,6 +963,7 @@ private fun FullscreenLyricsLandscape(
             ) {
                 FullscreenLyricsList(
                     lyricsData = state.screenData.lyricsData,
+                    unavailable = state.screenData.lyricsUnavailable,
                     sharedViewModel = sharedViewModel,
                     color = color,
                     backdrop = backdrop,
@@ -1117,6 +1119,7 @@ private fun FullscreenLyricsDesktopChrome(
 @Composable
 private fun FullscreenLyricsList(
     lyricsData: NowPlayingScreenData.LyricsData?,
+    unavailable: Boolean,
     sharedViewModel: SharedViewModel,
     color: Color,
     backdrop: PlatformBackdrop,
@@ -1146,7 +1149,7 @@ private fun FullscreenLyricsList(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = stringResource(Res.string.unavailable),
+                        text = if (unavailable) stringResource(Res.string.lyrics_unavailable) else "",
                         style = typo().bodyMedium,
                         color = Color.White,
                         textAlign = TextAlign.Center,

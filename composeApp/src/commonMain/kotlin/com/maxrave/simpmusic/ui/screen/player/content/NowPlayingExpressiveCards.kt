@@ -118,6 +118,7 @@ import simpmusic.composeapp.generated.resources.like_and_dislike
 import simpmusic.composeapp.generated.resources.line_synced
 import simpmusic.composeapp.generated.resources.lyrics
 import simpmusic.composeapp.generated.resources.lyrics_offset
+import simpmusic.composeapp.generated.resources.lyrics_unavailable
 import simpmusic.composeapp.generated.resources.published_at
 import simpmusic.composeapp.generated.resources.rate_lyrics
 import simpmusic.composeapp.generated.resources.rich_synced
@@ -563,6 +564,29 @@ internal fun ExpressiveBelowTheFold(
     var showLyricsOffsetBar by rememberSaveable { mutableStateOf(false) }
     Column(Modifier.padding(horizontal = 20.dp)) {
         // Lyrics card
+        AnimatedVisibility(
+            visible = state.screenData.lyricsData == null && state.screenData.lyricsUnavailable,
+            modifier = Modifier.padding(top = 10.dp),
+        ) {
+            Surface(
+                shape = ExpressiveCardShape,
+                color = colorScheme.surfaceContainer,
+            ) {
+                Column(modifier = Modifier.padding(15.dp)) {
+                    Text(
+                        text = stringResource(Res.string.lyrics),
+                        style = typo().labelMedium,
+                        color = Color.White,
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(Res.string.lyrics_unavailable),
+                        style = typo().bodyLarge,
+                        color = Color.White,
+                    )
+                }
+            }
+        }
         AnimatedVisibility(
             visible = state.screenData.lyricsData != null,
             modifier = Modifier.padding(top = 10.dp),

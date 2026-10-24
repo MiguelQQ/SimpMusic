@@ -44,7 +44,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -75,6 +74,7 @@ import com.maxrave.simpmusic.expect.currentOrientation
 import com.maxrave.simpmusic.expect.ui.layerBackdrop
 import com.maxrave.simpmusic.expect.ui.rememberBackdrop
 import com.maxrave.simpmusic.extension.copy
+import com.maxrave.simpmusic.extension.smoothScrimBrush
 import com.maxrave.simpmusic.ui.component.AppBottomNavigationBar
 import com.maxrave.simpmusic.ui.component.AppNavigationRail
 import com.maxrave.simpmusic.ui.component.DesktopSidebar
@@ -148,6 +148,12 @@ import simpmusic.composeapp.generated.resources.update_available
 import simpmusic.composeapp.generated.resources.update_message
 import simpmusic.composeapp.generated.resources.yes
 import kotlin.time.ExperimentalTime
+
+// Top of the nav scrim. Light enough that a shelf passing behind the icons still reads.
+private val KillmonBarScrimTop = Color.Black.copy(alpha = 0.40f)
+
+// Bottom of the nav scrim, over the system gesture. Still short of opaque black.
+private val KillmonBarScrimBottom = Color.Black.copy(alpha = 0.72f)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class, ExperimentalFoundationApi::class)
 @Composable
@@ -574,10 +580,9 @@ fun App(
                         // Killmon phone: floating card over a labeled bar, on a black dock.
                         val useFoldingBar = getPlatform() != Platform.Android && isLiquidGlassEnabled == TRUE
                         Column(Modifier.fillMaxWidth()) {
-                            // Home scrolls under the bar. The 72dp fade used to sit above the card, so its
-                            // opaque end read as a black shadow on the card's top edge. It only draws while
-                            // the card is hidden. With the card up, the 2dp of air stays clear and the opaque
-                            // black starts at the card's top edge (side gutters, the 12dp gap, the nav).
+                            // Home scrolls under this bar. The card paints only its own rectangle:
+                            // nothing opaque sits above it, beside it, or in the 12dp gap, so the
+                            // shelves stay sharp there. The fade lives on the nav row alone.
                             val showCard = isShowMiniPlayer && !useFoldingBar && !killmonBlocksChrome
                             if (!useFoldingBar && !showCard) {
                                 Box(
@@ -585,65 +590,59 @@ fun App(
                                         .fillMaxWidth()
                                         .height(72.dp)
                                         .background(
-                                            Brush.verticalGradient(
-                                                0f to Color(0x00000000),
-                                                0.4f to Color(0x99000000),
-                                                0.75f to Color(0xF2000000),
-                                                1f to Color(0xFF000000),
+                                            smoothScrimBrush(
+                                                from = Color.Black.copy(alpha = 0f),
+                                                to = KillmonBarScrimTop,
                                             ),
                                         ),
                                 )
                             }
-                            Column(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .then(
-                                        if (!useFoldingBar) {
-                                            // Padding before the black paint, so the 2dp is not a black lip.
-                                            Modifier
-                                                .padding(top = if (showCard) 2.dp else 0.dp)
-                                                .background(Color.Black)
-                                        } else {
-                                            Modifier
-                                        },
-                                    ),
+                            AnimatedVisibility(
+                                showCard,
+                                enter = fadeIn() + slideInHorizontally(),
+                                exit = fadeOut(),
                             ) {
-                                AnimatedVisibility(
-                                    showCard,
-                                    enter = fadeIn() + slideInHorizontally(),
-                                    exit = fadeOut(),
-                                ) {
-                                    MiniPlayer(
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 12.dp)
-                                            .padding(bottom = 12.dp)
-                                            .height(72.dp),
-                                        backdrop = backdrop,
-                                        navController = navController,
-                                        onClick = {
-                                            isShowNowPlaylistScreen = true
-                                        },
-                                        onClose = {
-                                            viewModel.stopPlayer()
-                                            viewModel.isServiceRunning = false
-                                        },
-                                    )
+                                MiniPlayer(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp)
+                                        .padding(top = 2.dp, bottom = 12.dp)
+                                        .height(72.dp),
+                                    backdrop = backdrop,
+                                    navController = navController,
+                                    onClick = {
+                                        isShowNowPlaylistScreen = true
+                                    },
+                                    onClose = {
+                                        viewModel.stopPlayer()
+                                        viewModel.isServiceRunning = false
+                                    },
+                                )
+                            }
+                            if (useFoldingBar) {
+                                LiquidGlassAppBottomNavigationBar(
+                                    navController = navController,
+                                    backdrop = backdrop,
+                                    viewModel = viewModel,
+                                    onOpenNowPlaying = { isShowNowPlaylistScreen = true },
+                                    isScrolledToTop = isScrolledToTop,
+                                    showAnalyticsTab = showAnalyticsTab,
+                                    showMixForYouTab = showMixForYouTab,
+                                    liquidGlass = isLiquidGlassEnabled == TRUE,
+                                ) { klass ->
+                                    viewModel.reloadDestination(klass)
                                 }
-                                if (useFoldingBar) {
-                                    LiquidGlassAppBottomNavigationBar(
-                                        navController = navController,
-                                        backdrop = backdrop,
-                                        viewModel = viewModel,
-                                        onOpenNowPlaying = { isShowNowPlaylistScreen = true },
-                                        isScrolledToTop = isScrolledToTop,
-                                        showAnalyticsTab = showAnalyticsTab,
-                                        showMixForYouTab = showMixForYouTab,
-                                        liquidGlass = isLiquidGlassEnabled == TRUE,
-                                    ) { klass ->
-                                        viewModel.reloadDestination(klass)
-                                    }
-                                } else {
+                            } else {
+                                Box(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .background(
+                                            smoothScrimBrush(
+                                                from = KillmonBarScrimTop,
+                                                to = KillmonBarScrimBottom,
+                                            ),
+                                        ),
+                                ) {
                                     AppBottomNavigationBar(
                                         navController = navController,
                                         showAnalyticsTab = showAnalyticsTab,

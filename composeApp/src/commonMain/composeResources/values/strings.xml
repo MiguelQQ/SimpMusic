@@ -121,6 +121,7 @@
     <string name="top_artists">Top artists</string>
     <string name="your_playlist">Your Playlist</string>
     <string name="lyrics">Lyrics</string>
+    <string name="lyrics_unavailable">Lyrics unavailable</string>
     <string name="all">All</string>
     <string name="videos">Videos</string>
     <string name="content">Content</string>

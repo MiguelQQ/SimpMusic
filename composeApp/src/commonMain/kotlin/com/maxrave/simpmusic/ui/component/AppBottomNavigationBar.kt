@@ -63,7 +63,7 @@ private val NavUnselected = Color(0xFFB3B3B3)
 /**
  * Killmon phone bar: four equal slots (Inicio, Buscar, Tu biblioteca, Crear), the current glyphs
  * at 28 dp with a label underneath. Selected is white and bold. No pill and no indicator fill.
- * The scrim behind it lives in [App], so this row stays transparent and the black shows through.
+ * The scrim behind it lives in [App]: a soft translucent gradient, so this row stays transparent.
  */
 @Composable
 fun AppBottomNavigationBar(

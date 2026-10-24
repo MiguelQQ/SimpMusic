@@ -175,6 +175,7 @@ import simpmusic.composeapp.generated.resources.like_and_dislike
 import simpmusic.composeapp.generated.resources.line_synced
 import simpmusic.composeapp.generated.resources.lyrics
 import simpmusic.composeapp.generated.resources.lyrics_offset
+import simpmusic.composeapp.generated.resources.lyrics_unavailable
 import simpmusic.composeapp.generated.resources.now_playing_upper
 import simpmusic.composeapp.generated.resources.playing_on_device
 import simpmusic.composeapp.generated.resources.published_at
@@ -1293,6 +1294,33 @@ fun NowPlayingContentSpotify(
                     }
                     Column(Modifier.padding(horizontal = 20.dp)) {
                         // Lyrics Layout
+                        AnimatedVisibility(
+                            visible = state.screenData.lyricsData == null && state.screenData.lyricsUnavailable,
+                            modifier = Modifier.padding(top = 10.dp),
+                        ) {
+                            ElevatedCard(
+                                onClick = {},
+                                shape = RoundedCornerShape(8.dp),
+                                colors =
+                                    CardDefaults.elevatedCardColors().copy(
+                                        containerColor = state.startColor.value,
+                                    ),
+                            ) {
+                                Column(modifier = Modifier.padding(15.dp)) {
+                                    Text(
+                                        text = stringResource(Res.string.lyrics),
+                                        style = typo().labelMedium,
+                                        color = Color.White,
+                                    )
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Text(
+                                        text = stringResource(Res.string.lyrics_unavailable),
+                                        style = typo().bodyLarge,
+                                        color = Color.White,
+                                    )
+                                }
+                            }
+                        }
                         AnimatedVisibility(
                             visible = state.screenData.lyricsData != null,
                             modifier = Modifier.padding(top = 10.dp),

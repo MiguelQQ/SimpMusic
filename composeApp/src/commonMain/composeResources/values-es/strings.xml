@@ -113,6 +113,7 @@
     <string name="top_artists">Artistas más escuchados</string>
     <string name="your_playlist">Tu lista</string>
     <string name="lyrics">Letras</string>
+    <string name="lyrics_unavailable">Letra no disponible</string>
     <string name="all">Todo</string>
     <string name="videos">Videos</string>
     <string name="content">Contenido</string>
