@@ -12,6 +12,9 @@ Logo grande (`app_icon`) y el texto "Killmon Music", fondo negro y acentos verde
 ## Versión
 `versionName` 0.7.0 y `versionCode` 65.
 
+## Calidad de audio por defecto
+En una instalación nueva, la calidad de música para reproducir y para descargar es la más alta de la lista: "High Opus - 256kps (YT Premium)". Si YouTube no manda ese Opus, se usa el AAC de 256 kbps. Si la cuenta no tiene ninguno de los dos, suena o se descarga el audio más alto que sí llegue. No hay un ajuste distinto para Wi-Fi y para datos: solo existen Calidad y Calidad de descarga. La calidad de vídeo sigue en 720p. Quien ya eligió una calidad la conserva: no se reescribe la etiqueta guardada.
+
 ## Guion de Pruebas QA
 
 1. Instala el APK 0.7.0 (versionCode 65). Si el teléfono ya tenía Killmon Music, borra los datos de la app. Ábrela. No debe asomar Inicio ni la barra de abajo. Sale una pantalla negra con el logo grande de Killmon Music, el nombre "Killmon Music" y el formulario de iniciar sesión, en verde y cian. No hay botón para omitir ni "Iniciar sesión en YouTube".
@@ -25,3 +28,7 @@ Logo grande (`app_icon`) y el texto "Killmon Music", fondo negro y acentos verde
 9. Entra con la misma cuenta. En Cuenta Killmon pulsa "Eliminar cuenta". Con una contraseña mala debe decir que no es correcta y seguir en la cuenta. Con la contraseña real, confirmas. Vuelves a la pantalla de acceso y atrás cierra la app. Ese correo ya no puede entrar.
 10. Crea la cuenta otra vez, llega a Inicio y cierra la app desde el recents del teléfono. Ábrela de nuevo. Tras la pantalla negra de comprobación entras directo a Inicio, sin ver el formulario y sin un parpadeo de Inicio que luego salte al login. El avatar sigue con tu nombre y tu correo de Killmon.
 11. En Ajustes del teléfono, Aplicaciones, Killmon Music: la versión es 0.7.0.
+12. Con los datos de la app borrados, entra en la cuenta y abre Ajustes. "Calidad" y "Calidad de descarga" dicen "High Opus - 256kps (YT Premium)" sin que las toques. "Calidad de vídeo" y "Calidad de descarga de vídeo" siguen en 720p. No hay una fila aparte de calidad para Wi-Fi o para datos móviles.
+13. Reproduce una canción. Con una cuenta de YouTube que tenga audio de 256 kbps, suena ese (Opus, o AAC si YouTube no manda Opus). Sin ese audio, suena el más alto que sí llegue y la canción no se queda en silencio. En el reproductor, la etiqueta de calidad no es "Low - 66kps" si hay un formato mejor.
+14. Descarga esa canción sin cambiar "Calidad de descarga". El aviso y el archivo usan la calidad alta por defecto, la misma que en el paso 12.
+15. En un teléfono que ya tenía Killmon Music con otra calidad guardada (por ejemplo "Low - 66kps" o "Medium - 129kps" en Calidad, en Calidad de descarga, o en las dos), instala este APK sin borrar los datos. Abre Ajustes: esas filas siguen mostrando lo que estaba guardado. Reproduce y descarga: no suben solas a 256 kbps.

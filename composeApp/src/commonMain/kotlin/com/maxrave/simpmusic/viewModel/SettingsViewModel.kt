@@ -1266,7 +1266,7 @@ class SettingsViewModel(
     fun changeQuality(qualityItem: String?) {
         viewModelScope.launch {
             log("changeQuality: $qualityItem")
-            dataStoreManager.setQuality(qualityItem ?: QUALITY.items.first().toString())
+            dataStoreManager.setQuality(qualityItem ?: QUALITY.defaultLabel)
             getQuality()
         }
     }
