@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.StringResource
@@ -276,9 +277,52 @@ class SearchViewModel(
         }
     }
 
+    /**
+     * Only the newest query may write results: a slower, older request would otherwise land on
+     * top of the one the user is actually looking at (live search fires while they type).
+     */
+    private var searchJob: Job? = null
+    private var lastSearch: Pair<String, SearchType>? = null
+
+    private fun beginSearch(
+        query: String,
+        type: SearchType,
+    ) {
+        searchJob?.cancel()
+        lastSearch = query to type
+    }
+
+    /**
+     * Search-as-you-type: runs the search for the selected chip unless that exact query is already
+     * loaded or loading, so submitting what live search just fetched costs nothing.
+     */
+    fun searchLive(query: String) {
+        val type = _searchScreenState.value.searchType
+        if (lastSearch == (query to type) && _searchScreenUIState.value !is SearchScreenUIState.Error) return
+        search(query, type)
+    }
+
+    fun search(
+        query: String,
+        type: SearchType = _searchScreenState.value.searchType,
+    ) {
+        when (type) {
+            SearchType.ALL -> searchAll(query)
+            SearchType.SONGS -> searchSongs(query)
+            SearchType.VIDEOS -> searchVideos(query)
+            SearchType.ALBUMS -> searchAlbums(query)
+            SearchType.ARTISTS -> searchArtists(query)
+            SearchType.PLAYLISTS -> searchPlaylists(query)
+            SearchType.FEATURED_PLAYLISTS -> searchFeaturedPlaylist(query)
+            SearchType.PODCASTS -> searchPodcast(query)
+        }
+    }
+
     fun searchSongs(query: String) {
+        beginSearch(query, SearchType.SONGS)
         _searchScreenUIState.value = SearchScreenUIState.Loading
-        viewModelScope.launch {
+        searchJob =
+            viewModelScope.launch {
             searchRepository.getSearchDataSong(query).collect { values ->
                 when (values) {
                     is Resource.Success -> {
@@ -299,8 +343,10 @@ class SearchViewModel(
     }
 
     fun searchAll(query: String) {
+        beginSearch(query, SearchType.ALL)
         _searchScreenUIState.value = SearchScreenUIState.Loading
-        viewModelScope.launch {
+        searchJob =
+            viewModelScope.launch {
             var song = ArrayList<SongsResult>()
             val video = ArrayList<VideosResult>()
             var album = ArrayList<AlbumsResult>()
@@ -450,8 +496,10 @@ class SearchViewModel(
     }
 
     fun searchAlbums(query: String) {
+        beginSearch(query, SearchType.ALBUMS)
         _searchScreenUIState.value = SearchScreenUIState.Loading
-        viewModelScope.launch {
+        searchJob =
+            viewModelScope.launch {
             searchRepository.getSearchDataAlbum(query).collect { values ->
                 when (values) {
                     is Resource.Success -> {
@@ -475,8 +523,10 @@ class SearchViewModel(
     }
 
     fun searchFeaturedPlaylist(query: String) {
+        beginSearch(query, SearchType.FEATURED_PLAYLISTS)
         _searchScreenUIState.value = SearchScreenUIState.Loading
-        viewModelScope.launch {
+        searchJob =
+            viewModelScope.launch {
             searchRepository.getSearchDataFeaturedPlaylist(query).collect { values ->
                 when (values) {
                     is Resource.Success -> {
@@ -500,8 +550,10 @@ class SearchViewModel(
     }
 
     fun searchPodcast(query: String) {
+        beginSearch(query, SearchType.PODCASTS)
         _searchScreenUIState.value = SearchScreenUIState.Loading
-        viewModelScope.launch {
+        searchJob =
+            viewModelScope.launch {
             searchRepository.getSearchDataPodcast(query).collect { values ->
                 when (values) {
                     is Resource.Success -> {
@@ -525,8 +577,10 @@ class SearchViewModel(
     }
 
     fun searchArtists(query: String) {
+        beginSearch(query, SearchType.ARTISTS)
         _searchScreenUIState.value = SearchScreenUIState.Loading
-        viewModelScope.launch {
+        searchJob =
+            viewModelScope.launch {
             searchRepository.getSearchDataArtist(query).collect { values ->
                 when (values) {
                     is Resource.Success -> {
@@ -550,8 +604,10 @@ class SearchViewModel(
     }
 
     fun searchPlaylists(query: String) {
+        beginSearch(query, SearchType.PLAYLISTS)
         _searchScreenUIState.value = SearchScreenUIState.Loading
-        viewModelScope.launch {
+        searchJob =
+            viewModelScope.launch {
             searchRepository.getSearchDataPlaylist(query).collect { values ->
                 when (values) {
                     is Resource.Success -> {
@@ -575,8 +631,10 @@ class SearchViewModel(
     }
 
     fun searchVideos(query: String) {
+        beginSearch(query, SearchType.VIDEOS)
         _searchScreenUIState.value = SearchScreenUIState.Loading
-        viewModelScope.launch {
+        searchJob =
+            viewModelScope.launch {
             searchRepository.getSearchDataVideo(query).collect { values ->
                 when (values) {
                     is Resource.Success -> {

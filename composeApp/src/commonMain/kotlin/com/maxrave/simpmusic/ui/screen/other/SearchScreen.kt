@@ -153,6 +153,7 @@ import dev.chrisbanes.haze.HazeInput
 import dev.chrisbanes.haze.blur.hazeBlur
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
+import com.maxrave.simpmusic.utils.searchUiTypeFor
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -312,9 +313,14 @@ fun SearchScreen(
             isSearchSubmitted = false
             isExpanded = true
         }
-        if (searchText.isNotEmpty() && isFocused) {
-            searchViewModel.suggestQuery(searchText)
-        }
+    }
+
+    // Music results come while typing (YouTube Music search), not a list of text suggestions.
+    LaunchedEffect(searchText) {
+        val query = searchText.trim()
+        if (query.isEmpty() || query.toAppDeepLinkOrNull() != null) return@LaunchedEffect
+        delay(LIVE_SEARCH_DEBOUNCE_MS)
+        searchViewModel.searchLive(query)
     }
 
     LaunchedEffect(isSearchSubmitted) {
@@ -331,15 +337,7 @@ fun SearchScreen(
 
     LaunchedEffect(isExpanded, searchText, isFocused) {
         searchUIType =
-            if (searchText.isNotEmpty() && isExpanded) {
-                SearchUIType.SEARCH_SUGGESTIONS
-            } else if (isFocused && isExpanded) {
-                SearchUIType.SEARCH_HISTORY
-            } else if (searchText.isEmpty()) {
-                SearchUIType.EMPTY
-            } else {
-                SearchUIType.SEARCH_RESULTS
-            }
+            searchUiTypeFor(searchText, isFocused, isExpanded)
     }
 
     //On search icon click while on search screen, open keyboard. Android only feature
@@ -945,18 +943,8 @@ fun SearchScreen(
                                     }
 
                                     SearchScreenUIState.Empty -> {
-                                        // Empty state
-                                        Box(
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentAlignment = Alignment.Center,
-                                        ) {
-                                            Text(
-                                                text = stringResource(Res.string.no_results_found),
-                                                style = typo().titleMedium,
-                                                textAlign = TextAlign.Center,
-                                                modifier = Modifier.fillMaxWidth(),
-                                            )
-                                        }
+                                        // Nothing requested yet (live search is still debouncing).
+                                        Box(modifier = Modifier.fillMaxSize())
                                     }
                                 }
                             }
@@ -1152,6 +1140,8 @@ fun SearchScreen(
         }
     }
 }
+
+private const val LIVE_SEARCH_DEBOUNCE_MS = 450L
 
 @Composable
 fun SuggestItemRow(

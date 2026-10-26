@@ -76,6 +76,7 @@ import com.maxrave.simpmusic.expect.getDownloadFolderPath
 import com.maxrave.simpmusic.expect.isOnUnmeteredNetwork
 import com.maxrave.simpmusic.expect.ui.toByteArray
 import com.maxrave.simpmusic.getPlatform
+import com.maxrave.simpmusic.utils.lyricsAttemptIsStale
 import com.maxrave.simpmusic.utils.VersionManager
 import com.maxrave.simpmusic.utils.decodePromos
 import com.maxrave.simpmusic.utils.shownPromoIds
@@ -191,6 +192,9 @@ class SharedViewModel(
 
     /** The in-flight lyrics fetch. Cancelled when the track changes so a late result cannot land. */
     private var lyricsJob: Job? = null
+
+    /** The track and length the last lyrics fetch ran for, so a jittering duration cannot re-run it. */
+    private var lastLyricsAttempt: Pair<String, Int>? = null
 
     private val _intent: MutableStateFlow<GenericIntent?> = MutableStateFlow(null)
     val intent: StateFlow<GenericIntent?> = _intent
@@ -340,9 +344,13 @@ class SharedViewModel(
                                     // A fetch already running for this track is left alone. Starting
                                     // another one here cancelled the first whenever the player
                                     // reported the length a moment after the track change.
-                                    if (nowPlayingScreenData.value.lyricsData == null && lyricsJob?.isActive != true) {
+                                    val durationSec = (timeline.total / 1000).toInt()
+                                    if (nowPlayingScreenData.value.lyricsData == null &&
+                                        lyricsJob?.isActive != true &&
+                                        lyricsAttemptIsStale(lastLyricsAttempt, song.videoId, durationSec)
+                                    ) {
                                         Logger.w(tag, "Get lyrics from format")
-                                        getLyricsFromFormat(nowPlaying.mediaItem.isVideo(), song, (timeline.total / 1000).toInt())
+                                        getLyricsFromFormat(nowPlaying.mediaItem.isVideo(), song, durationSec)
                                     }
                                 }
                             }
@@ -402,6 +410,7 @@ class SharedViewModel(
                     canvasJob?.cancel()
                     lyricsJob?.cancel()
                     lyricsJob = null
+                    lastLyricsAttempt = null
                     resetLyricsVoteState()
                     _nowPlayingScreenData.value = NowPlayingScreenData.initial()
 
@@ -1407,7 +1416,7 @@ class SharedViewModel(
             dataStoreManager.helpBuildLyricsDatabase.first() == TRUE &&
                 lyricsProvider != LyricsProvider.SIMPMUSIC
         coroutineContext.ensureActive()
-        if (_nowPlayingState.value?.songEntity?.videoId == videoId) {
+        if (lyricsStillFor(videoId)) {
             val track = _nowPlayingState.value?.track
             when (isTranslatedLyrics) {
                 true -> {
@@ -1421,10 +1430,13 @@ class SharedViewModel(
                     }
                     _nowPlayingScreenData.update {
                         it.copy(
+                            // Only onto the lyrics of THIS track: a translation that outlived its
+                            // song must never attach to the next song's lines.
                             lyricsData =
-                                it.lyricsData?.copy(
-                                    translatedLyrics = lyrics to lyricsProvider,
-                                ),
+                                it.lyricsData
+                                    ?.takeIf { data -> data.videoId == videoId }
+                                    ?.copy(translatedLyrics = lyrics to lyricsProvider)
+                                    ?: it.lyricsData,
                         )
                     }
                     if (shouldSendLyricsToSimpMusic && track != null) {
@@ -1466,6 +1478,7 @@ class SharedViewModel(
                                 NowPlayingScreenData.LyricsData(
                                     lyrics = lyrics,
                                     lyricsProvider = lyricsProvider,
+                                    videoId = videoId,
                                 ),
                         )
                     }
@@ -1517,6 +1530,7 @@ class SharedViewModel(
         if (LiveStreamRegistry.isLive(song.videoId)) return
         if (duration <= 0) return
         lyricsJob?.cancel()
+        lastLyricsAttempt = song.videoId to duration
         _nowPlayingScreenData.update { it.copy(lyricsData = null, lyricsUnavailable = false) }
         resetLyricsVoteState()
         lyricsJob =
@@ -1970,8 +1984,31 @@ class SharedViewModel(
     /** Inserts [track] immediately after the current one and tells the user. */
     fun playNext(track: Track) {
         viewModelScope.launch {
-            mediaPlayerHandler.playNext(track)
+            // With nothing in the player there is no "current song" to go after, and the handler's
+            // insert would silently do nothing while the toast still promised it. Start the track.
+            val idle =
+                mediaPlayerHandler.nowPlaying.value == null ||
+                    mediaPlayerHandler.queueData.value
+                        ?.data
+                        ?.listTracks
+                        .isNullOrEmpty()
+            if (idle) {
+                setQueueData(
+                    QueueData.Data(
+                        listTracks = arrayListOf(track),
+                        firstPlayedTrack = track,
+                        playlistId = "RDAMVM${track.videoId}",
+                        playlistName = track.title,
+                        playlistType = PlaylistType.RADIO,
+                        continuation = null,
+                    ),
+                )
+                loadMediaItem(track, SONG_CLICK)
+                return@launch
+            }
+            // Announce at once: the handler may need a network round trip for a missing artist.
             makeToast(getString(Res.string.will_play_next))
+            mediaPlayerHandler.playNext(track)
         }
     }
 
@@ -2396,6 +2433,8 @@ data class NowPlayingScreenData(
         val lyrics: Lyrics,
         val translatedLyrics: Pair<Lyrics, LyricsProvider>? = null,
         val lyricsProvider: LyricsProvider,
+        /** The track these lines were matched to; anything else must not be drawn or translated. */
+        val videoId: String? = null,
     )
 
     companion object {
