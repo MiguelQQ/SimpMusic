@@ -138,6 +138,7 @@ import com.maxrave.simpmusic.ui.component.EndOfPage
 import com.maxrave.simpmusic.ui.component.ExpandableChip
 import com.maxrave.simpmusic.ui.component.FootgunsStarDialog
 import com.maxrave.simpmusic.ui.component.HomeDiscoverSection
+import com.maxrave.simpmusic.ui.component.HomeQuickAccessGrid
 import com.maxrave.simpmusic.ui.component.HomeItem
 import com.maxrave.simpmusic.ui.component.HomeItemContentPlaylist
 import com.maxrave.simpmusic.ui.component.HomeShimmer
@@ -232,6 +233,11 @@ import simpmusic.composeapp.generated.resources.notification
 import simpmusic.composeapp.generated.resources.party
 import simpmusic.composeapp.generated.resources.play_all
 import simpmusic.composeapp.generated.resources.quick_picks
+import simpmusic.composeapp.generated.resources.favorite
+import simpmusic.composeapp.generated.resources.home_recent_songs
+import simpmusic.composeapp.generated.resources.home_your_albums
+import simpmusic.composeapp.generated.resources.home_your_artists
+import simpmusic.composeapp.generated.resources.home_your_playlists
 import simpmusic.composeapp.generated.resources.relax
 import simpmusic.composeapp.generated.resources.romance
 import simpmusic.composeapp.generated.resources.sad
@@ -330,14 +336,48 @@ fun HomeScreen(
     val continuation by viewModel.continuation.collectAsStateWithLifecycle()
 
     var homeFilter by rememberSaveable { mutableStateOf(HomeChipFilter.ALL) }
+    val recents by viewModel.recents.collectAsStateWithLifecycle()
+    val libraryOverview by viewModel.libraryOverview.collectAsStateWithLifecycle()
+    val quickPicksTitle = stringResource(Res.string.quick_picks)
+    val favoritesTitle = stringResource(Res.string.favorite)
+    val recentSongsTitle = stringResource(Res.string.home_recent_songs)
+    val yourArtistsTitle = stringResource(Res.string.home_your_artists)
+    val yourAlbumsTitle = stringResource(Res.string.home_your_albums)
+    val yourPlaylistsTitle = stringResource(Res.string.home_your_playlists)
+    // Quick picks (a song list, several per column) becomes the small tile grid under the chips, so
+    // it leaves the row list. Matched by its shape as well as its title: the title is translated.
+    val quickPicksShelf =
+        remember(homeShelves, quickPicksTitle) {
+            homeShelves.firstOrNull { it.itemsPerColumn != null || it.title == quickPicksTitle }
+        }
+    val quickTiles =
+        remember(recents, libraryOverview, homeShelves, favoritesTitle) {
+            buildQuickTiles(
+                recents = recents,
+                favoritesCount = libraryOverview?.favorite?.count ?: 0,
+                favoritesThumbnail = libraryOverview?.favorite?.thumbnails?.firstOrNull(),
+                favoritesTitle = favoritesTitle,
+                homeShelves = listOfNotNull(quickPicksShelf) + homeShelves.filter { it !== quickPicksShelf },
+            )
+        }
+    val localShelves =
+        remember(recents, recentSongsTitle, yourArtistsTitle, yourAlbumsTitle, yourPlaylistsTitle) {
+            buildLocalShelves(recents, recentSongsTitle, yourArtistsTitle, yourAlbumsTitle, yourPlaylistsTitle)
+        }
     val visibleShelves =
-        remember(homeShelves, homeFilter) {
+        remember(homeShelves, homeFilter, quickPicksShelf, localShelves) {
             when (homeFilter) {
-                HomeChipFilter.ALL -> homeShelves
-                HomeChipFilter.MUSIC -> homeShelves.filter { !it.isPodcastShelf() }
+                HomeChipFilter.ALL ->
+                    interleaveShelves(homeShelves.filter { it !== quickPicksShelf }, localShelves)
+                HomeChipFilter.MUSIC ->
+                    interleaveShelves(
+                        homeShelves.filter { it !== quickPicksShelf && !it.isPodcastShelf() },
+                        localShelves,
+                    )
                 HomeChipFilter.PODCASTS -> homeShelves.filter { it.isPodcastShelf() }
             }
         }
+    val showQuickGrid = homeFilter != HomeChipFilter.PODCASTS && params == null && quickTiles.isNotEmpty()
 
     val openAppTime by sharedViewModel.openAppTime.collectAsStateWithLifecycle()
     val shareLyricsPermissions by sharedViewModel.shareSavedLyrics.collectAsStateWithLifecycle()
@@ -868,48 +908,16 @@ fun HomeScreen(
                                             ),
                                         )
                                     }
+                                    if (index == 0 && showQuickGrid) {
+                                        HomeQuickAccessGrid(
+                                            tiles = quickTiles,
+                                            navController = navController,
+                                            viewModel = viewModel,
+                                        )
+                                        Spacer(modifier = Modifier.height(20.dp))
+                                    }
                                     Spacer(modifier = Modifier.height(8.dp))
-                                    if (item.title == stringResource(Res.string.quick_picks)) {
-                                        AnimatedVisibility(
-                                            visible =
-                                                homeData.find {
-                                                    it.title ==
-                                                        stringResource(
-                                                            Res.string.quick_picks,
-                                                        )
-                                                } != null,
-                                        ) {
-                                            QuickPicks(
-                                                homeItem =
-                                                    (
-                                                        homeData.find {
-                                                            it.title ==
-                                                                stringResource(
-                                                                    Res.string.quick_picks,
-                                                                )
-                                                        } ?: return@AnimatedVisibility
-                                                    ).let { content ->
-                                                        content.copy(
-                                                            contents =
-                                                                content.contents.mapNotNull { ct ->
-                                                                    ct?.copy(
-                                                                        artists =
-                                                                            ct.artists?.let { art ->
-                                                                                if (art.size > 1) {
-                                                                                    art.dropLast(1)
-                                                                                } else {
-                                                                                    art
-                                                                                }
-                                                                            },
-                                                                    )
-                                                                },
-                                                        )
-                                                    },
-                                                navController = navController,
-                                                viewModel = viewModel,
-                                            )
-                                        }
-                                    } else if (item.isSongCardShelf()) {
+                                    if (item.isSongCardShelf()) {
                                         HomeDiscoverSection(
                                             data = item,
                                             navController = navController,

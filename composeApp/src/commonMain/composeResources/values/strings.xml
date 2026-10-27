@@ -1069,4 +1069,8 @@
     <string name="cd_close">Close</string>
     <string name="cd_album_art">Album art</string>
     <string name="cd_like">Like</string>
+    <string name="home_recent_songs">Recently played</string>
+    <string name="home_your_artists">Your artists</string>
+    <string name="home_your_albums">Your albums</string>
+    <string name="home_your_playlists">Your playlists</string>
 </resources>

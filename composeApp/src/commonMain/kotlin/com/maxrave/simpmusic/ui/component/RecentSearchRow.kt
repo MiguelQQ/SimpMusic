@@ -1,5 +1,6 @@
 package com.maxrave.simpmusic.ui.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -180,14 +181,36 @@ fun RecentSearchRow(
     onClick: () -> Unit,
     onAdd: (() -> Unit)?,
     onRemove: () -> Unit,
+    onPlayNext: ((Track) -> Unit)? = null,
 ) {
     val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    // Only a recent that is a playable song/video can be swiped; artists, albums and playlists
+    // keep a plain row.
+    val playable = if (onPlayNext != null) item.toPlayableTrack() else null
+    PlayNextSwipeBox(
+        enabled = playable != null,
+        onPlayNext = { playable?.let { onPlayNext?.invoke(it) } },
+    ) {
+        RecentSearchRowContent(item, onClick, onAdd, onRemove, dark)
+    }
+}
+
+@Composable
+private fun RecentSearchRowContent(
+    item: RecentSearchItem,
+    onClick: () -> Unit,
+    onAdd: (() -> Unit)?,
+    onRemove: () -> Unit,
+    dark: Boolean,
+) {
     val titleColor = if (dark) Color.White else MaterialTheme.colorScheme.onBackground
     val subtitleColor = if (dark) Color.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant
     Row(
         modifier =
             Modifier
                 .fillMaxWidth()
+                // Opaque, so the green swipe layer behind it never shows through at rest.
+                .background(MaterialTheme.colorScheme.background)
                 .clickable(onClick = onClick)
                 .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,

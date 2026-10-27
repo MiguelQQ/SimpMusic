@@ -7,6 +7,9 @@ import com.maxrave.domain.data.model.home.HomeItem
 import com.maxrave.domain.data.model.home.chart.Chart
 import com.maxrave.domain.data.model.mood.Mood
 import com.maxrave.domain.manager.DataStoreManager
+import com.maxrave.domain.data.model.library.LibraryOverview
+import com.maxrave.domain.data.type.RecentlyType
+import com.maxrave.domain.repository.CommonRepository
 import com.maxrave.domain.repository.HomeRepository
 import com.maxrave.domain.utils.Resource
 import com.maxrave.logger.Logger
@@ -17,6 +20,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -33,7 +37,25 @@ import simpmusic.composeapp.generated.resources.view_count
 class HomeViewModel(
     private val dataStoreManager: DataStoreManager,
     private val homeRepository: HomeRepository,
+    commonRepository: CommonRepository,
 ) : BaseViewModel() {
+    // The listener's own recents (songs, artists, albums, playlists, podcasts), oldest first. Read
+    // on IO by the repository and shared, so Home's quick tiles and history carousels cost one query.
+    val recents: StateFlow<List<RecentlyType>> =
+        commonRepository
+            .getAllRecentData()
+            .catch { emit(emptyList()) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    val libraryOverview: StateFlow<LibraryOverview?> =
+        commonRepository
+            .getLibraryOverview()
+            .catch { }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    // Pages fetched on their own to make Home dense; scrolling to the end still pages as before.
+    private var autoFilledPages = 0
+
     private val _homeItemList: MutableStateFlow<List<HomeItem>> =
         MutableStateFlow(arrayListOf())
     val homeItemList: StateFlow<List<HomeItem>> = _homeItemList
@@ -172,6 +194,7 @@ class HomeViewModel(
         loading.value = true
         loadingChart.value = true
         _homeListState.value = ListState.LOADING
+        autoFilledPages = 0
         homeJob?.cancel()
         homeJob =
             viewModelScope.launch {
@@ -264,8 +287,22 @@ class HomeViewModel(
                         Logger.w("Error", "getHomeItemList: ${chart.message}")
                     }
                     loading.value = false
+                    fillHomeIfSparse()
                 }
             }
+    }
+
+    /**
+     * Spotify's Home is a long run of rows. YouTube sends a handful per response, so while there are
+     * fewer than [TARGET_HOME_SHELVES] and more pages exist, the next page is fetched without waiting
+     * for the listener to scroll — at most [MAX_AUTO_PAGES] times, and only for the plain Home.
+     */
+    private fun fillHomeIfSparse() {
+        val next = _continuation.value
+        if (_params.value != null || next.isNullOrEmpty()) return
+        if (_homeItemList.value.size >= TARGET_HOME_SHELVES || autoFilledPages >= MAX_AUTO_PAGES) return
+        autoFilledPages++
+        getContinueHomeItem(next)
     }
 
     /** A shelf's "Play all": YouTube's own finite queue of that shelf's songs. */
@@ -299,6 +336,7 @@ class HomeViewModel(
                                     _homeListState.value = ListState.PAGINATION_EXHAUST
                                 } else {
                                     _homeListState.value = ListState.IDLE
+                                    fillHomeIfSparse()
                                 }
                             }
 
@@ -331,6 +369,9 @@ class HomeViewModel(
     }
 
     companion object {
+        const val TARGET_HOME_SHELVES = 12
+        const val MAX_AUTO_PAGES = 3
+
         // Home params
         const val HOME_PARAMS_RELAX = "ggM8SgQIBxADSgQIBRABSgQICRABSgQIChABSgQIDRABSgQICBABSgQIBBABSgQIDhABSgQIAxABSgQIBhAB"
         const val HOME_PARAMS_SLEEP = "ggM8SgQIBxABSgQIBRADSgQICRABSgQIChABSgQIDRABSgQICBABSgQIBBABSgQIDhABSgQIAxABSgQIBhAB"

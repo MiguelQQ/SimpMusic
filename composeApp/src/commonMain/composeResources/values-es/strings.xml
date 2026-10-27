@@ -1069,4 +1069,8 @@
         <item quantity="one">%1$d artista</item>
         <item quantity="other">%1$d artistas</item>
     </plurals>
+    <string name="home_recent_songs">Escuchado recientemente</string>
+    <string name="home_your_artists">Tus artistas</string>
+    <string name="home_your_albums">Tus álbumes</string>
+    <string name="home_your_playlists">Tus playlists</string>
 </resources>

@@ -563,6 +563,7 @@ fun SearchScreen(
                                         }
                                     },
                                 onRemove = { searchViewModel.deleteRecent(item.id) },
+                                onPlayNext = { sharedViewModel.playNext(it) },
                             )
                         }
                         if (recentSearches.isNotEmpty()) {
