@@ -20,18 +20,6 @@ import kotlinx.coroutines.launch
 class ListenTogetherSettingsViewModel(
     private val dataStore: DataStoreManager,
 ) : ViewModel() {
-    val serverUrl: StateFlow<String> =
-        dataStore
-            .getString(KEY_SERVER_URL)
-            .map { it.orEmpty() }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), "")
-
-    val usingCustomServer: StateFlow<Boolean> =
-        dataStore
-            .getString(KEY_SERVER_URL)
-            .map { !it.isNullOrBlank() }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
-
     val autoApproveJoins: StateFlow<Boolean> = boolFlow(KEY_AUTO_APPROVE_JOINS)
     val autoApproveSuggestions: StateFlow<Boolean> = boolFlow(KEY_AUTO_APPROVE_SUGGESTIONS)
     val followHostVolume: StateFlow<Boolean> = boolFlow(KEY_FOLLOW_HOST_VOLUME, default = true)
@@ -41,12 +29,6 @@ class ListenTogetherSettingsViewModel(
             .getString(KEY_BLOCKLIST)
             .map { raw -> raw.orEmpty().split(SEPARATOR).map { it.trim() }.filter { it.isNotEmpty() } }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-
-    /** Empty clears the override and falls back to [ListenTogetherClient.DEFAULT_SERVER_URL]. */
-    fun setServerUrl(url: String) =
-        viewModelScope.launch { dataStore.putString(KEY_SERVER_URL, url.trim()) }
-
-    fun useDefaultServer() = viewModelScope.launch { dataStore.putString(KEY_SERVER_URL, "") }
 
     fun setAutoApproveJoins(value: Boolean) = putBool(KEY_AUTO_APPROVE_JOINS, value)
 

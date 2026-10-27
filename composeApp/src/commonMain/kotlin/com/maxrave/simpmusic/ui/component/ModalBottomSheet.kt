@@ -201,6 +201,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import simpmusic.composeapp.generated.resources.Res
 import simpmusic.composeapp.generated.resources.add_to_a_playlist
 import simpmusic.composeapp.generated.resources.add_to_queue
+import simpmusic.composeapp.generated.resources.lt_add_to_room
 import simpmusic.composeapp.generated.resources.add_to_queue_disabled_endless
 import simpmusic.composeapp.generated.resources.add_to_queue_disabled_radio
 import simpmusic.composeapp.generated.resources.album
@@ -1938,6 +1939,8 @@ fun NowPlayingBottomSheet(
  */
 @Composable
 fun rememberAddToQueueBlock(): AddToQueueBlock? {
+    val room by koinInject<com.maxrave.domain.repository.ListenTogetherRepository>().room.collectAsState()
+    if (room.inRoom) return null
     val handler = koinInject<MediaPlayerHandler>()
     val dataStoreManager = koinInject<DataStoreManager>()
     val queueData by handler.queueData.collectAsState()
@@ -1955,6 +1958,8 @@ fun rememberAddToQueueBlock(): AddToQueueBlock? {
  */
 @Composable
 fun AddToQueueBlock?.addToQueueLabel(): StringResource {
+    val room by koinInject<com.maxrave.domain.repository.ListenTogetherRepository>().room.collectAsState()
+    if (room.inRoom) return Res.string.lt_add_to_room
     val queueData by koinInject<MediaPlayerHandler>().queueData.collectAsState()
     return when (this) {
         null -> if (queueData?.data?.listTracks.isNullOrEmpty()) Res.string.create_new_queue_and_play else Res.string.add_to_queue

@@ -780,8 +780,6 @@
     <string name="lt_just_asked">זה עתה ביקש להצטרף</string>
     <string name="lt_suggestions">שירים מומלצים</string>
     <string name="lt_leave_room">עזוב חדר</string>
-    <string name="lt_credit_protocol">פרוטוקול האזנה משותפת של Metrolist</string>
-    <string name="lt_credit_compatible">החדרים תואמים ללקוחות Metrolist</string>
     <string name="lt_server">שרת</string>
     <string name="lt_custom_server">שרת מותאם אישית</string>
     <string name="lt_custom_server_desc">הזן כתובת wss:// משלך</string>

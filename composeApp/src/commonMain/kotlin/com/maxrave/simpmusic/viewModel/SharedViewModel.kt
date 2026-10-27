@@ -976,6 +976,10 @@ class SharedViewModel(
         index: Int? = null,
     ) {
         viewModelScope.launch {
+            if (com.maxrave.domain.data.player.JamPlaybackRouter.actions != null) {
+                mediaPlayerHandler.loadMediaItem(track, type, index)
+                return@launch
+            }
             mediaPlayerHandler.clearMediaItems()
             songRepository.insertSong(track.toSongEntity()).lastOrNull()?.let {
                 println("insertSong: $it")

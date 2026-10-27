@@ -375,9 +375,7 @@ private fun ColumnScope.WorkArea(
                     TextButton(onClick = { viewModel.transport("next") }) { Text("Siguiente") }
                 }
             }
-            var trackInput by remember { mutableStateOf("") }
-            OutlinedTextField(value = trackInput, onValueChange = { trackInput = it }, label = { Text("Enlace de YouTube o ID (11 caracteres)") }, modifier = Modifier.fillMaxWidth())
-            TextButton(onClick = { viewModel.addTrack(trackInput); trackInput = "" }) { Text("Añadir a la cola compartida") }
+            Text("Añade canciones desde búsqueda, biblioteca o playlists con los controles habituales de reproducir o añadir a la cola.")
             Text("Cola de la JAM · todos pueden editar")
             state.queue.forEachIndexed { index, track ->
                 val qid = state.queueIds.getOrNull(index)
@@ -575,7 +573,7 @@ private fun ConnectionLine(
         Column(Modifier.weight(1f)) {
             Text(label, style = typo().bodyMedium, color = accent, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
-                "The Meowery · Poland",
+                "Servidor Killmon (AWS)",
                 style = typo().bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -894,6 +892,7 @@ private fun Members(
                         Text(
                             text =
                                 when {
+                                                                        member.playbackFailed -> "Falló la carga de YouTube"
                                                                         member.isBuffering -> "Cargando"
                                     member.isConnected -> "Listo"
                                     else -> "Desconectado"

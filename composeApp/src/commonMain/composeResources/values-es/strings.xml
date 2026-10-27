@@ -712,7 +712,7 @@
     <string name="lt_just_asked">ya has preguntado para unirte</string>
     <string name="lt_leave_room">Salir de la JAM</string>
     <string name="lt_credit_protocol">JAM de Killmon Music</string>
-    <string name="lt_credit_compatible">Audio desde el servidor Killmon · cuenta Killmon requerida</string>
+    <string name="lt_credit_compatible">YouTube directo en cada teléfono · cuenta Killmon requerida</string>
     <string name="lt_server">Servidor</string>
     <string name="lt_custom_server">Servidor personalizado</string>
     <string name="lt_save_server">Guardar servidor</string>
@@ -849,9 +849,9 @@
     <string name="lt_join_room">Entrar a la JAM</string>
     <string name="lt_background_warning">La JAM se reconecta si pierdes la conexión. Al volver, saltas a la posición del anfitrión.</string>
     <string name="lt_suggestions">Canciones sugeridas</string>
-    <string name="lt_default_server_name">The Meowery</string>
-    <string name="lt_default_server_location">Polonia · gestionado por Nyx</string>
-    <string name="lt_custom_server_desc">Escribe tu propia dirección wss://</string>
+    <string name="lt_default_server_name">Killmon</string>
+    <string name="lt_default_server_location">Servidor Killmon (AWS)</string>
+    <string name="lt_custom_server_desc">killmon.seriepokemon.online</string>
     <string name="lt_as_host">Cuando eres anfitrión</string>
     <string name="lt_transfer_host">Hacer anfitrión</string>
     <string name="lt_waiting_approval_desc">Conectando con el servidor Killmon</string>
@@ -1073,4 +1073,5 @@
     <string name="home_your_artists">Tus artistas</string>
     <string name="home_your_albums">Tus álbumes</string>
     <string name="home_your_playlists">Tus playlists</string>
+    <string name="lt_add_to_room">Añadir a la JAM</string>
 </resources>
