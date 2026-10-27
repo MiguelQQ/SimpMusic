@@ -254,6 +254,7 @@ fun MiniPlayer(
     /** Lets the queue's song sheets open artist and album pages; the Desktop capsule's queue needs it. */
     navController: NavController? = null,
 ) {
+    val jamRoom by koinInject<com.maxrave.domain.repository.ListenTogetherRepository>().room.collectAsStateWithLifecycle()
     val isLiquidGlassEnabled by sharedViewModel.getEnableLiquidGlass().collectAsStateWithLifecycle(DataStoreManager.FALSE)
     val controllerState by sharedViewModel.controllerState.collectAsStateWithLifecycle()
     val timelineState by sharedViewModel.timeline.collectAsStateWithLifecycle()
@@ -455,7 +456,7 @@ fun MiniPlayer(
                                     model =
                                         ImageRequest
                                             .Builder(LocalPlatformContext.current)
-                                            .data(songEntity?.thumbnails)
+                                            .data(if (jamRoom.inRoom) jamRoom.currentTrack?.let { it.thumbnail.ifBlank { "https://i.ytimg.com/vi/${it.id}/hqdefault.jpg" } } else songEntity?.thumbnails)
                                             .crossfade(550)
                                             .build(),
                                     placeholder = rememberHolderPainter(),
@@ -510,7 +511,7 @@ fun MiniPlayer(
                                             .align(Alignment.CenterVertically),
                                     ) {
                                         Text(
-                                            text = (target.title).toString(),
+                                            text = (if (jamRoom.inRoom) (if (jamRoom.loading) "En JAM · Cargando/Sincronizando · " else "En JAM · ") else "") + target.title,
                                             style =
                                                 typo().titleSmall.copy(
                                                     fontWeight = FontWeight.Bold,
@@ -799,7 +800,7 @@ fun MiniPlayer(
                                 model =
                                     ImageRequest
                                         .Builder(LocalPlatformContext.current)
-                                        .data(songEntity?.thumbnails)
+                                        .data(if (jamRoom.inRoom) jamRoom.currentTrack?.let { it.thumbnail.ifBlank { "https://i.ytimg.com/vi/${it.id}/hqdefault.jpg" } } else songEntity?.thumbnails)
                                         .crossfade(550)
                                         .build(),
                                 placeholder = rememberHolderPainter(),
@@ -843,7 +844,7 @@ fun MiniPlayer(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
-                                text = (songEntity?.title ?: "").toString(),
+                                text = (if (jamRoom.inRoom) (if (jamRoom.loading) "En JAM · Cargando/Sincronizando · " else "En JAM · ") else "") + (songEntity?.title ?: jamRoom.currentTrack?.title.orEmpty()),
                                 // labelSmall is 14sp — oversized against a 40dp artwork; keep its
                                 // weight, drop the size a notch.
                                 style = typo().labelSmall.copy(fontSize = 12.sp),

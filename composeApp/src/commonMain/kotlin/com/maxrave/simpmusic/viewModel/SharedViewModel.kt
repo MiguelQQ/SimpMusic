@@ -151,6 +151,7 @@ class SharedViewModel(
     private val playlistRepository: PlaylistRepository,
     private val lyricsCanvasRepository: LyricsCanvasRepository,
     private val cacheRepository: CacheRepository,
+    private val listenTogetherRepository: com.maxrave.domain.repository.ListenTogetherRepository,
 ) : BaseViewModel() {
     var isFirstLiked: Boolean = false
     var isFirstMiniplayer: Boolean = false
@@ -588,7 +589,12 @@ class SharedViewModel(
             val controllerJob =
                 launch {
                     Logger.w(tag, "ControllerJob is running")
-                    mediaPlayerHandler.controlState.collectLatest {
+                    combine(mediaPlayerHandler.controlState, listenTogetherRepository.room) { controls, room ->
+                        if (room.inRoom) {
+                            val index = room.queue.indexOfFirst { it.id == room.currentTrack?.id }
+                            controls.copy(isNextAvailable = index < room.queue.lastIndex, isPreviousAvailable = index >= 0)
+                        } else controls
+                    }.collectLatest {
                         Logger.w(tag, "ControlState is $it")
                         _controllerState.value = it
                         // Propagate crossfade state to timeline so UI can react

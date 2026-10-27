@@ -363,31 +363,7 @@ private fun ColumnScope.WorkArea(
                     Suggestions(state.suggestions, viewModel::approveSuggestion, viewModel::rejectSuggestion)
                 }
             }
-            if (state.gateTimedOut && state.isHost) {
-                Text("Hay miembros que siguen cargando. Puedes iniciar; se unirán al segundo actual cuando estén listos.")
-                PrimaryButton(text = "Forzar reproducción", enabled = true, onClick = viewModel::forcePlay)
-            }
-            state.currentTrack?.let { Text("Sonando: ${it.title}") }
-            if (state.isHost) {
-                Row {
-                    TextButton(onClick = { viewModel.transport("prev") }) { Text("Anterior") }
-                    TextButton(onClick = { viewModel.transport(if (state.isPlaying) "pause" else "play") }) { Text(if (state.isPlaying) "Pausar" else "Reproducir") }
-                    TextButton(onClick = { viewModel.transport("next") }) { Text("Siguiente") }
-                }
-            }
-            Text("Añade canciones desde búsqueda, biblioteca o playlists con los controles habituales de reproducir o añadir a la cola.")
-            Text("Cola de la JAM · todos pueden editar")
-            state.queue.forEachIndexed { index, track ->
-                val qid = state.queueIds.getOrNull(index)
-                Column {
-                    Text("${index + 1}. ${track.title}")
-                    Row {
-                        TextButton(enabled = qid != null && index > 0, onClick = { qid?.let { viewModel.moveTrack(it, index - 1) } }) { Text("Subir") }
-                        TextButton(enabled = qid != null && index < state.queue.lastIndex, onClick = { qid?.let { viewModel.moveTrack(it, index + 1) } }) { Text("Bajar") }
-                        TextButton(enabled = qid != null, onClick = { qid?.let(viewModel::removeTrack) }) { Text("Quitar") }
-                    }
-                }
-            }
+            Text("Controla la música y la cola compartida desde el reproductor habitual.")
             Members(
                 members = state.members,
                 selfId = state.selfUserId,
@@ -643,9 +619,9 @@ private fun RoomCodePoster(
             Text(
                 text =
                     if (state.isHost) {
-                        "You are the host · ${state.members.size} listening"
+                        "Eres anfitrión · ${state.members.size} miembros · todos controlan"
                     } else {
-                        "${state.members.firstOrNull { it.isHost }?.username.orEmpty()} controla la reproducción"
+                        "Anfitrión: ${state.members.firstOrNull { it.isHost }?.username.orEmpty()} · todos controlan"
                     },
                 style = typo().bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
