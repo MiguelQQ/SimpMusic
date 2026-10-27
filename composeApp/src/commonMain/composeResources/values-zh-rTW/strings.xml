@@ -731,7 +731,7 @@
     <string name="exit_selection">退出選取模式</string>
     <string name="remove_from_playlist">從播放清單移除</string>
     <!-- Listen Together -->
-    <string name="listen_together">Listen Together</string>
+    <string name="listen_together">JAM</string>
     <string name="lt_tagline">無論心之所向，共同聆聽你所愛。創建一個房間並分享房間代碼，與朋友一同聆聽吧。</string>
     <string name="lt_not_connected">未連線</string>
     <string name="lt_connected">已連線</string>

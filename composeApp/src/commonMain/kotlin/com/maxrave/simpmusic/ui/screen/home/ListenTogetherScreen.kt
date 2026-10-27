@@ -42,6 +42,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -311,11 +313,11 @@ fun ListenTogetherScreen(
                 managing = null
             },
             onKick = {
-                viewModel.kickUser(member.userId)
+                viewModel.transferHost(member.userId)
                 managing = null
             },
             onBlock = {
-                viewModel.blockAndKick(member.userId, member.username)
+                viewModel.transferHost(member.userId)
                 managing = null
             },
             onDismiss = { managing = null },
@@ -361,6 +363,33 @@ private fun ColumnScope.WorkArea(
                     Suggestions(state.suggestions, viewModel::approveSuggestion, viewModel::rejectSuggestion)
                 }
             }
+            if (state.gateTimedOut && state.isHost) {
+                Text("Hay miembros que siguen cargando. Puedes iniciar; se unirán al segundo actual cuando estén listos.")
+                PrimaryButton(text = "Forzar reproducción", enabled = true, onClick = viewModel::forcePlay)
+            }
+            state.currentTrack?.let { Text("Sonando: ${it.title}") }
+            if (state.isHost) {
+                Row {
+                    TextButton(onClick = { viewModel.transport("prev") }) { Text("Anterior") }
+                    TextButton(onClick = { viewModel.transport(if (state.isPlaying) "pause" else "play") }) { Text(if (state.isPlaying) "Pausar" else "Reproducir") }
+                    TextButton(onClick = { viewModel.transport("next") }) { Text("Siguiente") }
+                }
+            }
+            var trackInput by remember { mutableStateOf("") }
+            OutlinedTextField(value = trackInput, onValueChange = { trackInput = it }, label = { Text("Enlace de YouTube o ID (11 caracteres)") }, modifier = Modifier.fillMaxWidth())
+            TextButton(onClick = { viewModel.addTrack(trackInput); trackInput = "" }) { Text("Añadir a la cola compartida") }
+            Text("Cola de la JAM · todos pueden editar")
+            state.queue.forEachIndexed { index, track ->
+                val qid = state.queueIds.getOrNull(index)
+                Column {
+                    Text("${index + 1}. ${track.title}")
+                    Row {
+                        TextButton(enabled = qid != null && index > 0, onClick = { qid?.let { viewModel.moveTrack(it, index - 1) } }) { Text("Subir") }
+                        TextButton(enabled = qid != null && index < state.queue.lastIndex, onClick = { qid?.let { viewModel.moveTrack(it, index + 1) } }) { Text("Bajar") }
+                        TextButton(enabled = qid != null, onClick = { qid?.let(viewModel::removeTrack) }) { Text("Quitar") }
+                    }
+                }
+            }
             Members(
                 members = state.members,
                 selfId = state.selfUserId,
@@ -376,11 +405,11 @@ private fun ColumnScope.WorkArea(
         }
 
         else -> {
-            NameField(displayName, viewModel::onDisplayNameChange)
+            Text("Se usa el nombre de tu cuenta Killmon")
 
             PrimaryButton(
                 text = stringResource(Res.string.lt_create_room),
-                enabled = displayName.isNotBlank() && state.isConnected,
+                enabled = state.isConnected,
                 onClick = viewModel::createRoom,
             )
 
@@ -390,7 +419,7 @@ private fun ColumnScope.WorkArea(
 
             SecondaryButton(
                 text = stringResource(Res.string.lt_join_room),
-                enabled = displayName.isNotBlank() && codeInput.length == ROOM_CODE_LENGTH && state.isConnected,
+                enabled = codeInput.length == ROOM_CODE_LENGTH && state.isConnected,
                 onClick = viewModel::joinRoom,
             )
 
@@ -435,7 +464,7 @@ private fun CreditFooter() {
 }
 
 /** Prefix for the share button; the code alone means nothing to the recipient. */
-private const val SHARE_PREFIX = "Join my Killmon Music room with code "
+private const val SHARE_PREFIX = "https://killmon.seriepokemon.online/jam/?code="
 
 // ───────────────────────────────── structure ─────────────────────────────────
 
@@ -596,7 +625,7 @@ private fun RoomCodePoster(
         Text(
             text =
                 state.roomCode
-                    ?.chunked(4)
+                    ?.chunked(3)
                     ?.joinToString(" ")
                     .orEmpty(),
             // The app's scale stops at 25sp because nothing else has to carry across a room. Sized
@@ -618,7 +647,7 @@ private fun RoomCodePoster(
                     if (state.isHost) {
                         "You are the host · ${state.members.size} listening"
                     } else {
-                        "${state.members.firstOrNull { it.isHost }?.username.orEmpty()} is controlling playback"
+                        "${state.members.firstOrNull { it.isHost }?.username.orEmpty()} controla la reproducción"
                     },
                 style = typo().bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -661,12 +690,12 @@ private fun BufferBanner(names: List<String>) {
     Surface(tint = MaterialTheme.colorScheme.tertiary) {
         Column(Modifier.fillMaxWidth().padding(16.dp)) {
             Text(
-                text = if (names.isEmpty()) "Waiting for everyone" else "Waiting for ${names.joinToString(", ")}",
+                text = if (names.isEmpty()) "Esperando a que los demás carguen…" else "Esperando a que los demás carguen… ${names.joinToString(", ")}",
                 style = typo().bodyMedium,
                 color = MaterialTheme.colorScheme.tertiary,
             )
             Text(
-                "Playback resumes when everyone is ready",
+                "La música empieza cuando todos están listos",
                 style = typo().bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -865,10 +894,9 @@ private fun Members(
                         Text(
                             text =
                                 when {
-                                    member.userId == selfId -> stringResource(Res.string.lt_you)
-                                    member.isBuffering -> "loading…"
-                                    member.isConnected -> "in sync"
-                                    else -> "disconnected"
+                                                                        member.isBuffering -> "Cargando"
+                                    member.isConnected -> "Listo"
+                                    else -> "Desconectado"
                                 },
                             style = typo().bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -980,18 +1008,7 @@ private fun MemberActionDialog(
                     MaterialTheme.colorScheme.onSurface,
                     onTransferHost,
                 )
-                DialogAction(
-                    stringResource(Res.string.lt_kick),
-                    stringResource(Res.string.lt_kick_desc),
-                    MaterialTheme.colorScheme.error,
-                    onKick,
-                )
-                DialogAction(
-                    stringResource(Res.string.lt_block),
-                    stringResource(Res.string.lt_block_desc),
-                    MaterialTheme.colorScheme.error,
-                    onBlock,
-                )
+
             }
         }
     }

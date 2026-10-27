@@ -139,10 +139,21 @@ class ListenTogetherViewModel(
 
     fun cancelJoin() = repository.cancelJoin()
 
+    fun forcePlay() = repository.forcePlay()
+    fun removeTrack(qid: Long) = repository.removeTrack(qid)
+    fun moveTrack(qid: Long, to: Int) = repository.moveTrack(qid, to)
+    fun transport(type: String) = repository.transport(type)
+    fun addTrack(input: String) {
+        val id = Regex("(?:v=|youtu\\.be/|shorts/)([A-Za-z0-9_-]{11})").find(input)?.groupValues?.get(1) ?: input.trim()
+        if (Regex("^[A-Za-z0-9_-]{11}$").matches(id)) {
+            repository.suggestTrack(com.maxrave.domain.data.model.listentogether.RoomTrack(id = id, title = id, artist = ""))
+        }
+    }
+
     fun clearError() = repository.clearError()
 
     companion object {
-        const val ROOM_CODE_LENGTH = 8
+        const val ROOM_CODE_LENGTH = 6
         private const val MAX_USERNAME_LENGTH = 50
     }
 }

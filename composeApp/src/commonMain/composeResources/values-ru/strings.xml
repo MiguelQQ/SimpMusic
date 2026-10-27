@@ -762,7 +762,7 @@
     <string name="exit_selection">Выйти из выделения</string>
     <string name="remove_from_playlist">Удалить из плейлиста</string>
     <!-- Listen Together -->
-    <string name="listen_together">Listen Together</string>
+    <string name="listen_together">JAM</string>
     <string name="lt_tagline">Одна песня, одна позиция, вместе. Создайте комнату и поделитесь кодом с друзьями.</string>
     <string name="lt_not_connected">Не подключено</string>
     <string name="lt_connected">Подключено</string>

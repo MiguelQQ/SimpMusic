@@ -755,7 +755,7 @@
     <string name="exit_selection">Quitter la sélection</string>
     <string name="remove_from_playlist">Supprimer de la playlist</string>
     <!-- Listen Together -->
-    <string name="listen_together">Écoutons Ensemble</string>
+    <string name="listen_together">JAM</string>
     <string name="lt_tagline">Un titre, un endroit, tous ensemble. Créez une salle et partagez le code avec vos amis.</string>
     <string name="lt_not_connected">Non connecté</string>
     <string name="lt_connected">Connecté</string>

@@ -556,7 +556,7 @@
     <string name="exit_selection">Seçim iptal</string>
     <string name="remove_from_playlist">Çalma listesinden sil</string>
     <!-- Listen Together -->
-    <string name="listen_together">Birlikte Dinleyin</string>
+    <string name="listen_together">JAM</string>
     <string name="lt_tagline">Arkadışınız ile birlikte, tek şarkı, tek pozisyon. Bir oda oluşturun ve kodu arkadaşlarınızla paylaşın.</string>
     <string name="lt_not_connected">Bağlanamadı</string>
     <string name="lt_connected">Bağlandı</string>

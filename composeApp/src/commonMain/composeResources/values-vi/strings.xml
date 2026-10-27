@@ -752,7 +752,7 @@
     <string name="exit_selection">Thoát chế độ chọn</string>
     <string name="remove_from_playlist">Xoá khỏi danh sách phát</string>
     <!-- Listen Together -->
-    <string name="listen_together">Nghe cùng nhau</string>
+    <string name="listen_together">JAM</string>
     <string name="lt_tagline">Cùng một bài, cùng một nhịp, nghe cùng nhau. Tạo phòng và gửi mã cho bạn bè.</string>
     <string name="lt_not_connected">Chưa kết nối</string>
     <string name="lt_connected">Đã kết nối</string>

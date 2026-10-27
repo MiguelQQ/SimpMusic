@@ -759,7 +759,7 @@
     <string name="exit_selection">צא מהבחירה</string>
     <string name="remove_from_playlist">הסר מהפלייליסט</string>
     <!-- Listen Together -->
-    <string name="listen_together">האזן ביחד</string>
+    <string name="listen_together">JAM</string>
     <string name="lt_tagline">שיר אחד, זמן אחד, ביחד. צור חדר ושתף את הקוד עם חברים.</string>
     <string name="lt_not_connected">לא מחובר</string>
     <string name="lt_connected">מחובר</string>

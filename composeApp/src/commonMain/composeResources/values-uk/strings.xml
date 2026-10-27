@@ -739,7 +739,7 @@
     <string name="exit_selection">Вийти з вибору</string>
     <string name="remove_from_playlist">Видалити з плейлісту</string>
     <!-- Listen Together -->
-    <string name="listen_together">Слухайте разом</string>
+    <string name="listen_together">JAM</string>
     <string name="lt_tagline">Одна пісня, одне положення. Створи кімнату та поділися кодом із друзями.</string>
     <string name="lt_not_connected">Не підключено</string>
     <string name="lt_connected">Підключено</string>

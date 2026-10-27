@@ -755,7 +755,7 @@
     <string name="exit_selection">Avsluta markeringsläget</string>
     <string name="remove_from_playlist">Ta bort från spellistan</string>
     <!-- Listen Together -->
-    <string name="listen_together">Lyssna tillsammans</string>
+    <string name="listen_together">JAM</string>
     <string name="lt_tagline">Lyssna på samma låt samtidigt. Skapa ett rum och dela koden med vänner.</string>
     <string name="lt_not_connected">Inte ansluten</string>
     <string name="lt_connected">Ansluten</string>

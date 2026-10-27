@@ -755,7 +755,7 @@ In Killmon Music können nur Playlist-Dateien in unserem eigenen Format importie
     <string name="exit_selection">Auswahl beenden</string>
     <string name="remove_from_playlist">Von der Playlist entfernen</string>
     <!-- Listen Together -->
-    <string name="listen_together">Gemeinsam hören</string>
+    <string name="listen_together">JAM</string>
     <string name="lt_tagline">Ein Song und ein Aufenthaltsort zusammen. Erstelle einen Raum und teile den Code mit Freunden.</string>
     <string name="lt_not_connected">Nicht verbunden</string>
     <string name="lt_connected">Verbunden</string>
