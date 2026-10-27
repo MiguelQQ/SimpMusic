@@ -45,7 +45,7 @@ class KillmonReleaseTest {
     }
 
     @Test
-    fun higherTagBeatsOlderOnesAndSkipsAReleaseWithoutArm64() {
+    fun highestTagFallsBackToReleasePageWithoutArm64() {
         val json =
             """
             [
@@ -80,8 +80,9 @@ class KillmonReleaseTest {
             ]
             """.trimIndent()
         val update = selectKillmonUpdate(json, "0.7.1", 66)
-        assertEquals("v0.7.2-killmon", update?.label)
-        assertEquals("https://example.com/072.apk", update?.downloadUrl)
+        assertEquals("v0.9-killmon", update?.label)
+        assertNull(update?.downloadUrl)
+        assertEquals("https://github.com/MiguelQQ/SimpMusic/releases/tag/v0.9-killmon", update?.releaseUrl)
     }
 
     @Test
@@ -118,6 +119,31 @@ class KillmonReleaseTest {
         assertEquals(SemVer(0, 7, 1), parsed)
         assertTrue(parseKillmonVersion("v0.7-killmon")!! < parseKillmonVersion("0.7.1")!!)
         assertTrue(parseKillmonVersion("v0.8-killmon")!! > parseKillmonVersion("0.7.1")!!)
+    }
+
+    @Test
+    fun numericSemverIncludesKillmonPrereleasesWithoutNotes() {
+        val json = release("v0.7.14-killmon", "", "KillmonMusic-0.7.14-arm64-release.apk")
+        assertEquals("v0.7.14-killmon", selectKillmonUpdate(json, "0.7.13", 78)?.label)
+        assertNull(selectKillmonUpdate(json, "0.7.14", 79))
+        assertNull(selectKillmonUpdate(json, "0.7.15-killmon", 80))
+        assertTrue(parseKillmonVersion("0.7.10")!! > parseKillmonVersion("0.7.9")!!)
+        assertTrue(parseKillmonVersion("0.10.0")!! > parseKillmonVersion("0.9.99")!!)
+    }
+
+    @Test
+    fun plainVersionCodeInNotesBreaksSemverTie() {
+        val json = release("v0.7.14-killmon", "versionCode 80", "KillmonMusic-0.7.14-arm64-release.apk")
+        assertEquals(80, selectKillmonUpdate(json, "0.7.14", 79)?.versionCode)
+        assertNull(selectKillmonUpdate(json, "0.7.14", 80))
+        assertNull(selectKillmonUpdate(json, "0.7.15", 79))
+    }
+
+    @Test
+    fun malformedAndOverflowVersionsDoNotCrash() {
+        assertNull(parseKillmonVersion("banana"))
+        assertNull(parseKillmonVersion("v999999999999999999.7.14-killmon"))
+        assertNull(selectKillmonUpdate(release("v999999999999999999.7.14-killmon", "", "KillmonMusic-0.7.14-arm64-release.apk"), "0.7.13", 78))
     }
 
     private fun release(

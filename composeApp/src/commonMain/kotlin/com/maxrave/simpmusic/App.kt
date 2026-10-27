@@ -166,7 +166,7 @@ fun App(
     val killmonAccount = koinInject<KillmonAccountRepository>()
     val killmonReady by killmonAccount.ready.collectAsStateWithLifecycle()
     val killmonSession by killmonAccount.session.collectAsStateWithLifecycle()
-    KillmonInAppUpdate(active = killmonReady && killmonSession != null)
+    KillmonInAppUpdate(active = true)
     // Latched once. Home is composed only after the stored session has been checked, so a missing
     // session never paints Home for a frame.
     var killmonStart by remember { mutableStateOf<Any?>(null) }

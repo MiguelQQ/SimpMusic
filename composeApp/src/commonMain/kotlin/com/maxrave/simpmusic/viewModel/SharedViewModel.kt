@@ -1249,7 +1249,7 @@ class SharedViewModel(
 
     fun checkForUpdate() {
         // Upstream GitHub and F-Droid checks stay off. Killmon asks MiguelQQ/SimpMusic
-        // from KillmonInAppUpdate after the account session is ready.
+        // from KillmonInAppUpdate on cold launch and process foreground resumes.
         _isCheckingUpdate.value = false
         _updateResponse.value = null
     }

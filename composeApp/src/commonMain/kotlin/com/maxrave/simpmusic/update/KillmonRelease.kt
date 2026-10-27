@@ -8,7 +8,8 @@ import kotlinx.serialization.json.Json
 data class KillmonUpdate(
     /** Tag or release name, shown in the dialog. */
     val label: String,
-    val downloadUrl: String,
+    val downloadUrl: String?,
+    val releaseUrl: String,
     val versionCode: Int?,
 )
 
@@ -31,7 +32,7 @@ private val versionCodePattern = Regex("""(?i)versionCode["'\s:=]+(\d+)""")
 private val arm64Apk = Regex("""^KillmonMusic-.*arm64-release\.apk$""")
 
 /**
- * Newest release that ships a `KillmonMusic-*-arm64-release.apk`, when it is newer than the
+ * Newest release, preferring a `KillmonMusic-*-arm64-release.apk`, when it is newer than the
  * installed build. Drafts are skipped. Prereleases are included. A `-killmon` tag suffix is a
  * label, not a semver prerelease. Returns null on a bad payload or when nothing is newer.
  *
@@ -57,6 +58,7 @@ fun selectKillmonUpdate(
     return KillmonUpdate(
         label = best.label,
         downloadUrl = best.downloadUrl,
+        releaseUrl = best.releaseUrl,
         versionCode = best.versionCode,
     )
 }
@@ -69,15 +71,15 @@ internal fun parseKillmonVersion(raw: String): SemVer? {
     return versionPattern.matchEntire(found)?.toSemVer()
 }
 
-private fun MatchResult.toSemVer(): SemVer {
+private fun MatchResult.toSemVer(): SemVer? {
     val pre =
         groupValues[4]
             .split('.')
             .filter { it.isNotEmpty() && !it.equals("killmon", ignoreCase = true) }
     return SemVer(
-        major = groupValues[1].toInt(),
-        minor = groupValues[2].toIntOrNull() ?: 0,
-        patch = groupValues[3].toIntOrNull() ?: 0,
+        major = groupValues[1].toIntOrNull() ?: return null,
+        minor = if (groupValues[2].isEmpty()) 0 else groupValues[2].toIntOrNull() ?: return null,
+        patch = if (groupValues[3].isEmpty()) 0 else groupValues[3].toIntOrNull() ?: return null,
         pre = pre,
     )
 }
@@ -120,7 +122,8 @@ private fun comparePre(
 
 private data class ReleaseCandidate(
     val label: String,
-    val downloadUrl: String,
+    val downloadUrl: String?,
+    val releaseUrl: String,
     val semver: SemVer,
     val versionCode: Int?,
 )
@@ -143,11 +146,14 @@ private fun GhRelease.toCandidate(): ReleaseCandidate? {
             val name = asset.name.orEmpty()
             val url = asset.browserDownloadUrl.orEmpty()
             arm64Apk.matches(name) && url.startsWith("https://")
-        } ?: return null
+        }
     val label = tagName?.takeIf { it.isNotBlank() } ?: name?.takeIf { it.isNotBlank() } ?: return null
     return ReleaseCandidate(
         label = label,
-        downloadUrl = asset.browserDownloadUrl.orEmpty(),
+        downloadUrl = asset?.browserDownloadUrl,
+        releaseUrl = htmlUrl?.takeIf { it.startsWith("https://github.com/MiguelQQ/SimpMusic/releases/tag/") }
+            ?: tagName?.takeIf { versionPattern.matches(it) }?.let { "https://github.com/MiguelQQ/SimpMusic/releases/tag/$it" }
+            ?: return null,
         semver = semver,
         versionCode = versionCodePattern.find(body.orEmpty())?.groupValues?.get(1)?.toIntOrNull(),
     )
@@ -157,6 +163,7 @@ private fun GhRelease.toCandidate(): ReleaseCandidate? {
 private data class GhRelease(
     @SerialName("tag_name") val tagName: String? = null,
     val name: String? = null,
+    @SerialName("html_url") val htmlUrl: String? = null,
     val draft: Boolean? = null,
     val body: String? = null,
     val assets: List<GhAsset>? = null,

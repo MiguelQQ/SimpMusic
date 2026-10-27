@@ -1,7 +1,7 @@
 [versions]
 # App version
-version-name = "0.7.13"
-version-code = "78"
+version-name = "0.7.14"
+version-code = "79"
 
 android = "9.4.1"
 kotlin = "2.4.21"
@@ -227,6 +227,7 @@ atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu"
 uri = { module = "com.eygraber:uri-kmp", version.ref = "uri" }
 
 #CMP
+androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycle" }
 androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines-android" }
