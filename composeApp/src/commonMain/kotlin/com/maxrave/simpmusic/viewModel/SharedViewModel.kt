@@ -258,7 +258,16 @@ class SharedViewModel(
                 loading = true,
             ),
         )
-    val timeline: StateFlow<TimeLine> = _timeline
+
+    /**
+     * The player's timeline with the room's load gate folded into `loading`, so every progress bar,
+     * mini player and capsule that already shows a spinner for `loading` also shows it while another
+     * phone in a Listen Together room is still loading. Internal code writes [_timeline] only.
+     */
+    val timeline: StateFlow<TimeLine> =
+        combine(_timeline, listenTogetherRepository.room) { line, room ->
+            if (room.showsLoading(line.loading) == line.loading) line else line.copy(loading = true)
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, _timeline.value)
 
     private var _nowPlayingScreenData =
         MutableStateFlow<NowPlayingScreenData>(
@@ -1549,13 +1558,12 @@ class SharedViewModel(
                 val videoId = song.videoId
                 log("Get Lyrics From Format for $videoId", LogLevel.WARN)
                 val artistName = song.artistName
+                // A blank or "null" artist (a room track added without one) is no artist: LRCLIB and
+                // SimpMusic then match on the title alone and answer with another song's lyrics.
+                val firstArtist = artistName?.firstOrNull()?.takeUnless { it.isBlank() || it == "null" }
                 val artist =
-                    if (artistName?.firstOrNull() != null &&
-                        artistName
-                            .firstOrNull()
-                            ?.contains("Various Artists") == false
-                    ) {
-                        artistName.firstOrNull()
+                    if (firstArtist != null && !firstArtist.contains("Various Artists")) {
+                        firstArtist
                     } else {
                         mediaPlayerHandler.nowPlaying
                             .first()

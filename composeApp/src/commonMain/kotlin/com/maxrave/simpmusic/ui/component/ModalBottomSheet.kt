@@ -971,13 +971,8 @@ fun QueueBottomSheet(
     musicServiceHandler: MediaPlayerHandler = koinInject<MediaPlayerHandler>(),
     dataStoreManager: DataStoreManager = koinInject(),
 ) {
-    val jamRoom by org.koin.compose.koinInject<com.maxrave.domain.repository.ListenTogetherRepository>().room.collectAsStateWithLifecycle()
-    if (jamRoom.inRoom) {
-        ModalBottomSheet(onDismissRequest = onDismiss) {
-            JamPlayerQueue(Modifier.fillMaxWidth().height(520.dp))
-        }
-        return
-    }
+    // A Listen Together room uses this same sheet: the room's queue is mirrored into the handler's
+    // queue, and tap / drag / remove / move already travel to the room through JamPlaybackRouter.
     val coroutineScope = rememberCoroutineScope()
     val localDensity = LocalDensity.current
     val windowInsets = WindowInsets.systemBars

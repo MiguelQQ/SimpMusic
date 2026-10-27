@@ -104,11 +104,6 @@ internal fun AppleMusicQueueView(
     dataStoreManager: DataStoreManager = koinInject(),
     musicServiceHandler: MediaPlayerHandler = koinInject(),
 ) {
-    val jamRoom by koinInject<com.maxrave.domain.repository.ListenTogetherRepository>().room.collectAsStateWithLifecycle()
-    if (jamRoom.inRoom) {
-        com.maxrave.simpmusic.ui.component.JamPlayerQueue(modifier.fillMaxSize())
-        return
-    }
     val localDensity = LocalDensity.current
     val coroutineScope = rememberCoroutineScope()
 
