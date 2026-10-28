@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -613,7 +614,8 @@ fun App(
                                         .fillMaxWidth()
                                         .padding(horizontal = 12.dp)
                                         .padding(top = 2.dp, bottom = 12.dp)
-                                        .height(88.dp),
+                                        .wrapContentHeight()
+                                        .heightIn(min = 96.dp),
                                     backdrop = backdrop,
                                     navController = navController,
                                     onClick = {
@@ -676,7 +678,8 @@ fun App(
                                         .fillMaxWidth(0.8f)
                                         .padding(horizontal = 8.dp)
                                         .padding(bottom = 8.dp)
-                                        .height(88.dp)
+                                        .wrapContentHeight()
+                                        .heightIn(min = 96.dp)
                                 } else {
                                     // Floating capsule, Apple Music style: a fixed size so it never
                                     // stretches to the window width, and no haze at all — the capsule

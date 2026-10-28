@@ -388,253 +388,152 @@ fun MiniPlayer(
                             },
                     ),
         ) {
-            Box(modifier = Modifier.fillMaxHeight()) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier =
                         Modifier
-                            .fillMaxSize(),
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
                 ) {
                     Spacer(modifier = Modifier.width(10.dp))
-                    Box(modifier = Modifier.weight(1F)) {
-                        Row(
-                            modifier =
-                                Modifier
-                                    .offset { IntOffset(offsetX.value.roundToInt(), 0) }
-                                    .pointerInput(Unit) {
-                                        detectHorizontalDragGestures(
-                                            onDragStart = {
-                                            },
-                                            onHorizontalDrag = {
-                                                change: PointerInputChange,
-                                                dragAmount: Float,
-                                                ->
-                                                coroutineScope.launch {
-                                                    change.consume()
-                                                    offsetX.animateTo(offsetX.value + dragAmount * 2)
-                                                    Logger.w("MiniPlayer", "Dragged ${offsetX.value}")
-                                                }
-                                            },
-                                            onDragCancel = {
-                                                Logger.w("MiniPlayer", "Drag Cancelled")
-                                                coroutineScope.launch {
-                                                    if (offsetX.value > 200) {
-                                                        sharedViewModel.onUIEvent(UIEvent.Previous)
-                                                    } else if (offsetX.value < -120) {
-                                                        sharedViewModel.onUIEvent(UIEvent.Next)
-                                                    }
-                                                    offsetX.animateTo(0f)
-                                                }
-                                            },
-                                            onDragEnd = {
-                                                Logger.w("MiniPlayer", "Drag Ended")
-                                                coroutineScope.launch {
-                                                    if (offsetX.value > 200) {
-                                                        sharedViewModel.onUIEvent(UIEvent.Previous)
-                                                    } else if (offsetX.value < -120) {
-                                                        sharedViewModel.onUIEvent(UIEvent.Next)
-                                                    }
-                                                    offsetX.animateTo(0f)
-                                                }
-                                            },
-                                        )
-                                    },
-                        ) {
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .size(52.dp)
-                                        .align(Alignment.CenterVertically),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                AsyncImage(
-                                    model =
-                                        ImageRequest
-                                            .Builder(LocalPlatformContext.current)
-                                            .data(if (jamRoom.inRoom) jamRoom.currentTrack?.let { it.thumbnail.ifBlank { "https://i.ytimg.com/vi/${it.id}/hqdefault.jpg" } } else songEntity?.thumbnails)
-                                            .crossfade(550)
-                                            .build(),
-                                    placeholder = rememberHolderPainter(),
-                                    error = rememberHolderPainter(),
-                                    contentDescription = null,
-                                    contentScale = ContentScale.Crop,
-                                    modifier =
-                                        Modifier
-                                            .size(52.dp)
-                                            .clip(RoundedCornerShape(4.dp)),
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            AnimatedContent(
-                                targetState = songEntity,
-                                modifier = Modifier.weight(1F).fillMaxHeight().clipToBounds(),
-                                contentAlignment = Alignment.CenterStart,
-                                transitionSpec = {
-                                    // Compare the incoming number with the previous number.
-                                    if (targetState != initialState) {
-                                        // If the target number is larger, it slides up and fades in
-                                        // while the initial (smaller) number slides up and fades out.
-                                        (
-                                            slideInHorizontally { width ->
-                                                width
-                                            } + fadeIn()
-                                        ).togetherWith(
-                                            slideOutHorizontally { width -> +width } + fadeOut(),
-                                        )
-                                    } else {
-                                        // If the target number is smaller, it slides down and fades in
-                                        // while the initial number slides down and fades out.
-                                        (
-                                            slideInHorizontally { width ->
-                                                +width
-                                            } + fadeIn()
-                                        ).togetherWith(
-                                            slideOutHorizontally { width -> width } + fadeOut(),
-                                        )
-                                    }.using(
-                                        // Clip so the outgoing title cannot paint over «En {dispositivo}».
-                                        SizeTransform(clip = true),
+                    AsyncImage(
+                        model =
+                            ImageRequest
+                                .Builder(LocalPlatformContext.current)
+                                .data(if (jamRoom.inRoom) jamRoom.currentTrack?.let { it.thumbnail.ifBlank { "https://i.ytimg.com/vi/${it.id}/hqdefault.jpg" } } else songEntity?.thumbnails)
+                                .crossfade(550)
+                                .build(),
+                        placeholder = rememberHolderPainter(),
+                        error = rememberHolderPainter(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier =
+                            Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(4.dp)),
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .clipToBounds()
+                                .pointerInput(Unit) {
+                                    detectHorizontalDragGestures(
+                                        onDragStart = {},
+                                        onHorizontalDrag = { change, dragAmount ->
+                                            coroutineScope.launch {
+                                                change.consume()
+                                                offsetX.animateTo(offsetX.value + dragAmount * 2)
+                                            }
+                                        },
+                                        onDragCancel = {
+                                            coroutineScope.launch {
+                                                if (offsetX.value > 200) sharedViewModel.onUIEvent(UIEvent.Previous)
+                                                else if (offsetX.value < -120) sharedViewModel.onUIEvent(UIEvent.Next)
+                                                offsetX.animateTo(0f)
+                                            }
+                                        },
+                                        onDragEnd = {
+                                            coroutineScope.launch {
+                                                if (offsetX.value > 200) sharedViewModel.onUIEvent(UIEvent.Previous)
+                                                else if (offsetX.value < -120) sharedViewModel.onUIEvent(UIEvent.Next)
+                                                offsetX.animateTo(0f)
+                                            }
+                                        },
                                     )
                                 },
-                            ) { target ->
-                                if (target != null) {
-                                    Column(
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .wrapContentHeight()
-                                            .align(Alignment.CenterVertically)
-                                            .clipToBounds(),
-                                    ) {
-                                        Text(
-                                            text = (if (jamRoom.inRoom) (if (jamRoom.loading) "En JAM · Cargando/Sincronizando · " else "En JAM · ") else "") + target.title,
-                                            style =
-                                                typo().titleSmall.copy(
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontSize = 15.sp,
-                                                    lineHeight = 18.sp,
-                                                    color = Color.White,
-                                                ),
-                                            color = Color.White,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            modifier = Modifier.fillMaxWidth(),
-                                        )
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                        ) {
-                                            androidx.compose.animation.AnimatedVisibility(visible = target.isExplicit) {
-                                                ExplicitBadge(
-                                                    modifier =
-                                                        Modifier
-                                                            .size(20.dp)
-                                                            .padding(end = 4.dp),
-                                                )
-                                            }
-                                            Text(
-                                                text = target.artistName?.connectArtists().orEmpty(),
-                                                style =
-                                                    typo().bodySmall.copy(
-                                                        fontSize = 13.sp,
-                                                        lineHeight = 16.sp,
-                                                        color = MiniPlayerArtist,
-                                                    ),
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
-                                                color = MiniPlayerArtist,
-                                                modifier = Modifier.weight(1f),
-                                            )
-                                        }
-                                        if (!connectListeningOn.isNullOrBlank()) {
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                verticalAlignment = Alignment.CenterVertically,
-                                            ) {
-                                                Icon(
-                                                    imageVector = SimpIcons.Speaker,
-                                                    contentDescription = null,
-                                                    tint = MiniPlayerArtist,
-                                                    modifier = Modifier.size(12.dp),
-                                                )
-                                                Spacer(modifier = Modifier.width(4.dp))
-                                                Text(
-                                                    text = "En $connectListeningOn",
-                                                    style =
-                                                        typo().bodySmall.copy(
-                                                            fontSize = 12.sp,
-                                                            lineHeight = 14.sp,
-                                                            color = MiniPlayerArtist,
-                                                        ),
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis,
-                                                    color = MiniPlayerArtist,
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
+                    ) {
+                        val title = songEntity?.title ?: jamRoom.currentTrack?.title.orEmpty()
+                        val jamPrefix =
+                            if (jamRoom.inRoom) {
+                                if (jamRoom.loading) "En JAM · Cargando/Sincronizando · " else "En JAM · "
+                            } else {
+                                ""
                             }
+                        Text(
+                            text = jamPrefix + title,
+                            style =
+                                typo().titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp,
+                                    lineHeight = 18.sp,
+                                    color = Color.White,
+                                ),
+                            color = Color.White,
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.fillMaxWidth().clipToBounds(),
+                        )
+                        Text(
+                            text = songEntity?.artistName?.connectArtists().orEmpty(),
+                            style =
+                                typo().bodySmall.copy(
+                                    fontSize = 13.sp,
+                                    lineHeight = 16.sp,
+                                    color = MiniPlayerArtist,
+                                ),
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Ellipsis,
+                            color = MiniPlayerArtist,
+                            modifier = Modifier.fillMaxWidth().clipToBounds(),
+                        )
+                        if (!connectListeningOn.isNullOrBlank()) {
+                            Text(
+                                text = "En $connectListeningOn",
+                                style =
+                                    typo().bodySmall.copy(
+                                        fontSize = 12.sp,
+                                        lineHeight = 14.sp,
+                                        color = MiniPlayerArtist,
+                                    ),
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Ellipsis,
+                                color = MiniPlayerArtist,
+                                modifier = Modifier.fillMaxWidth().clipToBounds(),
+                            )
                         }
                     }
                     val playColor = Color.White
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.padding(end = 8.dp),
-                    ) {
-                        if (isPlatformCastAvailable()) {
-                            PlatformCastButton(modifier = Modifier.size(MiniPlayerTouch), tint = playColor)
-                        } else {
-                            MiniPlayerGlyph(
-                                imageVector = SimpIcons.MusicCast,
-                                tint = playColor,
-                                onClick = onClick,
+                    MiniPlayerSaveButton(
+                        liked = liked,
+                        onClick = { sharedViewModel.onUIEvent(UIEvent.ToggleLike) },
+                    )
+                    if (loading && connectListeningOn.isNullOrBlank()) {
+                        Box(modifier = Modifier.size(MiniPlayerTouch), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(22.dp),
+                                color = playColor,
+                                strokeWidth = 2.dp,
                             )
                         }
-                        MiniPlayerSaveButton(
-                            liked = liked,
-                            onClick = { sharedViewModel.onUIEvent(UIEvent.ToggleLike) },
+                    } else {
+                        MiniPlayerGlyph(
+                            imageVector = if (isPlaying) SimpIcons.Pause else SimpIcons.PlayArrow,
+                            tint = playColor,
+                            onClick = { sharedViewModel.onUIEvent(UIEvent.PlayPause) },
+                            iconSize = 30.dp,
                         )
-                        Crossfade(targetState = loading, label = "") {
-                            if (it) {
-                                Box(modifier = Modifier.size(MiniPlayerTouch), contentAlignment = Alignment.Center) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(22.dp),
-                                        color = playColor,
-                                        strokeWidth = 2.dp,
-                                    )
-                                }
-                            } else {
-                                MiniPlayerGlyph(
-                                    imageVector = if (isPlaying) SimpIcons.Pause else SimpIcons.PlayArrow,
-                                    tint = playColor,
-                                    onClick = { sharedViewModel.onUIEvent(UIEvent.PlayPause) },
-                                    iconSize = 30.dp,
-                                )
-                            }
-                        }
                     }
+                    Spacer(modifier = Modifier.width(4.dp))
                 }
-                Box(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomCenter),
-                ) {
-                    LeftToRight {
-                        LinearProgressIndicator(
-                            progress = { animatedProgress },
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(2.dp),
-                            color = Color.White,
-                            trackColor = Color.White.copy(alpha = 0.28f),
-                            strokeCap = StrokeCap.Butt,
-                            gapSize = 0.dp,
-                            drawStopIndicator = {},
-                        )
-                    }
+                LeftToRight {
+                    LinearProgressIndicator(
+                        progress = { animatedProgress },
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .height(2.dp),
+                        color = Color.White,
+                        trackColor = Color.White.copy(alpha = 0.28f),
+                        strokeCap = StrokeCap.Butt,
+                        gapSize = 0.dp,
+                        drawStopIndicator = {},
+                    )
                 }
             }
         }
@@ -862,6 +761,7 @@ fun MiniPlayer(
                                 modifier =
                                     Modifier
                                         .fillMaxWidth()
+                                        .clipToBounds()
                                         .wrapContentHeight(
                                             align = Alignment.CenterVertically,
                                         ).basicMarquee(

@@ -679,7 +679,7 @@ class SharedViewModel(
                             shownId = null
                             _connectListeningOn.value = null
                         }
-                        delay(250)
+                        delay(100)
                     }
                 }
             job1.join()
@@ -1040,6 +1040,15 @@ class SharedViewModel(
                 mediaPlayerHandler.loadMediaItem(track, type, index)
                 return@launch
             }
+            run {
+                val queued =
+                    com.maxrave.domain.data.model.connect.queueForRemotePlay(
+                        mediaPlayerHandler.queueData.value?.data?.listTracks.orEmpty(),
+                        track,
+                    )
+                val at = com.maxrave.domain.data.model.connect.indexForRemotePlay(queued, track.videoId, index)
+                if (com.maxrave.domain.data.model.connect.ConnectPlayRouter.redirect(queued, at)) return@launch
+            }
             mediaPlayerHandler.clearMediaItems()
             songRepository.insertSong(track.toSongEntity()).lastOrNull()?.let {
                 println("insertSong: $it")
@@ -1109,23 +1118,23 @@ class SharedViewModel(
         val display = session.toDisplayPlayback(now) ?: return
         val track = session.currentTrack()?.asTrack() ?: return
         val previousId = _nowPlayingState.value?.track?.videoId
-        _nowPlayingState.value =
-            NowPlayingTrackState(
-                mediaItem = track.toGenericMediaItem(),
-                track = track,
-                songEntity = track.toSongEntity(),
-            )
+        // toSongEntity() sella la hora en cada llamada, así que un data class nuevo cada tick
+        // reanimaría el título encima de «En Windows». Solo se cambia la ficha si cambia la pista.
+        if (previousId != track.videoId || _nowPlayingState.value?.songEntity?.title != track.title) {
+            _nowPlayingState.value =
+                NowPlayingTrackState(
+                    mediaItem = track.toGenericMediaItem(),
+                    track = track,
+                    songEntity = track.toSongEntity(),
+                )
+        }
         val device = state.listeningOnDeviceName()
         _connectListeningOn.value = device
-        val artistLine =
-            listOfNotNull(
-                display.artist.takeIf { it.isNotBlank() },
-                device?.let { "En $it" },
-            ).joinToString(" · ")
+        // El artista queda limpio. «En {aparato}» lo pinta solo el mini-player, en su propia línea.
         _nowPlayingScreenData.update {
             it.copy(
                 nowPlayingTitle = display.title.ifBlank { track.title },
-                artistName = artistLine,
+                artistName = display.artist,
                 thumbnailURL = display.artwork,
                 isVideo = false,
             )
@@ -1175,7 +1184,30 @@ class SharedViewModel(
     private fun redirectTransport(action: String, positionMs: Long? = null): Boolean {
         if (!connectRepository.state.value.isFollowingRemote()) return false
         connectRepository.remoteControl(action, positionMs)
+        paintRemoteSession()
         return true
+    }
+
+    /** La barra y el icono siguen el gesto ya, sin esperar al latido. La posición se extrapola desde positionAt. */
+    @OptIn(ExperimentalTime::class)
+    private fun paintRemoteSession() {
+        val session = connectRepository.state.value.session ?: return
+        val now = kotlin.time.Clock.System.now().toEpochMilliseconds()
+        val display = session.toDisplayPlayback(now) ?: return
+        _timeline.update {
+            it.copy(
+                current = display.positionMs,
+                total = display.durationMs.takeIf { duration -> duration > 0L } ?: it.total,
+                loading = false,
+            )
+        }
+        _controllerState.value =
+            _controllerState.value.copy(
+                isPlaying = display.isPlaying,
+                isNextAvailable = session.index < session.queue.lastIndex,
+                isPreviousAvailable = true,
+                isCrossfading = false,
+            )
     }
 
     fun onUIEvent(uiEvent: UIEvent) =
