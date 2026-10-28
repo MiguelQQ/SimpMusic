@@ -149,6 +149,9 @@ import simpmusic.composeapp.generated.resources.update_message
 import simpmusic.composeapp.generated.resources.yes
 import kotlin.time.ExperimentalTime
 
+/** Desktop registers killmonmusic://. simpmusic:// stays so older links and the Android QR payload still open. */
+private fun isKillmonAppScheme(scheme: String?) = scheme == "killmonmusic" || scheme == "simpmusic"
+
 // One continuous dock scrim: transparent at the card top, near-black at the nav icons.
 private val KillmonBarScrimTop = Color.Black.copy(alpha = 0f)
 private val KillmonBarScrimBottom = Color.Black.copy(alpha = 0.93f)
@@ -255,7 +258,7 @@ fun App(
         val data = intent.data
         Logger.d("MainActivity", "onCreate: $data")
         if (data != null) {
-            if (data.scheme == "simpmusic" && data.host == "notification") {
+            if (isKillmonAppScheme(data.scheme) && data.host == "notification") {
                 viewModel.setIntent(null)
                 navController.navigate(
                     NotificationDestination,
@@ -272,7 +275,7 @@ fun App(
                 // of it. The token is handed straight to the shared view model, and the screen
                 // closes itself when it sees a session key appear.
                 token?.let { viewModel.completeLastfmLogin(it) }
-            } else if (data.host == "simpmusic.org" || data.scheme == "simpmusic") {
+            } else if (data.host == "simpmusic.org" || isKillmonAppScheme(data.scheme)) {
                 // https://simpmusic.org/app/watch?v=VIDEO_ID
                 // https://simpmusic.org/app/playlist?list=PLAYLIST_ID
                 // https://simpmusic.org/app/channel/CHANNEL_ID
@@ -283,7 +286,7 @@ fun App(
                 // For simpmusic.org: segments = ["app", "watch"] → appPath = segments[1]
                 // For simpmusic://: host IS the appPath (e.g. host="watch"), segments = []
                 val appPath =
-                    if (data.scheme == "simpmusic") {
+                    if (isKillmonAppScheme(data.scheme)) {
                         data.host
                     } else {
                         segments.getOrNull(1)
@@ -320,7 +323,7 @@ fun App(
                         // simpmusic://channel/UCxxx → segments = ["UCxxx"]
                         // simpmusic.org/app/channel/UCxxx → segments = ["app", "channel", "UCxxx"]
                         val artistId =
-                            if (data.scheme == "simpmusic") {
+                            if (isKillmonAppScheme(data.scheme)) {
                                 segments.firstOrNull()
                             } else {
                                 segments.getOrNull(2)

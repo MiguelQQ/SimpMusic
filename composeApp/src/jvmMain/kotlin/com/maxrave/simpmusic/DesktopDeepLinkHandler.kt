@@ -14,12 +14,9 @@ import java.io.File
  * and the first instance reads it on restore.
  *
  * Supported URI patterns:
- * - simpmusic://open-app?url=<encoded_url>  (redirected from website)
- * - simpmusic://watch?v=VIDEO_ID            (direct scheme)
- * - simpmusic://playlist?list=PLAYLIST_ID   (direct scheme)
- * - simpmusic://channel/CHANNEL_ID          (direct scheme)
- * - simpmusic://album?id=ALBUM_ID           (direct scheme)
- * - https://simpmusic.org/app/...            (web URL passed via args)
+ * - killmonmusic:// and simpmusic:// open-app, watch, playlist, channel, album
+ *   (simpmusic:// stays accepted so Android→Desktop QR login and older links still open)
+ * - YouTube URLs passed via args
  */
 object DesktopDeepLinkHandler {
     private const val TAG = "DesktopDeepLinkHandler"
@@ -91,22 +88,22 @@ object DesktopDeepLinkHandler {
      * Converts a raw URI string into a [GenericIntent] that App.kt can process.
      *
      * Conversion rules:
-     * 1. simpmusic://open-app?url=<encoded_url>
+     * 1. killmonmusic://open-app?url=<encoded_url> (and the older simpmusic:// form)
      *    → Extract the `url` param and use it as intent data
      *
-     * 2. simpmusic://watch?v=xxx, simpmusic://playlist?list=xxx, etc.
-     *    → Convert to https://simpmusic.org/app/watch?v=xxx format
-     *      so App.kt handles it uniformly via the simpmusic.org branch
+     * 2. killmonmusic://watch?v=xxx, playlist, channel, album (and the older simpmusic:// form)
+     *    → Passed through. App.kt reads the scheme. These are not rewritten to simpmusic.org.
      *
-     * 3. https://simpmusic.org/app/... or YouTube URLs
+     * 3. wordbyword://lastfm-auth, YouTube URLs, or a legacy https://simpmusic.org/app/... link
      *    → Pass through as-is
      */
     private fun parseToIntent(uri: String): GenericIntent {
         val parsed = Uri.parse(uri)
 
+        val appScheme = parsed.scheme == "simpmusic" || parsed.scheme == "killmonmusic"
         val actualUri = when {
-            // simpmusic://open-app?url=<encoded_url>
-            parsed.scheme == "simpmusic" && parsed.host == "open-app" -> {
+            // killmonmusic://open-app?url=<encoded_url> (and the older simpmusic:// form)
+            appScheme && parsed.host == "open-app" -> {
                 val urlParam = parsed.getQueryParameter("url")
                 if (urlParam != null) {
                     Logger.d(TAG, "Extracted URL from open-app: $urlParam")
@@ -118,24 +115,12 @@ object DesktopDeepLinkHandler {
                 }
             }
 
-            // simpmusic://watch?v=xxx → https://simpmusic.org/app/watch?v=xxx
-            // simpmusic://playlist?list=xxx → https://simpmusic.org/app/playlist?list=xxx
-            // simpmusic://channel/UCxxx → https://simpmusic.org/app/channel/UCxxx
-            // simpmusic://album?id=xxx → https://simpmusic.org/app/album?id=xxx
-            parsed.scheme == "simpmusic" && parsed.host != null -> {
-                val host = parsed.host!!
-                val query = parsed.query?.let { "?$it" } ?: ""
-                val pathSuffix = parsed.pathSegments.joinToString("/").let {
-                    if (it.isNotEmpty()) "/$it" else ""
-                }
-                val convertedUrl = "https://simpmusic.org/app/$host$pathSuffix$query"
-                Logger.d(TAG, "Converted simpmusic:// to: $convertedUrl")
-                Uri.parse(convertedUrl)
-            }
+            // killmonmusic://watch?v=xxx and the older simpmusic:// form. App.kt reads the scheme
+            // directly. Do not rewrite these into a simpmusic.org URL.
+            appScheme && parsed.host != null -> parsed
 
-            // wordbyword://lastfm-auth?token=xxx → pass through untouched. It must NOT be rewritten
-            // to simpmusic.org like the branch above does: App.kt matches on this exact scheme to
-            // read the Last.fm request token.
+            // wordbyword://lastfm-auth?token=xxx → pass through untouched. App.kt matches this
+            // scheme to read the Last.fm request token. The scheme is fixed by the Last.fm account.
             parsed.scheme == "wordbyword" -> parsed
 
             // https://simpmusic.org/app/... or YouTube URLs → pass through
