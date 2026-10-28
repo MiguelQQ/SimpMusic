@@ -8,6 +8,7 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.view.KeyEvent
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -77,6 +78,20 @@ class MainActivity : AppCompatActivity() {
                 mBound = false
             }
         }
+
+    /**
+     * Con el PC (u otro aparato) activo, el volumen del teléfono no mueve STREAM_MUSIC:
+     * manda el nivel al player remoto. Media3 no deja colgar un VolumeProviderCompat de la
+     * MediaLibrarySession, así que el camino en primer plano es este dispatch.
+     */
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action == KeyEvent.ACTION_DOWN &&
+            (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP || event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)
+        ) {
+            if (viewModel.adjustRemoteVolume(event.keyCode == KeyEvent.KEYCODE_VOLUME_UP)) return true
+        }
+        return super.dispatchKeyEvent(event)
+    }
 
     override fun onStart() {
         super.onStart()

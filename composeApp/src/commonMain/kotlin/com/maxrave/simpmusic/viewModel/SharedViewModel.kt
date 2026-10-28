@@ -54,6 +54,7 @@ import com.maxrave.domain.mediaservice.handler.SleepTimerState
 import com.maxrave.domain.mediaservice.handler.addToQueueBlock
 import com.maxrave.domain.data.model.connect.asTrack
 import com.maxrave.domain.data.model.connect.listeningOnDeviceName
+import com.maxrave.domain.data.model.connect.nextRemoteVolume
 import com.maxrave.domain.data.model.connect.toDisplayPlayback
 import com.maxrave.domain.repository.AccountConnectRepository
 import com.maxrave.domain.repository.AlbumRepository
@@ -1156,6 +1157,18 @@ class SharedViewModel(
                 session.estimatedPositionMs(now) + deltaMs
             }
         return base.coerceIn(0L, if (duration > 0L) duration else Long.MAX_VALUE)
+    }
+
+    /**
+     * Tecla de volumen con la app delante y el audio en otro aparato.
+     * Devuelve false si este aparato es el que suena, para que el stream local siga igual.
+     */
+    fun adjustRemoteVolume(up: Boolean): Boolean {
+        val state = connectRepository.state.value
+        if (!state.isFollowingRemote()) return false
+        val current = state.session?.volume ?: 1f
+        connectRepository.remoteControl("volume", volume = nextRemoteVolume(current, up))
+        return true
     }
 
     /** Play, pausa, seek y saltos van al aparato activo. El volumen de este no. */

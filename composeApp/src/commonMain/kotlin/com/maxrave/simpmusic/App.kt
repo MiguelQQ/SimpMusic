@@ -613,7 +613,7 @@ fun App(
                                         .fillMaxWidth()
                                         .padding(horizontal = 12.dp)
                                         .padding(top = 2.dp, bottom = 12.dp)
-                                        .height(72.dp),
+                                        .height(88.dp),
                                     backdrop = backdrop,
                                     navController = navController,
                                     onClick = {
@@ -676,7 +676,7 @@ fun App(
                                         .fillMaxWidth(0.8f)
                                         .padding(horizontal = 8.dp)
                                         .padding(bottom = 8.dp)
-                                        .height(72.dp)
+                                        .height(88.dp)
                                 } else {
                                     // Floating capsule, Apple Music style: a fixed size so it never
                                     // stretches to the window width, and no haze at all — the capsule

@@ -77,6 +77,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
@@ -136,6 +137,7 @@ import com.maxrave.simpmusic.ui.icon.PictureInPictureAlt
 import com.maxrave.simpmusic.ui.icon.PlayArrow
 import com.maxrave.simpmusic.ui.icon.QueueMusic
 import com.maxrave.simpmusic.ui.icon.SimpIcons
+import com.maxrave.simpmusic.ui.icon.Speaker
 import com.maxrave.simpmusic.ui.icon.VolumeOff
 import com.maxrave.simpmusic.ui.icon.VolumeUp
 import com.maxrave.simpmusic.ui.screen.player.content.toAudioQualityLabel
@@ -465,7 +467,7 @@ fun MiniPlayer(
                             Spacer(modifier = Modifier.width(12.dp))
                             AnimatedContent(
                                 targetState = songEntity,
-                                modifier = Modifier.weight(1F).fillMaxHeight(),
+                                modifier = Modifier.weight(1F).fillMaxHeight().clipToBounds(),
                                 contentAlignment = Alignment.CenterStart,
                                 transitionSpec = {
                                     // Compare the incoming number with the previous number.
@@ -490,9 +492,8 @@ fun MiniPlayer(
                                             slideOutHorizontally { width -> width } + fadeOut(),
                                         )
                                     }.using(
-                                        // Disable clipping since the faded slide-in/out should
-                                        // be displayed out of bounds.
-                                        SizeTransform(clip = false),
+                                        // Clip so the outgoing title cannot paint over «En {dispositivo}».
+                                        SizeTransform(clip = true),
                                     )
                                 },
                             ) { target ->
@@ -501,7 +502,8 @@ fun MiniPlayer(
                                         Modifier
                                             .fillMaxWidth()
                                             .wrapContentHeight()
-                                            .align(Alignment.CenterVertically),
+                                            .align(Alignment.CenterVertically)
+                                            .clipToBounds(),
                                     ) {
                                         Text(
                                             text = (if (jamRoom.inRoom) (if (jamRoom.loading) "En JAM · Cargando/Sincronizando · " else "En JAM · ") else "") + target.title,
@@ -509,19 +511,13 @@ fun MiniPlayer(
                                                 typo().titleSmall.copy(
                                                     fontWeight = FontWeight.Bold,
                                                     fontSize = 15.sp,
+                                                    lineHeight = 18.sp,
                                                     color = Color.White,
                                                 ),
                                             color = Color.White,
                                             maxLines = 1,
-                                            modifier =
-                                                Modifier
-                                                    .fillMaxWidth()
-                                                    .wrapContentHeight(
-                                                        align = Alignment.CenterVertically,
-                                                    ).basicMarquee(
-                                                        iterations = Int.MAX_VALUE,
-                                                        animationMode = MarqueeAnimationMode.Immediately,
-                                                    ).focusable(),
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier.fillMaxWidth(),
                                         )
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
@@ -536,24 +532,44 @@ fun MiniPlayer(
                                                 )
                                             }
                                             Text(
-                                                text = artistWithDevice(target.artistName?.connectArtists().orEmpty(), connectListeningOn),
+                                                text = target.artistName?.connectArtists().orEmpty(),
                                                 style =
                                                     typo().bodySmall.copy(
                                                         fontSize = 13.sp,
+                                                        lineHeight = 16.sp,
                                                         color = MiniPlayerArtist,
                                                     ),
                                                 maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
                                                 color = MiniPlayerArtist,
-                                                modifier =
-                                                    Modifier
-                                                        .weight(1f)
-                                                        .wrapContentHeight(
-                                                            align = Alignment.CenterVertically,
-                                                        ).basicMarquee(
-                                                            iterations = Int.MAX_VALUE,
-                                                            animationMode = MarqueeAnimationMode.Immediately,
-                                                        ).focusable(),
+                                                modifier = Modifier.weight(1f),
                                             )
+                                        }
+                                        if (!connectListeningOn.isNullOrBlank()) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                            ) {
+                                                Icon(
+                                                    imageVector = SimpIcons.Speaker,
+                                                    contentDescription = null,
+                                                    tint = MiniPlayerArtist,
+                                                    modifier = Modifier.size(12.dp),
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text(
+                                                    text = "En $connectListeningOn",
+                                                    style =
+                                                        typo().bodySmall.copy(
+                                                            fontSize = 12.sp,
+                                                            lineHeight = 14.sp,
+                                                            color = MiniPlayerArtist,
+                                                        ),
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    color = MiniPlayerArtist,
+                                                )
+                                            }
                                         }
                                     }
                                 }
