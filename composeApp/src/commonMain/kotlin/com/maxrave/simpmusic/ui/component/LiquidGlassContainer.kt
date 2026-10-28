@@ -83,7 +83,7 @@ fun Modifier.liquidGlass(
     // unchanged, only the draw. Gated HERE, at the shared primitive, because none of the ~15 call
     // sites across Album/Playlist/Artist/LocalPlaylist/Analytics ever read the setting themselves:
     // the flag used to reach only the nav bar and the MiniPlayer, which branch before composing
-    // glass at all. Desktop never takes this path — AppTheme provides true there unconditionally.
+    // glass at all. Desktop follows the same setting; the playback capsule does not use this modifier.
     if (!LocalLiquidGlassEnabled.current) {
         return this
             .clip(shape)

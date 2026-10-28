@@ -84,7 +84,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -109,7 +108,6 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.maxrave.domain.data.entities.SongEntity
-import com.maxrave.domain.manager.DataStoreManager
 import com.maxrave.domain.utils.connectArtists
 import com.maxrave.logger.Logger
 import com.maxrave.simpmusic.Platform
@@ -124,8 +122,6 @@ import com.maxrave.simpmusic.ui.component.HeartCheckBox
 import com.maxrave.simpmusic.ui.component.PlayPauseButton
 import com.maxrave.simpmusic.ui.component.PlayerControlLayout
 import com.maxrave.simpmusic.ui.component.QueueBottomSheet
-import com.maxrave.simpmusic.ui.component.liquidGlass
-import com.maxrave.simpmusic.ui.component.rememberGlassLuminance
 import com.maxrave.simpmusic.ui.component.rememberHolderPainter
 import com.maxrave.simpmusic.expect.ui.PlatformCastButton
 import com.maxrave.simpmusic.expect.ui.isPlatformCastAvailable
@@ -163,8 +159,9 @@ import simpmusic.composeapp.generated.resources.cd_mini_player
 
 private const val TAG = "MiniPlayer"
 
-/** Nearly opaque charcoal card, independent of the continuous dock scrim underneath. */
+/** Charcoal card shared with the Android bar. Desktop uses the opaque colour so the capsule is not glass. */
 private val MiniPlayerCard = Color(0xFF2A2A2A).copy(alpha = 0.97f)
+private val MiniPlayerSolid = Color(0xFF2A2A2A)
 private val MiniPlayerArtist = Color(0xFFB3B3B3)
 private val MiniPlayerTouch = 48.dp
 private val MiniPlayerIcon = 26.dp
@@ -255,21 +252,10 @@ fun MiniPlayer(
     navController: NavController? = null,
 ) {
     val jamRoom by koinInject<com.maxrave.domain.repository.ListenTogetherRepository>().room.collectAsStateWithLifecycle()
-    val isLiquidGlassEnabled by sharedViewModel.getEnableLiquidGlass().collectAsStateWithLifecycle(DataStoreManager.FALSE)
     val controllerState by sharedViewModel.controllerState.collectAsStateWithLifecycle()
     val timelineState by sharedViewModel.timeline.collectAsStateWithLifecycle()
     // The Desktop capsule's quality line between its timestamps — see toAudioQualityLabel.
     val formatState by sharedViewModel.format.collectAsStateWithLifecycle(initialValue = null)
-
-    val layer = rememberGraphicsLayer()
-
-    // The Desktop capsule is always liquid glass, so it needs the glass code paths whatever the
-    // setting says — both the luminance sampling loop that drives the glass and the theme-following
-    // text colour. Leaving them gated left the capsule with luminance stuck at 0: a 2dp blur and a
-    // 0.12 darken, which is why it looked like a smear rather than glass. The setting still governs
-    // the Android card below.
-    val useGlassSurface = isLiquidGlassEnabled == DataStoreManager.TRUE || getPlatform() == Platform.Desktop
-    val luminance = rememberGlassLuminance(layer, enabled = useGlassSurface && isVisible)
 
     val isDarkTheme = LocalIsDarkTheme.current
 
@@ -630,9 +616,10 @@ fun MiniPlayer(
             }
         }
     } else {
-        // Desktop bottom bar surface follows the theme (haze over content), so text and controls
-        // use the theme foreground token instead of the artwork-luminance colour.
-        val textColor = MaterialTheme.colorScheme.onBackground
+        // Solid charcoal, same family as the Android card. White glyphs stay readable on it
+        // in both light and dark app themes; the old onBackground token went dark on a light theme
+        // and disappeared into the pill.
+        val textColor = Color.White
 
         // Crossfade cue: a label on the artist line, nothing on the bar itself. The Now Playing
         // screen cycles the track through hues for this, which on a 2dp hairline reads as a
@@ -682,17 +669,16 @@ fun MiniPlayer(
                 onNavigateToOtherScreen = { showQueueBottomSheet = false },
             )
         }
-        // Apple Music-style floating capsule: transport on the left, the track and its slim
-        // progress slider in the middle, the action cluster on the right. Size and placement come
-        // from the caller (App.kt), so the capsule keeps a fixed width and floats over content.
-        // Always liquid glass, not gated on the setting: the capsule IS the glass shape here, and
-        // falling back to a haze blur gives a dark smear instead of a floating pill.
+        // Floating capsule: transport on the left, the track and its slim progress slider in the
+        // middle, the action cluster on the right. Size and placement come from the caller (App.kt).
+        // Opaque charcoal, like the Android mini player. No liquid glass, blur, or backdrop sample:
+        // a glass capsule reads as a transparent smear over the window, which is not the look we want.
         val capsuleShape = RoundedCornerShape(50)
         val density = LocalDensity.current
         Box(
             modifier
-                .liquidGlass(backdrop, layer, luminance, capsuleShape, blurScale = 1.2f)
                 .clip(capsuleShape)
+                .background(MiniPlayerSolid)
                 .clickable {
                     onClick()
                 },
@@ -1117,7 +1103,7 @@ fun MiniPlayer(
                                             // Theme surface, not `background` — that one animates to the
                                             // artwork's palette colour, which turned the popup olive green
                                             // for one cover and pink for the next.
-                                            .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.96f))
+                                            .background(MiniPlayerSolid)
                                             .padding(vertical = 10.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.spacedBy(8.dp),

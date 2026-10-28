@@ -543,9 +543,9 @@ fun App(
         themeMode = themeMode,
         themeColorSource = themeColorSource,
         customThemeColor = parseThemeColorHex(customThemeColorHex),
-        // Desktop is unconditionally true — the liquid-glass setting row is Android-only, and the
-        // Desktop capsule player is glass by design. Same rule as MiniPlayer's useGlassSurface.
-        liquidGlassEnabled = isLiquidGlassEnabled == TRUE || getPlatform() == Platform.Desktop,
+        // Follow the setting on every platform. Desktop used to force this on so the capsule could
+        // sample a glass backdrop; the capsule is a solid card and must not depend on that haze.
+        liquidGlassEnabled = isLiquidGlassEnabled == TRUE,
     ) {
         // Read inside AppTheme so MaterialTheme reflects the resolved scheme.
         val isLightScheme = MaterialTheme.colorScheme.background.luminance() > 0.5f
@@ -737,8 +737,8 @@ fun App(
                     ) {
                         // Everything left of Now Playing. On Desktop the capsule player sits on the centre of
                         // this whole area, sidebar included, so it lives here rather than in the content panel,
-                        // which is both narrower than the capsule and clipped; and the area is what its glass
-                        // records, so the part over the sidebar refracts the sidebar instead of nothing.
+                        // which is both narrower than the capsule and clipped. The capsule itself is a solid
+                        // card; this area is a backdrop source only while liquid glass is enabled.
                         Box(
                             Modifier
                                 .weight(1f)
@@ -748,10 +748,10 @@ fun App(
                                 Modifier
                                     .fillMaxSize()
                                     .then(
-                                        // Desktop is unconditional: the floating capsule player is ALWAYS
-                                        // liquid glass there, and glass with no recorded source draws as
-                                        // plain transparency.
-                                        if (isDesktopShell && isTablet && !isInFullscreen) {
+                                        // Only while liquid glass is on. The desktop capsule is a solid card and
+                                        // does not sample this layer; recording it unconditionally was
+                                        // what made the bar look like transparent glass.
+                                        if (isLiquidGlassEnabled == TRUE && isDesktopShell && isTablet && !isInFullscreen) {
                                             Modifier.layerBackdrop(backdrop)
                                         } else {
                                             Modifier
