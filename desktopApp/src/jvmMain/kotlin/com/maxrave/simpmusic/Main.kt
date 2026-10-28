@@ -3,7 +3,7 @@ package com.maxrave.simpmusic
 import java.awt.Toolkit
 
 /**
- * Thin entry point for SimpMusic Desktop.
+ * Thin entry point for Killmon Music Desktop.
  *
  * All window setup, Sentry init, Koin loading, deep link
  * handling, mini-player wiring, and tray integration live in

@@ -731,7 +731,7 @@
     <string name="exit_selection">退出選取模式</string>
     <string name="remove_from_playlist">從播放清單移除</string>
     <!-- Listen Together -->
-    <string name="listen_together">Listen Together</string>
+    <string name="listen_together">JAM</string>
     <string name="lt_tagline">無論心之所向，共同聆聽你所愛。創建一個房間並分享房間代碼，與朋友一同聆聽吧。</string>
     <string name="lt_not_connected">未連線</string>
     <string name="lt_connected">已連線</string>
@@ -752,8 +752,6 @@
     <string name="lt_just_asked">已要求加入</string>
     <string name="lt_suggestions">推薦的曲目</string>
     <string name="lt_leave_room">離開派對</string>
-    <string name="lt_credit_protocol">「共同聆聽」協定由Metrolist提供</string>
-    <string name="lt_credit_compatible">派對與Metrolist用戶端相容</string>
     <string name="lt_server">伺服器</string>
     <string name="lt_custom_server">自訂伺服器</string>
     <string name="lt_custom_server_desc">輸入您自己伺服器的 wss:// 位址</string>

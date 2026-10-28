@@ -1,14 +1,15 @@
 package com.maxrave.simpmusic.viewModel
 
 import androidx.lifecycle.viewModelScope
-import com.maxrave.common.SELECTED_LANGUAGE
-import com.maxrave.common.SUPPORTED_LANGUAGE
 import com.maxrave.domain.data.entities.SongEntity
 import com.maxrave.domain.data.model.home.HomeDataCombine
 import com.maxrave.domain.data.model.home.HomeItem
 import com.maxrave.domain.data.model.home.chart.Chart
 import com.maxrave.domain.data.model.mood.Mood
 import com.maxrave.domain.manager.DataStoreManager
+import com.maxrave.domain.data.model.library.LibraryOverview
+import com.maxrave.domain.data.type.RecentlyType
+import com.maxrave.domain.repository.CommonRepository
 import com.maxrave.domain.repository.HomeRepository
 import com.maxrave.domain.utils.Resource
 import com.maxrave.logger.Logger
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -26,7 +28,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import simpmusic.composeapp.generated.resources.Res
 import simpmusic.composeapp.generated.resources.music_video
 import simpmusic.composeapp.generated.resources.new_release
@@ -36,7 +37,25 @@ import simpmusic.composeapp.generated.resources.view_count
 class HomeViewModel(
     private val dataStoreManager: DataStoreManager,
     private val homeRepository: HomeRepository,
+    commonRepository: CommonRepository,
 ) : BaseViewModel() {
+    // The listener's own recents (songs, artists, albums, playlists, podcasts), oldest first. Read
+    // on IO by the repository and shared, so Home's quick tiles and history carousels cost one query.
+    val recents: StateFlow<List<RecentlyType>> =
+        commonRepository
+            .getAllRecentData()
+            .catch { emit(emptyList()) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    val libraryOverview: StateFlow<LibraryOverview?> =
+        commonRepository
+            .getLibraryOverview()
+            .catch { }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    // Pages fetched on their own to make Home dense; scrolling to the end still pages as before.
+    private var autoFilledPages = 0
+
     private val _homeItemList: MutableStateFlow<List<HomeItem>> =
         MutableStateFlow(arrayListOf())
     val homeItemList: StateFlow<List<HomeItem>> = _homeItemList
@@ -53,6 +72,7 @@ class HomeViewModel(
     val accountInfo: StateFlow<Pair<String?, String?>?> = _accountInfo
 
     private var homeJob: Job? = null
+    private var continuationJob: Job? = null
 
     val showSnackBarErrorState = MutableSharedFlow<String>()
 
@@ -64,8 +84,6 @@ class HomeViewModel(
 
     val loading = MutableStateFlow<Boolean>(true)
     val loadingChart = MutableStateFlow<Boolean>(true)
-    private var regionCode: String = ""
-    private var language: String = ""
 
     private val _songEntity: MutableStateFlow<SongEntity?> = MutableStateFlow(null)
     val songEntity: StateFlow<SongEntity?> = _songEntity
@@ -91,26 +109,22 @@ class HomeViewModel(
 
     init {
         // Killmon: never prompt to log in on launch. Sign-in stays optional in Settings.
-        homeJob = Job()
         viewModelScope.launch {
-            regionCodeChart.value = dataStoreManager.chartKey.first()
-            exploreChart(regionCodeChart.value ?: "ZZ")
-            language = dataStoreManager.getString(SELECTED_LANGUAGE).first()
-                ?: SUPPORTED_LANGUAGE.codes.first()
-            //  refresh when region change
+            // One regional observer: both country and language invalidate discovery state.
             val job1 =
                 launch {
-                    dataStoreManager.location.distinctUntilChanged().collect {
-                        regionCode = it
-                        getHomeItemList(params.value)
-                    }
-                }
-            //  refresh when language change
-            val job2 =
-                launch {
-                    dataStoreManager.language.distinctUntilChanged().collect {
-                        language = it
-                        getHomeItemList(params.value)
+                    combine(dataStoreManager.location, dataStoreManager.language) { country, language ->
+                        country to language
+                    }.distinctUntilChanged().collect { (country, _) ->
+                        regionCodeChart.value = country
+                        _continuation.value = null
+                        _params.value = null
+                        _homeItemList.value = emptyList()
+                        _chart.value = null
+                        _newRelease.value = emptyList()
+                        _exploreMoodItem.value = null
+                        _homeBackground.value = null
+                        getHomeItemList()
                     }
                 }
             val job3 =
@@ -159,7 +173,6 @@ class HomeViewModel(
                     }
                 }
             job1.join()
-            job2.join()
             job3.join()
             job4.join()
             job5.join()
@@ -177,14 +190,11 @@ class HomeViewModel(
     }
 
     fun getHomeItemList(params: String? = null) {
+        continuationJob?.cancel()
         loading.value = true
+        loadingChart.value = true
         _homeListState.value = ListState.LOADING
-        language =
-            runBlocking {
-                dataStoreManager.getString(SELECTED_LANGUAGE).first()
-                    ?: SUPPORTED_LANGUAGE.codes.first()
-            }
-        regionCode = runBlocking { dataStoreManager.location.first() }
+        autoFilledPages = 0
         homeJob?.cancel()
         homeJob =
             viewModelScope.launch {
@@ -234,6 +244,7 @@ class HomeViewModel(
                             _chart.value = null
                         }
                     }
+                    loadingChart.value = false
                     when (newRelease) {
                         is Resource.Success -> {
                             _newRelease.value = newRelease.data ?: arrayListOf()
@@ -276,8 +287,22 @@ class HomeViewModel(
                         Logger.w("Error", "getHomeItemList: ${chart.message}")
                     }
                     loading.value = false
+                    fillHomeIfSparse()
                 }
             }
+    }
+
+    /**
+     * Spotify's Home is a long run of rows. YouTube sends a handful per response, so while there are
+     * fewer than [TARGET_HOME_SHELVES] and more pages exist, the next page is fetched without waiting
+     * for the listener to scroll — at most [MAX_AUTO_PAGES] times, and only for the plain Home.
+     */
+    private fun fillHomeIfSparse() {
+        val next = _continuation.value
+        if (_params.value != null || next.isNullOrEmpty()) return
+        if (_homeItemList.value.size >= TARGET_HOME_SHELVES || autoFilledPages >= MAX_AUTO_PAGES) return
+        autoFilledPages++
+        getContinueHomeItem(next)
     }
 
     /** A shelf's "Play all": YouTube's own finite queue of that shelf's songs. */
@@ -286,7 +311,10 @@ class HomeViewModel(
     }
 
     fun getContinueHomeItem(continuation: String?) {
-        viewModelScope.launch {
+        // A continuation belongs to the regional Home response that produced it.
+        if (continuation != _continuation.value) return
+        continuationJob?.cancel()
+        continuationJob = viewModelScope.launch {
             if (continuation.isNullOrEmpty()) {
                 _homeListState.value = ListState.PAGINATION_EXHAUST
                 return@launch
@@ -308,6 +336,7 @@ class HomeViewModel(
                                     _homeListState.value = ListState.PAGINATION_EXHAUST
                                 } else {
                                     _homeListState.value = ListState.IDLE
+                                    fillHomeIfSparse()
                                 }
                             }
 
@@ -325,24 +354,7 @@ class HomeViewModel(
 
     fun exploreChart(region: String) {
         viewModelScope.launch {
-            loadingChart.value = true
-            homeRepository
-                .getChartData(
-                    region,
-                ).collect { values ->
-                    regionCodeChart.value = region
-                    dataStoreManager.setChartKey(region)
-                    when (values) {
-                        is Resource.Success -> {
-                            _chart.value = values.data
-                        }
-
-                        else -> {
-                            _chart.value = null
-                        }
-                    }
-                    loadingChart.value = false
-                }
+            dataStoreManager.setChartKey(region)
         }
     }
 
@@ -353,9 +365,13 @@ class HomeViewModel(
     override fun onCleared() {
         super.onCleared()
         homeJob?.cancel()
+        continuationJob?.cancel()
     }
 
     companion object {
+        const val TARGET_HOME_SHELVES = 12
+        const val MAX_AUTO_PAGES = 3
+
         // Home params
         const val HOME_PARAMS_RELAX = "ggM8SgQIBxADSgQIBRABSgQICRABSgQIChABSgQIDRABSgQICBABSgQIBBABSgQIDhABSgQIAxABSgQIBhAB"
         const val HOME_PARAMS_SLEEP = "ggM8SgQIBxABSgQIBRADSgQICRABSgQIChABSgQIDRABSgQICBABSgQIBBABSgQIDhABSgQIAxABSgQIBhAB"

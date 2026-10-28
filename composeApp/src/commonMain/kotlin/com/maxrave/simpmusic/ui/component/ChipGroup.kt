@@ -229,7 +229,7 @@ private fun ChipBody(
             colors =
                 FilterChipDefaults.elevatedFilterChipColors(
                     containerColor = containerColor,
-                    selectedContainerColor = com.maxrave.simpmusic.ui.theme.killmonGreen,
+                    selectedContainerColor = com.maxrave.simpmusic.ui.theme.killmonBrand(),
                     labelColor = labelColor,
                     selectedLabelColor = Color.Black,
                 ),

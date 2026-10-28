@@ -710,7 +710,7 @@
     <string name="exit_selection">Exit selection</string>
     <string name="remove_from_playlist">Remove from playlist</string>
     <!-- Listen Together -->
-    <string name="listen_together">Listen Together</string>
+    <string name="listen_together">JAM</string>
     <string name="lt_tagline">One song, one position, together. Stvori a room and share the code with friends.</string>
     <string name="lt_not_connected">Net connected</string>
     <string name="lt_connected">Povezano</string>
@@ -731,8 +731,6 @@
     <string name="lt_just_asked">just asked to join</string>
     <string name="lt_suggestions">Suggested tracks</string>
     <string name="lt_leave_room">Leave room</string>
-    <string name="lt_credit_protocol">Listen Together protocol by Metrolist</string>
-    <string name="lt_credit_compatible">Rooms are compatible with Metrolist clients</string>
     <string name="lt_server">Poslužitelj</string>
     <string name="lt_custom_server">Prilagođeno server</string>
     <string name="lt_custom_server_desc">Enter your own wss:// address</string>

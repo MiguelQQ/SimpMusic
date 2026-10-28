@@ -2,6 +2,7 @@ package com.maxrave.simpmusic.update
 
 import android.content.Intent
 import android.net.Uri
+import android.os.SystemClock
 import android.provider.Settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,7 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -28,13 +28,16 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.maxrave.simpmusic.BuildKonfig
 import com.maxrave.simpmusic.ui.component.KillmonPrimaryButton
 import com.maxrave.simpmusic.ui.theme.killmonGreen
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -45,14 +48,43 @@ import kotlin.math.roundToInt
 
 private const val RELEASES_URL = "https://api.github.com/repos/MiguelQQ/SimpMusic/releases?per_page=100"
 
+/** Process lifetime state survives Activity recreation, but never suppresses the next cold launch. */
+private object KillmonUpdateSession {
+    private val policy = KillmonUpdatePolicy()
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private var job: Job? = null
+    var offer by mutableStateOf<KillmonUpdate?>(null)
+        private set
+
+    fun check() {
+        if (job?.isActive == true || offer != null || !policy.startCheck(SystemClock.elapsedRealtime())) return
+        job = scope.launch {
+            val update = withContext(Dispatchers.IO) {
+                try {
+                    val body = fetchText(RELEASES_URL) ?: return@withContext null
+                    selectKillmonUpdate(body, BuildKonfig.versionName, BuildKonfig.versionCode)
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (_: Exception) {
+                    null
+                }
+            }
+            offer = update?.takeIf(policy::shouldOffer)
+        }
+    }
+
+    fun dismiss() {
+        offer?.let(policy::dismiss)
+        offer = null
+    }
+}
+
 @Composable
 actual fun KillmonInAppUpdate(active: Boolean) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
-    var checked by remember { mutableStateOf(false) }
-    var dismissed by remember { mutableStateOf(false) }
-    var offer by remember { mutableStateOf<KillmonUpdate?>(null) }
+    val offer = KillmonUpdateSession.offer
     var downloading by remember { mutableStateOf(false) }
     var indeterminate by remember { mutableStateOf(true) }
     var progress by remember { mutableFloatStateOf(0f) }
@@ -60,36 +92,33 @@ actual fun KillmonInAppUpdate(active: Boolean) {
     var resumeAfterPermission by remember { mutableStateOf(false) }
     val downloadJob = remember { mutableStateOf<Job?>(null) }
 
-    LaunchedEffect(active) {
-        if (!active || checked) return@LaunchedEffect
-        checked = true
-        offer =
-            withContext(Dispatchers.IO) {
-                try {
-                    val body = fetchText(RELEASES_URL) ?: return@withContext null
-                    selectKillmonUpdate(
-                        releasesJson = body,
-                        installedName = BuildKonfig.versionName,
-                        installedCode = BuildKonfig.versionCode,
-                    )
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (_: Exception) {
-                    null
-                }
-            }
+    DisposableEffect(active) {
+        val lifecycle = ProcessLifecycleOwner.get().lifecycle
+        val observer = LifecycleEventObserver { _, event ->
+            if (active && event == Lifecycle.Event.ON_RESUME) KillmonUpdateSession.check()
+        }
+        lifecycle.addObserver(observer)
+        // Also covers composition after the process already reached RESUMED.
+        if (active && lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) KillmonUpdateSession.check()
+        onDispose { lifecycle.removeObserver(observer) }
     }
 
     fun dismiss() {
         downloadJob.value?.cancel()
         downloading = false
         resumeAfterPermission = false
-        dismissed = true
+        downloaded = null
+        KillmonUpdateSession.dismiss()
     }
 
     fun begin() {
         val current = offer ?: return
-        if (dismissed || downloading) return
+        if (downloading) return
+        val downloadUrl = current.downloadUrl
+        if (downloadUrl == null) {
+            context.openRelease(current.releaseUrl)
+            return
+        }
         if (!context.canInstallPackages()) {
             resumeAfterPermission = true
             context.openUnknownSourcesSettings()
@@ -109,7 +138,7 @@ actual fun KillmonInAppUpdate(active: Boolean) {
             scope.launch {
                 val file =
                     try {
-                        downloadApk(current.downloadUrl, context.cacheDir) { fraction, knownTotal ->
+                        downloadApk(downloadUrl, context.cacheDir) { fraction, knownTotal ->
                             indeterminate = !knownTotal
                             progress = fraction
                         }
@@ -120,7 +149,10 @@ actual fun KillmonInAppUpdate(active: Boolean) {
                         null
                     }
                 downloading = false
-                if (file == null) return@launch
+                if (file == null) {
+                    context.openRelease(current.releaseUrl)
+                    return@launch
+                }
                 downloaded = file
                 if (context.canInstallPackages()) {
                     context.installApk(file)
@@ -143,13 +175,13 @@ actual fun KillmonInAppUpdate(active: Boolean) {
     }
 
     val current = offer
-    if (current == null || dismissed) return
+    if (!active || current == null) return
     AlertDialog(
         onDismissRequest = { dismiss() },
         containerColor = Color(0xFF1E1E1E),
         title = {
             Text(
-                text = "Nueva versión ${current.label} disponible",
+                text = "Killmon Music: nueva versión ${current.label} disponible",
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
             )
@@ -201,6 +233,10 @@ actual fun KillmonInAppUpdate(active: Boolean) {
             }
         },
     )
+}
+
+private fun android.content.Context.openRelease(url: String) {
+    runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
 }
 
 private fun android.content.Context.canInstallPackages(): Boolean =

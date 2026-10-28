@@ -8,6 +8,7 @@ import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,7 +45,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -68,6 +68,7 @@ import com.maxrave.common.LibraryChipType
 import com.maxrave.domain.data.player.GenericMediaItem
 import com.maxrave.domain.manager.DataStoreManager
 import com.maxrave.domain.manager.DataStoreManager.Values.TRUE
+import com.maxrave.domain.repository.AccountConnectRepository
 import com.maxrave.domain.repository.KillmonAccountRepository
 import com.maxrave.logger.Logger
 import com.maxrave.simpmusic.expect.Orientation
@@ -75,7 +76,11 @@ import com.maxrave.simpmusic.expect.currentOrientation
 import com.maxrave.simpmusic.expect.ui.layerBackdrop
 import com.maxrave.simpmusic.expect.ui.rememberBackdrop
 import com.maxrave.simpmusic.extension.copy
+import com.maxrave.simpmusic.extension.smoothScrimBrush
 import com.maxrave.simpmusic.ui.component.AppBottomNavigationBar
+import com.maxrave.simpmusic.ui.component.ConnectRemotePlayer
+import com.maxrave.simpmusic.ui.component.ConnectRemotePlayerSheet
+import com.maxrave.simpmusic.ui.component.ConnectSessionBar
 import com.maxrave.simpmusic.ui.component.AppNavigationRail
 import com.maxrave.simpmusic.ui.component.DesktopSidebar
 import com.maxrave.simpmusic.ui.component.LiquidGlassAppBottomNavigationBar
@@ -149,6 +154,13 @@ import simpmusic.composeapp.generated.resources.update_message
 import simpmusic.composeapp.generated.resources.yes
 import kotlin.time.ExperimentalTime
 
+/** Desktop registers killmonmusic://. simpmusic:// stays so older links and the Android QR payload still open. */
+private fun isKillmonAppScheme(scheme: String?) = scheme == "killmonmusic" || scheme == "simpmusic"
+
+// One continuous dock scrim: transparent at the card top, near-black at the nav icons.
+private val KillmonBarScrimTop = Color.Black.copy(alpha = 0f)
+private val KillmonBarScrimBottom = Color.Black.copy(alpha = 0.93f)
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class, ExperimentalFoundationApi::class)
 @Composable
 fun App(
@@ -160,9 +172,11 @@ fun App(
     val windowSize = currentWindowAdaptiveInfo().windowSizeClass
     val navController = rememberNavController()
     val killmonAccount = koinInject<KillmonAccountRepository>()
+    val connectState by koinInject<AccountConnectRepository>().state.collectAsStateWithLifecycle()
+    val connectFollows = connectState.isFollowingRemote()
     val killmonReady by killmonAccount.ready.collectAsStateWithLifecycle()
     val killmonSession by killmonAccount.session.collectAsStateWithLifecycle()
-    KillmonInAppUpdate(active = killmonReady && killmonSession != null)
+    KillmonInAppUpdate(active = true)
     // Latched once. Home is composed only after the stored session has been checked, so a missing
     // session never paints Home for a frame.
     var killmonStart by remember { mutableStateOf<Any?>(null) }
@@ -251,7 +265,7 @@ fun App(
         val data = intent.data
         Logger.d("MainActivity", "onCreate: $data")
         if (data != null) {
-            if (data.scheme == "simpmusic" && data.host == "notification") {
+            if (isKillmonAppScheme(data.scheme) && data.host == "notification") {
                 viewModel.setIntent(null)
                 navController.navigate(
                     NotificationDestination,
@@ -268,7 +282,7 @@ fun App(
                 // of it. The token is handed straight to the shared view model, and the screen
                 // closes itself when it sees a session key appear.
                 token?.let { viewModel.completeLastfmLogin(it) }
-            } else if (data.host == "simpmusic.org" || data.scheme == "simpmusic") {
+            } else if (data.host == "simpmusic.org" || isKillmonAppScheme(data.scheme)) {
                 // https://simpmusic.org/app/watch?v=VIDEO_ID
                 // https://simpmusic.org/app/playlist?list=PLAYLIST_ID
                 // https://simpmusic.org/app/channel/CHANNEL_ID
@@ -279,7 +293,7 @@ fun App(
                 // For simpmusic.org: segments = ["app", "watch"] → appPath = segments[1]
                 // For simpmusic://: host IS the appPath (e.g. host="watch"), segments = []
                 val appPath =
-                    if (data.scheme == "simpmusic") {
+                    if (isKillmonAppScheme(data.scheme)) {
                         data.host
                     } else {
                         segments.getOrNull(1)
@@ -316,7 +330,7 @@ fun App(
                         // simpmusic://channel/UCxxx → segments = ["UCxxx"]
                         // simpmusic.org/app/channel/UCxxx → segments = ["app", "channel", "UCxxx"]
                         val artistId =
-                            if (data.scheme == "simpmusic") {
+                            if (isKillmonAppScheme(data.scheme)) {
                                 segments.firstOrNull()
                             } else {
                                 segments.getOrNull(2)
@@ -529,9 +543,9 @@ fun App(
         themeMode = themeMode,
         themeColorSource = themeColorSource,
         customThemeColor = parseThemeColorHex(customThemeColorHex),
-        // Desktop is unconditionally true — the liquid-glass setting row is Android-only, and the
-        // Desktop capsule player is glass by design. Same rule as MiniPlayer's useGlassSurface.
-        liquidGlassEnabled = isLiquidGlassEnabled == TRUE || getPlatform() == Platform.Desktop,
+        // Follow the setting on every platform. Desktop used to force this on so the capsule could
+        // sample a glass backdrop; the capsule is a solid card and must not depend on that haze.
+        liquidGlassEnabled = isLiquidGlassEnabled == TRUE,
     ) {
         // Read inside AppTheme so MaterialTheme reflects the resolved scheme.
         val isLightScheme = MaterialTheme.colorScheme.background.luminance() > 0.5f
@@ -571,74 +585,79 @@ fun App(
                         exit = fadeOut(),
                     ) {
                         // Folding glass bar is desktop-only and draws its own mini player.
-                        // Killmon phone: floating card over a labeled bar, on a black dock.
                         val useFoldingBar = getPlatform() != Platform.Android && isLiquidGlassEnabled == TRUE
-                        Column(Modifier.fillMaxWidth()) {
-                            // Home scrolls under the bar. This strip fades the shelves out; from the
-                            // card downward the dock is opaque black, including the nav and the gesture inset.
-                            if (!useFoldingBar) {
-                                Box(
+                        // A single brush spans the card, its margins, the gap and navigation.
+                        // Reach near-black around the icons, then hold it through the labels/inset.
+                        val showCard = isShowMiniPlayer && !useFoldingBar && !killmonBlocksChrome && !connectFollows
+                        Column(
+                            Modifier.fillMaxWidth().then(
+                                if (useFoldingBar) {
+                                    Modifier
+                                } else {
+                                    Modifier.background(
+                                        smoothScrimBrush(
+                                            from = KillmonBarScrimTop,
+                                            to = KillmonBarScrimBottom,
+                                            endFraction = 0.72f,
+                                        ),
+                                    )
+                                },
+                            ),
+                        ) {
+                            if (!useFoldingBar && !showCard && !connectFollows) {
+                                Spacer(Modifier.height(72.dp))
+                            }
+                            if (connectFollows) {
+                                ConnectSessionBar(
                                     Modifier
                                         .fillMaxWidth()
-                                        .height(72.dp)
-                                        .background(
-                                            Brush.verticalGradient(
-                                                0f to Color(0x00000000),
-                                                0.4f to Color(0x99000000),
-                                                0.75f to Color(0xF2000000),
-                                                1f to Color(0xFF000000),
-                                            ),
-                                        ),
+                                        .padding(horizontal = 12.dp)
+                                        .padding(bottom = 8.dp),
+                                    onOpen = { isShowNowPlaylistScreen = true },
                                 )
                             }
-                            Column(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .then(if (!useFoldingBar) Modifier.background(Color.Black) else Modifier),
+                            AnimatedVisibility(
+                                showCard,
+                                enter = fadeIn() + slideInHorizontally(),
+                                exit = fadeOut(),
                             ) {
-                                AnimatedVisibility(
-                                    isShowMiniPlayer && !useFoldingBar && !killmonBlocksChrome,
-                                    enter = fadeIn() + slideInHorizontally(),
-                                    exit = fadeOut(),
-                                ) {
-                                    MiniPlayer(
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 12.dp)
-                                            .padding(top = 2.dp, bottom = 12.dp)
-                                            .height(72.dp),
-                                        backdrop = backdrop,
-                                        navController = navController,
-                                        onClick = {
-                                            isShowNowPlaylistScreen = true
-                                        },
-                                        onClose = {
-                                            viewModel.stopPlayer()
-                                            viewModel.isServiceRunning = false
-                                        },
-                                    )
+                                MiniPlayer(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp)
+                                        .padding(top = 2.dp, bottom = 12.dp)
+                                        .height(72.dp),
+                                    backdrop = backdrop,
+                                    navController = navController,
+                                    onClick = {
+                                        isShowNowPlaylistScreen = true
+                                    },
+                                    onClose = {
+                                        viewModel.stopPlayer()
+                                        viewModel.isServiceRunning = false
+                                    },
+                                )
+                            }
+                            if (useFoldingBar) {
+                                LiquidGlassAppBottomNavigationBar(
+                                    navController = navController,
+                                    backdrop = backdrop,
+                                    viewModel = viewModel,
+                                    onOpenNowPlaying = { isShowNowPlaylistScreen = true },
+                                    isScrolledToTop = isScrolledToTop,
+                                    showAnalyticsTab = showAnalyticsTab,
+                                    showMixForYouTab = showMixForYouTab,
+                                    liquidGlass = isLiquidGlassEnabled == TRUE,
+                                ) { klass ->
+                                    viewModel.reloadDestination(klass)
                                 }
-                                if (useFoldingBar) {
-                                    LiquidGlassAppBottomNavigationBar(
-                                        navController = navController,
-                                        backdrop = backdrop,
-                                        viewModel = viewModel,
-                                        onOpenNowPlaying = { isShowNowPlaylistScreen = true },
-                                        isScrolledToTop = isScrolledToTop,
-                                        showAnalyticsTab = showAnalyticsTab,
-                                        showMixForYouTab = showMixForYouTab,
-                                        liquidGlass = isLiquidGlassEnabled == TRUE,
-                                    ) { klass ->
-                                        viewModel.reloadDestination(klass)
-                                    }
-                                } else {
-                                    AppBottomNavigationBar(
-                                        navController = navController,
-                                        showAnalyticsTab = showAnalyticsTab,
-                                        showMixForYouTab = showMixForYouTab,
-                                    ) { klass ->
-                                        viewModel.reloadDestination(klass)
-                                    }
+                            } else {
+                                AppBottomNavigationBar(
+                                    navController = navController,
+                                    showAnalyticsTab = showAnalyticsTab,
+                                    showMixForYouTab = showMixForYouTab,
+                                ) { klass ->
+                                    viewModel.reloadDestination(klass)
                                 }
                             }
                         }
@@ -659,12 +678,20 @@ fun App(
                 ) {
                     val tabletMiniPlayer: @Composable (Modifier) -> Unit = { modifier ->
                         androidx.compose.animation.AnimatedVisibility(
-                            visible = isShowMiniPlayer && isTablet && !isInFullscreen && !killmonBlocksChrome,
+                            visible = (isShowMiniPlayer || connectFollows) && isTablet && !isInFullscreen && !killmonBlocksChrome,
                             modifier = modifier,
                             enter = fadeIn() + slideInHorizontally(),
                             exit = fadeOut(),
                         ) {
-                            MiniPlayer(
+                            if (connectFollows) {
+                                ConnectSessionBar(
+                                    Modifier
+                                        .fillMaxWidth(if (getPlatform() == Platform.Android) 0.72f else 0.42f)
+                                        .padding(horizontal = 16.dp)
+                                        .padding(bottom = 16.dp),
+                                    onOpen = { isShowNowPlaylistScreen = true },
+                                )
+                            } else MiniPlayer(
                                 if (getPlatform() == Platform.Android) {
                                     Modifier
                                         .fillMaxWidth(0.8f)
@@ -710,8 +737,8 @@ fun App(
                     ) {
                         // Everything left of Now Playing. On Desktop the capsule player sits on the centre of
                         // this whole area, sidebar included, so it lives here rather than in the content panel,
-                        // which is both narrower than the capsule and clipped; and the area is what its glass
-                        // records, so the part over the sidebar refracts the sidebar instead of nothing.
+                        // which is both narrower than the capsule and clipped. The capsule itself is a solid
+                        // card; this area is a backdrop source only while liquid glass is enabled.
                         Box(
                             Modifier
                                 .weight(1f)
@@ -721,10 +748,10 @@ fun App(
                                 Modifier
                                     .fillMaxSize()
                                     .then(
-                                        // Desktop is unconditional: the floating capsule player is ALWAYS
-                                        // liquid glass there, and glass with no recorded source draws as
-                                        // plain transparency.
-                                        if (isDesktopShell && isTablet && !isInFullscreen) {
+                                        // Only while liquid glass is on. The desktop capsule is a solid card and
+                                        // does not sample this layer; recording it unconditionally was
+                                        // what made the bar look like transparent glass.
+                                        if (isLiquidGlassEnabled == TRUE && isDesktopShell && isTablet && !isInFullscreen) {
                                             Modifier.layerBackdrop(backdrop)
                                         } else {
                                             Modifier
@@ -765,7 +792,12 @@ fun App(
                                             if (isDesktopShell) {
                                                 Modifier
                                                     .padding(8.dp)
-                                                    .clip(RoundedCornerShape(12.dp))
+                                                    .border(
+                                                        1.dp,
+                                                        Color(0xFF7C4DFF).copy(alpha = 0.45f),
+                                                        RoundedCornerShape(14.dp),
+                                                    )
+                                                    .clip(RoundedCornerShape(14.dp))
                                                     .background(desktopPanel)
                                             } else {
                                                 Modifier
@@ -876,14 +908,21 @@ fun App(
                                                 },
                                             ),
                                     ) {
-                                        ForceDarkContent {
-                                            NowPlayingScreenContent(
-                                                navController = navController,
-                                                sharedViewModel = viewModel,
-                                                isExpanded = true,
-                                                dismissIcon = SimpIcons.ArrowForwardIos,
-                                            ) {
-                                                isShowNowPlaylistScreen = false
+                                        if (connectFollows) {
+                                            ConnectRemotePlayer(
+                                                onDismiss = { isShowNowPlaylistScreen = false },
+                                                modifier = Modifier.fillMaxSize(),
+                                            )
+                                        } else {
+                                            ForceDarkContent {
+                                                NowPlayingScreenContent(
+                                                    navController = navController,
+                                                    sharedViewModel = viewModel,
+                                                    isExpanded = true,
+                                                    dismissIcon = SimpIcons.ArrowForwardIos,
+                                                ) {
+                                                    isShowNowPlaylistScreen = false
+                                                }
                                             }
                                         }
                                     }
@@ -894,11 +933,15 @@ fun App(
                 }
 
                 if (isShowNowPlaylistScreen && !isTabletLandscape && !killmonBlocksChrome) {
-                    ForceDarkContent {
-                        NowPlayingScreen(
-                            navController = navController,
-                        ) {
-                            isShowNowPlaylistScreen = false
+                    if (connectFollows) {
+                        ConnectRemotePlayerSheet(onDismiss = { isShowNowPlaylistScreen = false })
+                    } else {
+                        ForceDarkContent {
+                            NowPlayingScreen(
+                                navController = navController,
+                            ) {
+                                isShowNowPlaylistScreen = false
+                            }
                         }
                     }
                 }

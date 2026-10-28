@@ -67,7 +67,7 @@ RW_DMG="$(mktemp -u "$(dirname "$OUT_DMG")/.simpmusic-rw-XXXX").dmg"
 
 echo "[wrap-mac-dmg] create-dmg → $TMP_DMG"
 create-dmg \
-  --volname "SimpMusic" \
+  --volname "Killmon Music" \
   --window-pos 200 120 \
   --window-size 1400 800 \
   --icon-size 192 \
@@ -82,12 +82,12 @@ hdiutil convert "$TMP_DMG" -format UDRW -o "$RW_DMG" >/dev/null
 rm -f "$TMP_DMG"
 
 echo "[wrap-mac-dmg] mount + apply volume icon"
-# Every arch mounts a volume named "SimpMusic". The previous arch's volume may not be
+# Every arch mounts a volume named "Killmon Music". The previous arch's volume may not be
 # fully released yet, so a plain `hdiutil attach` on the same name fails with EBUSY (16)
-# or silently remounts as "/Volumes/SimpMusic 1". Detach any stale volume first, attach
+# or silently remounts as "/Volumes/Killmon Music 1". Detach any stale volume first, attach
 # with a retry, and use the REAL mount point hdiutil reports instead of a hardcoded path.
 detach_stale_volumes() {
-  for v in /Volumes/SimpMusic /Volumes/SimpMusic\ *; do
+  for v in /Volumes/Killmon\ Music /Volumes/Killmon\ Music\ *; do
     [[ -e "$v" ]] && hdiutil detach -force "$v" >/dev/null 2>&1 || true
   done
 }

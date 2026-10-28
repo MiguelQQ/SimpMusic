@@ -759,7 +759,7 @@
     <string name="exit_selection">צא מהבחירה</string>
     <string name="remove_from_playlist">הסר מהפלייליסט</string>
     <!-- Listen Together -->
-    <string name="listen_together">האזן ביחד</string>
+    <string name="listen_together">JAM</string>
     <string name="lt_tagline">שיר אחד, זמן אחד, ביחד. צור חדר ושתף את הקוד עם חברים.</string>
     <string name="lt_not_connected">לא מחובר</string>
     <string name="lt_connected">מחובר</string>
@@ -780,8 +780,6 @@
     <string name="lt_just_asked">זה עתה ביקש להצטרף</string>
     <string name="lt_suggestions">שירים מומלצים</string>
     <string name="lt_leave_room">עזוב חדר</string>
-    <string name="lt_credit_protocol">פרוטוקול האזנה משותפת של Metrolist</string>
-    <string name="lt_credit_compatible">החדרים תואמים ללקוחות Metrolist</string>
     <string name="lt_server">שרת</string>
     <string name="lt_custom_server">שרת מותאם אישית</string>
     <string name="lt_custom_server_desc">הזן כתובת wss:// משלך</string>

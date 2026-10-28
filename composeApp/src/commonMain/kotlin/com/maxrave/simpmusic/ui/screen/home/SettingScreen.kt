@@ -708,6 +708,7 @@ fun SettingScreen(
                 SettingGroup(
                     title = stringResource(Res.string.login_sync_section),
                 ) {
+                    com.maxrave.simpmusic.ui.component.KillmonDevicesSettings()
                     SettingItem(
                         title =
                             stringResource(
@@ -1021,7 +1022,7 @@ fun SettingScreen(
                                 confirm =
                                     runBlocking { getString(Res.string.change) } to { state ->
                                         viewModel.changeLocation(
-                                            state.selectOne?.getSelected() ?: "US",
+                                            state.selectOne?.getSelected() ?: "CO",
                                         )
                                     },
                                 dismiss = runBlocking { getString(Res.string.cancel) },

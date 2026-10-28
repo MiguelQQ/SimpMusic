@@ -1,6 +1,9 @@
 package com.maxrave.simpmusic.ui.theme
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import com.maxrave.simpmusic.Platform
+import com.maxrave.simpmusic.getPlatform
 
 // ===== Brand =====
 
@@ -15,11 +18,25 @@ val killmonOnGreen = Color(0xFF000000)
 val killmonCyan = Color(0xFF18E0E8)
 val killmonAccentGradient = listOf(killmonGreen, killmonCyan)
 
+/** Desktop window only. Android keeps [killmonGreen]. */
+val killmonPurple = Color(0xFF7C4DFF)
+val killmonPurpleLight = Color(0xFFB388FF)
+val killmonPurpleGradient = listOf(killmonPurple, Color(0xFF9B59B6))
+
 /**
  * Brand seed color. The whole Material 3 ColorScheme is generated from this
- * color at runtime — see [AppTheme].
+ * color at runtime — see [AppTheme]. Android uses green. Desktop uses purple.
  */
 val seed = killmonGreen
+
+@Composable
+fun killmonBrand(): Color = if (getPlatform() == Platform.Desktop) killmonPurple else killmonGreen
+
+@Composable
+fun killmonBrandSecondary(): Color = if (getPlatform() == Platform.Desktop) killmonPurpleLight else killmonCyan
+
+@Composable
+fun killmonBrandGradient(): List<Color> = if (getPlatform() == Platform.Desktop) killmonPurpleGradient else killmonAccentGradient
 
 /** Spotify-style page and cards (dark theme). */
 val killmonBlack = Color(0xFF000000)
@@ -49,9 +66,9 @@ val blackMoreOverlay = Color(0x8f242424)
 // step one shade back towards the middle so they read as raised. The light panel is not here —
 // it comes from colorScheme.surfaceContainer, which already sits at the right distance.
 
-val desktopWindowDark = Color(0xFF000000)
-val desktopWindowLight = Color(0xFFFFFFFF)
-val desktopPanelDark = Color(0xFF121212)
+val desktopWindowDark = Color(0xFF100818)
+val desktopWindowLight = Color(0xFFF7F2FF)
+val desktopPanelDark = Color(0xFF1C1230)
 
 // ===== Desktop window controls =====
 // The macOS traffic lights. Fixed by convention rather than by theme — users read these by

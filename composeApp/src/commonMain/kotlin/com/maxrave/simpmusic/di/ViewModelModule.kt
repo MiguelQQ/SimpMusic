@@ -47,6 +47,7 @@ val viewModelModule =
                 get(),
                 get(),
                 get(),
+                get(),
             )
         }
         single {
@@ -111,6 +112,7 @@ val viewModelModule =
         }
         viewModel {
             HomeViewModel(
+                get(),
                 get(),
                 get(),
             )

@@ -556,7 +556,7 @@
     <string name="exit_selection">Seçim iptal</string>
     <string name="remove_from_playlist">Çalma listesinden sil</string>
     <!-- Listen Together -->
-    <string name="listen_together">Birlikte Dinleyin</string>
+    <string name="listen_together">JAM</string>
     <string name="lt_tagline">Arkadışınız ile birlikte, tek şarkı, tek pozisyon. Bir oda oluşturun ve kodu arkadaşlarınızla paylaşın.</string>
     <string name="lt_not_connected">Bağlanamadı</string>
     <string name="lt_connected">Bağlandı</string>
@@ -576,8 +576,6 @@
     <string name="lt_just_asked">az önce katılmayı istedim</string>
     <string name="lt_suggestions">Önerilen parçalar</string>
     <string name="lt_leave_room">Odadan ayrıl</string>
-    <string name="lt_credit_protocol">Metrolist protokolü ile birlikte dinle</string>
-    <string name="lt_credit_compatible">Odalar Metrolist istemcileriyle uyumludur</string>
     <string name="lt_server">Sunucu</string>
     <string name="lt_custom_server">Özel sunucu</string>
     <string name="lt_custom_server_desc">Kendi wss:// adresinizi girin</string>

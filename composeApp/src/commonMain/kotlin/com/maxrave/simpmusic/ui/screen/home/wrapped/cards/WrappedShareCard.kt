@@ -336,9 +336,8 @@ private fun PosterLabel(
  * the ink the panel writes in (`onSurface`) and the logo prints back through it in the panel's own
  * ground (`surface`), which is what keeps the mark readable whatever the artwork seeded.
  *
- * `Res.drawable.mono` is the app's logo, not an icon: `SimpIcons` is the Material Symbols set and
- * has no wordmark in it, and CLAUDE.md keeps the two logos as drawables on purpose. This is the
- * only `painterResource` left in the file.
+ * `Res.drawable.mono` is the Killmon mark, not a Material symbol: `SimpIcons` has no wordmark.
+ * This is the only `painterResource` left in the file.
  */
 @Composable
 private fun PosterSignature(wrapped: WrappedYear) {

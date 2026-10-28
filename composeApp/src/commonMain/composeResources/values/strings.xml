@@ -121,6 +121,7 @@
     <string name="top_artists">Top artists</string>
     <string name="your_playlist">Your Playlist</string>
     <string name="lyrics">Lyrics</string>
+    <string name="lyrics_unavailable">Lyrics unavailable</string>
     <string name="all">All</string>
     <string name="videos">Videos</string>
     <string name="content">Content</string>
@@ -781,34 +782,34 @@
     <string name="exit_selection">Exit selection</string>
     <string name="remove_from_playlist">Remove from playlist</string>
     <!-- Listen Together -->
-    <string name="listen_together">Listen Together</string>
-    <string name="lt_tagline">One song, one position, together. Create a room and share the code with friends.</string>
-    <string name="lt_not_connected">Not connected</string>
-    <string name="lt_connected">Connected</string>
-    <string name="lt_connecting">Connecting…</string>
-    <string name="lt_connect">Connect</string>
+    <string name="listen_together">JAM</string>
+    <string name="lt_tagline">Crea una JAM y comparte el código. Todos pueden editar la cola; el anfitrión controla la reproducción.</string>
+    <string name="lt_not_connected">Desconectado</string>
+    <string name="lt_connected">Conectado</string>
+    <string name="lt_connecting">Conectando…</string>
+    <string name="lt_connect">Conectar</string>
     <string name="lt_display_name">Display name</string>
     <string name="lt_display_name_hint">The name everyone in the room sees</string>
-    <string name="lt_create_room">Create room</string>
-    <string name="lt_or_join_with_code">or join with a code</string>
-    <string name="lt_join_room">Join room</string>
-    <string name="lt_background_warning">Leaving the app or switching away for too long will disconnect you from the room.</string>
-    <string name="lt_disconnect">Disconnect</string>
-    <string name="lt_room_code">Room code</string>
-    <string name="lt_in_room">In the room</string>
-    <string name="lt_host_badge">host</string>
-    <string name="lt_you">you</string>
+    <string name="lt_create_room">Crear JAM</string>
+    <string name="lt_or_join_with_code">o entra con un código de 6 caracteres</string>
+    <string name="lt_join_room">Entrar a la JAM</string>
+    <string name="lt_background_warning">La JAM se reconecta si pierdes la conexión. Al volver, saltas a la posición del anfitrión.</string>
+    <string name="lt_disconnect">Desconectar</string>
+    <string name="lt_room_code">Código de la JAM</string>
+    <string name="lt_in_room">En la JAM</string>
+    <string name="lt_host_badge">anfitrión</string>
+    <string name="lt_you">tú</string>
     <string name="lt_join_requests">Asking to join</string>
     <string name="lt_just_asked">just asked to join</string>
     <string name="lt_suggestions">Suggested tracks</string>
-    <string name="lt_leave_room">Leave room</string>
-    <string name="lt_credit_protocol">Listen Together protocol by Metrolist</string>
-    <string name="lt_credit_compatible">Rooms are compatible with Metrolist clients</string>
+    <string name="lt_leave_room">Salir de la JAM</string>
+    <string name="lt_credit_protocol">JAM de Killmon Music</string>
+    <string name="lt_credit_compatible">YouTube directo en cada teléfono · cuenta Killmon requerida</string>
     <string name="lt_server">Server</string>
-    <string name="lt_default_server_name" translatable="false">The Meowery</string>
-    <string name="lt_default_server_location" translatable="false">Poland · run by Nyx</string>
+    <string name="lt_default_server_name" translatable="false">Killmon</string>
+    <string name="lt_default_server_location" translatable="false">Servidor Killmon (AWS)</string>
     <string name="lt_custom_server">Custom server</string>
-    <string name="lt_custom_server_desc">Enter your own wss:// address</string>
+    <string name="lt_custom_server_desc">killmon.seriepokemon.online</string>
     <string name="lt_save_server">Save server</string>
     <string name="lt_as_host">When you host</string>
     <string name="lt_auto_approve_joins">Auto-approve joins</string>
@@ -822,9 +823,9 @@
     <string name="lt_kick_desc">They can rejoin with the code</string>
     <string name="lt_block">Block permanently</string>
     <string name="lt_block_desc">They cannot rejoin, even with the code</string>
-    <string name="lt_waiting_approval">Waiting for the host</string>
-    <string name="lt_waiting_approval_desc">They need to let you in. If the code is wrong you will get an error instead.</string>
-    <string name="lt_cancel_join">Cancel</string>
+    <string name="lt_waiting_approval">Entrando a la JAM…</string>
+    <string name="lt_waiting_approval_desc">Conectando con el servidor Killmon</string>
+    <string name="lt_cancel_join">Cancelar</string>
     <string name="share_lyrics">Share lyrics</string>
     <string name="share_lyrics_select_title">Select lines</string>
     <string name="share_lyrics_selected_count">%1$d lines selected</string>
@@ -1068,4 +1069,9 @@
     <string name="cd_close">Close</string>
     <string name="cd_album_art">Album art</string>
     <string name="cd_like">Like</string>
+    <string name="home_recent_songs">Recently played</string>
+    <string name="home_your_artists">Your artists</string>
+    <string name="home_your_albums">Your albums</string>
+    <string name="home_your_playlists">Your playlists</string>
+    <string name="lt_add_to_room">Add to JAM</string>
 </resources>

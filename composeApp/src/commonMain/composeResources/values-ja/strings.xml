@@ -752,7 +752,7 @@
     <string name="exit_selection">選択解除</string>
     <string name="remove_from_playlist">プレイリストから削除</string>
     <!-- Listen Together -->
-    <string name="listen_together">一緒に聴こう</string>
+    <string name="listen_together">JAM</string>
     <string name="lt_tagline">1曲を、同じところから、みんなで一緒に。ルームを作成して、コードを友達と共有しましょう。</string>
     <string name="lt_not_connected">接続されていません</string>
     <string name="lt_connected">接続されました</string>
@@ -773,8 +773,6 @@
     <string name="lt_just_asked">参加を求められました</string>
     <string name="lt_suggestions">おすすめの曲</string>
     <string name="lt_leave_room">ルームから退出</string>
-    <string name="lt_credit_protocol">Metrolistの「一緒に聴く」プロトコル</string>
-    <string name="lt_credit_compatible">ルームはMetrolistクライアントと互換性があります</string>
     <string name="lt_server">サーバー</string>
     <string name="lt_custom_server">カスタムサーバー</string>
     <string name="lt_custom_server_desc">自分のアドレスを入力してください</string>

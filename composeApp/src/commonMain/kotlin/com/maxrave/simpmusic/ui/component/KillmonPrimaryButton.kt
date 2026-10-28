@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.maxrave.simpmusic.ui.theme.killmonGreen
+import com.maxrave.simpmusic.ui.theme.killmonBrand
 import com.maxrave.simpmusic.ui.theme.killmonOnGreen
 
 /**
@@ -69,8 +69,8 @@ fun KillmonPrimaryButton(
 @Composable
 fun killmonPrimaryButtonColors(): ButtonColors =
     ButtonDefaults.buttonColors(
-        containerColor = killmonGreen,
+        containerColor = killmonBrand(),
         contentColor = killmonOnGreen,
-        disabledContainerColor = killmonGreen,
+        disabledContainerColor = killmonBrand(),
         disabledContentColor = killmonOnGreen,
     )

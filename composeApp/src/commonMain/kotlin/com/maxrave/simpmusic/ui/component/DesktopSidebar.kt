@@ -370,8 +370,8 @@ private fun SidebarNavRow(
     val color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
     Row(
         Modifier
-            .padding(horizontal = if (collapsed) 12.dp else 8.dp)
-            .then(if (collapsed) Modifier.size(48.dp) else Modifier.fillMaxWidth().height(48.dp))
+            .padding(horizontal = if (collapsed) 12.dp else 10.dp, vertical = 2.dp)
+            .then(if (collapsed) Modifier.size(52.dp) else Modifier.fillMaxWidth().height(52.dp))
             .then(if (selected) Modifier.liquidGlass(backdrop, RoundedCornerShape(24.dp), highlight = SidebarGlassRim) else Modifier)
             .clip(RoundedCornerShape(24.dp))
             .clickable(onClick = onClick)

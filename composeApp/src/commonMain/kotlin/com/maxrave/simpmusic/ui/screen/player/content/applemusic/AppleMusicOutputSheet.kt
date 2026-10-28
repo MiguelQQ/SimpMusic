@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.maxrave.domain.data.model.connect.ConnectDevice
 import com.maxrave.domain.data.player.AudioOutput
 import com.maxrave.domain.data.player.AudioOutputKind
 import com.maxrave.domain.data.player.GenericCastState
@@ -49,6 +50,7 @@ import com.maxrave.simpmusic.Platform
 import com.maxrave.simpmusic.expect.ui.DeviceVolumeController
 import com.maxrave.simpmusic.expect.ui.rememberCastReceivers
 import com.maxrave.simpmusic.expect.ui.rememberDeviceVolumeController
+import com.maxrave.domain.repository.AccountConnectRepository
 import com.maxrave.simpmusic.getPlatform
 import com.maxrave.simpmusic.ui.component.SurfaceDarkColors
 import com.maxrave.simpmusic.ui.component.rememberSurfaceDarkColors
@@ -121,8 +123,13 @@ internal fun AppleMusicOutputSheet(
     val localDensity = LocalDensity.current
     // Scanning for receivers only while this is open: discovery keeps the radio busy.
     val cast = rememberCastReceivers(discover = true)
+    val connectRepo = koinInject<AccountConnectRepository>()
+    val connect by connectRepo.state.collectAsStateWithLifecycle()
     // Devices coming and going update the list on their own; the system's own route changing does not.
-    LaunchedEffect(Unit) { onRefresh() }
+    LaunchedEffect(Unit) {
+        onRefresh()
+        connectRepo.refresh()
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -171,6 +178,39 @@ internal fun AppleMusicOutputSheet(
                             closeSheet()
                         },
                     )
+                }
+                if (connect.signedIn && connect.devices.isNotEmpty()) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
+                        thickness = 1.dp,
+                        color = Color.White.copy(alpha = 0.10f),
+                    )
+                    Text(
+                        text = "Killmon",
+                        style = typo().bodySmall,
+                        color = colors.subtitle,
+                        modifier = Modifier.fillMaxWidth().padding(start = 32.dp, end = 20.dp, top = 4.dp),
+                    )
+                    val trackTitle = connect.session?.currentTrack()?.title
+                    connect.devices.forEach { device ->
+                        OutputRow(
+                            icon = device.icon(),
+                            name = device.displayName,
+                            status =
+                                when {
+                                    device.isActive && !trackTitle.isNullOrBlank() -> "Reproduciendo · $trackTitle"
+                                    device.isActive -> stringResource(Res.string.audio_output_playing_here)
+                                    device.isSelf -> "Este dispositivo"
+                                    else -> "En línea"
+                                },
+                            selected = device.isActive,
+                            colors = colors,
+                            onClick = {
+                                if (!device.isActive) connectRepo.transferTo(device.deviceId)
+                                closeSheet()
+                            },
+                        )
+                    }
                 }
                 if (cast.receivers.isNotEmpty()) {
                     HorizontalDivider(
@@ -276,6 +316,9 @@ private fun AudioOutput.kindLabel(): String? =
         AudioOutputKind.HDMI -> if (name.isNotBlank()) stringResource(Res.string.audio_output_hdmi) else null
         else -> null
     }
+
+private fun ConnectDevice.icon(): ImageVector =
+    if (platform == "android" || platform == "ios") SimpIcons.Smartphone else SimpIcons.Speaker
 
 private fun AudioOutput.icon(): ImageVector =
     when (kind) {

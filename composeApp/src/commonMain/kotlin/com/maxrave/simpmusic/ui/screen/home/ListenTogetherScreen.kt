@@ -42,6 +42,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -311,11 +313,11 @@ fun ListenTogetherScreen(
                 managing = null
             },
             onKick = {
-                viewModel.kickUser(member.userId)
+                viewModel.transferHost(member.userId)
                 managing = null
             },
             onBlock = {
-                viewModel.blockAndKick(member.userId, member.username)
+                viewModel.transferHost(member.userId)
                 managing = null
             },
             onDismiss = { managing = null },
@@ -361,6 +363,7 @@ private fun ColumnScope.WorkArea(
                     Suggestions(state.suggestions, viewModel::approveSuggestion, viewModel::rejectSuggestion)
                 }
             }
+            Text("Controla la música y la cola compartida desde el reproductor habitual.")
             Members(
                 members = state.members,
                 selfId = state.selfUserId,
@@ -376,11 +379,11 @@ private fun ColumnScope.WorkArea(
         }
 
         else -> {
-            NameField(displayName, viewModel::onDisplayNameChange)
+            Text("Se usa el nombre de tu cuenta Killmon")
 
             PrimaryButton(
                 text = stringResource(Res.string.lt_create_room),
-                enabled = displayName.isNotBlank() && state.isConnected,
+                enabled = state.isConnected,
                 onClick = viewModel::createRoom,
             )
 
@@ -390,7 +393,7 @@ private fun ColumnScope.WorkArea(
 
             SecondaryButton(
                 text = stringResource(Res.string.lt_join_room),
-                enabled = displayName.isNotBlank() && codeInput.length == ROOM_CODE_LENGTH && state.isConnected,
+                enabled = codeInput.length == ROOM_CODE_LENGTH && state.isConnected,
                 onClick = viewModel::joinRoom,
             )
 
@@ -435,7 +438,7 @@ private fun CreditFooter() {
 }
 
 /** Prefix for the share button; the code alone means nothing to the recipient. */
-private const val SHARE_PREFIX = "Join my Killmon Music room with code "
+private const val SHARE_PREFIX = "https://killmon.seriepokemon.online/jam/?code="
 
 // ───────────────────────────────── structure ─────────────────────────────────
 
@@ -546,7 +549,7 @@ private fun ConnectionLine(
         Column(Modifier.weight(1f)) {
             Text(label, style = typo().bodyMedium, color = accent, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
-                "The Meowery · Poland",
+                "Servidor Killmon (AWS)",
                 style = typo().bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -596,7 +599,7 @@ private fun RoomCodePoster(
         Text(
             text =
                 state.roomCode
-                    ?.chunked(4)
+                    ?.chunked(3)
                     ?.joinToString(" ")
                     .orEmpty(),
             // The app's scale stops at 25sp because nothing else has to carry across a room. Sized
@@ -616,9 +619,9 @@ private fun RoomCodePoster(
             Text(
                 text =
                     if (state.isHost) {
-                        "You are the host · ${state.members.size} listening"
+                        "Eres anfitrión · ${state.members.size} miembros · todos controlan"
                     } else {
-                        "${state.members.firstOrNull { it.isHost }?.username.orEmpty()} is controlling playback"
+                        "Anfitrión: ${state.members.firstOrNull { it.isHost }?.username.orEmpty()} · todos controlan"
                     },
                 style = typo().bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -661,12 +664,12 @@ private fun BufferBanner(names: List<String>) {
     Surface(tint = MaterialTheme.colorScheme.tertiary) {
         Column(Modifier.fillMaxWidth().padding(16.dp)) {
             Text(
-                text = if (names.isEmpty()) "Waiting for everyone" else "Waiting for ${names.joinToString(", ")}",
+                text = if (names.isEmpty()) "Esperando a que los demás carguen…" else "Esperando a que los demás carguen… ${names.joinToString(", ")}",
                 style = typo().bodyMedium,
                 color = MaterialTheme.colorScheme.tertiary,
             )
             Text(
-                "Playback resumes when everyone is ready",
+                "La música empieza cuando todos están listos",
                 style = typo().bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -865,10 +868,10 @@ private fun Members(
                         Text(
                             text =
                                 when {
-                                    member.userId == selfId -> stringResource(Res.string.lt_you)
-                                    member.isBuffering -> "loading…"
-                                    member.isConnected -> "in sync"
-                                    else -> "disconnected"
+                                                                        member.playbackFailed -> "Falló la carga de YouTube"
+                                                                        member.isBuffering -> "Cargando"
+                                    member.isConnected -> "Listo"
+                                    else -> "Desconectado"
                                 },
                             style = typo().bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -980,18 +983,7 @@ private fun MemberActionDialog(
                     MaterialTheme.colorScheme.onSurface,
                     onTransferHost,
                 )
-                DialogAction(
-                    stringResource(Res.string.lt_kick),
-                    stringResource(Res.string.lt_kick_desc),
-                    MaterialTheme.colorScheme.error,
-                    onKick,
-                )
-                DialogAction(
-                    stringResource(Res.string.lt_block),
-                    stringResource(Res.string.lt_block_desc),
-                    MaterialTheme.colorScheme.error,
-                    onBlock,
-                )
+
             }
         }
     }

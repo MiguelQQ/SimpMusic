@@ -698,7 +698,7 @@
     <string name="exit_selection">Esci dalla selezione</string>
     <string name="remove_from_playlist">Rimuovi dalla playlist</string>
     <!-- Listen Together -->
-    <string name="listen_together">Ascolta in compagnia</string>
+    <string name="listen_together">JAM</string>
     <string name="lt_tagline">Una canzone, una posizione, in compagnia. Crea una stanza e condividi il codice con gli amici.</string>
     <string name="lt_not_connected">Non connesso</string>
     <string name="lt_connected">Connesso</string>

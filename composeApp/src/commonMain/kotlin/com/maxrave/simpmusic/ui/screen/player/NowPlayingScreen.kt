@@ -21,6 +21,8 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.rememberPagerState
@@ -952,23 +954,28 @@ fun NowPlayingScreenContent(
         )
     }
 
-    when (nowPlayingStyle) {
-        DataStoreManager.NOW_PLAYING_STYLE_M3_EXPRESSIVE ->
-            NowPlayingContentM3Expressive(
-                state = state,
-                actions = actions,
-            )
+    Column(Modifier.fillMaxSize()) {
+        com.maxrave.simpmusic.ui.component.JamPlayerStatus()
+        Box(Modifier.weight(1f)) {
+            when (nowPlayingStyle) {
+                DataStoreManager.NOW_PLAYING_STYLE_M3_EXPRESSIVE ->
+                    NowPlayingContentM3Expressive(
+                        state = state,
+                        actions = actions,
+                    )
 
-        DataStoreManager.NOW_PLAYING_STYLE_APPLE_MUSIC ->
-            NowPlayingContentAppleMusic(
-                state = state,
-                actions = actions,
-            )
+                DataStoreManager.NOW_PLAYING_STYLE_APPLE_MUSIC ->
+                    NowPlayingContentAppleMusic(
+                        state = state,
+                        actions = actions,
+                    )
 
-        else ->
-            NowPlayingContentSpotify(
-                state = state,
-                actions = actions,
-            )
+                else ->
+                    NowPlayingContentSpotify(
+                        state = state,
+                        actions = actions,
+                    )
+            }
+        }
     }
 }
