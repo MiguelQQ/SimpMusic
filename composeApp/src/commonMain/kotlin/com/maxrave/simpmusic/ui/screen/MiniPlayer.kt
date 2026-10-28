@@ -122,6 +122,8 @@ import com.maxrave.simpmusic.extension.elapsedLabel
 import com.maxrave.simpmusic.extension.formatDuration
 import com.maxrave.simpmusic.getPlatform
 import com.maxrave.simpmusic.ui.component.ExplicitBadge
+import com.maxrave.simpmusic.ui.component.rememberVolumeControl
+import com.maxrave.simpmusic.ui.component.volumeGestures
 import com.maxrave.simpmusic.ui.component.HeartCheckBox
 import com.maxrave.simpmusic.ui.component.PlayPauseButton
 import com.maxrave.simpmusic.ui.component.PlayerControlLayout
@@ -978,17 +980,10 @@ fun MiniPlayer(
                             )
                         }
                     }
-                    var isVolumeSliding by rememberSaveable {
-                        mutableStateOf(false)
-                    }
-                    var volumeValue by rememberSaveable {
-                        mutableFloatStateOf(0f)
-                    }
-                    LaunchedEffect(key1 = controllerState, key2 = isVolumeSliding) {
-                        if (!isVolumeSliding) {
-                            volumeValue = controllerState.volume
+                    val volume =
+                        rememberVolumeControl(controllerState.volume) { level ->
+                            sharedViewModel.onUIEvent(UIEvent.UpdateVolume(level))
                         }
-                    }
                     // Remembers the level to come back to when unmuting, so the button restores
                     // what the user was listening at instead of jumping to full volume.
                     // Starting muted leaves nothing to restore, so full volume stays the fallback.
@@ -1039,8 +1034,8 @@ fun MiniPlayer(
                         // open for a beat instead: moving back in cancels this effect before the
                         // delay elapses, so the popup stays.
                         var isVolumePopupVisible by remember { mutableStateOf(false) }
-                        LaunchedEffect(isVolumeHovered, isPopupHovered, isVolumeSliding) {
-                            if (isVolumeHovered || isPopupHovered || isVolumeSliding) {
+                        LaunchedEffect(isVolumeHovered, isPopupHovered, volume.dragging) {
+                            if (isVolumeHovered || isPopupHovered || volume.dragging) {
                                 isVolumePopupVisible = true
                             } else {
                                 delay(400)
@@ -1055,6 +1050,7 @@ fun MiniPlayer(
                                 Column(
                                     modifier =
                                         Modifier
+                                            .volumeGestures(volume)
                                             .hoverable(popupInteraction)
                                             .width(44.dp)
                                             .height(VOLUME_POPUP_HEIGHT)
@@ -1068,7 +1064,7 @@ fun MiniPlayer(
                                     verticalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
                                     Text(
-                                        text = (volumeValue * 100).roundToInt().toString(),
+                                        text = (volume.shown * 100).roundToInt().toString(),
                                         style = typo().bodySmall,
                                         color = textColor.copy(alpha = 0.7f),
                                         maxLines = 1,
@@ -1087,17 +1083,9 @@ fun MiniPlayer(
                                                 // turn: graphicsLayer rotates the drawing AND the pointer
                                                 // input, so drag direction follows the visual.
                                                 Slider(
-                                                    value = volumeValue,
-                                                    onValueChangeFinished = {
-                                                        isVolumeSliding = false
-                                                        sharedViewModel.onUIEvent(
-                                                            UIEvent.UpdateVolume(volumeValue.coerceIn(0f, 1f)),
-                                                        )
-                                                    },
-                                                    onValueChange = {
-                                                        isVolumeSliding = true
-                                                        volumeValue = it
-                                                    },
+                                                    value = volume.shown,
+                                                    onValueChangeFinished = { volume.onDragFinished() },
+                                                    onValueChange = { volume.onDrag(it) },
                                                     valueRange = 0f..1f,
                                                     modifier =
                                                         Modifier

@@ -987,18 +987,10 @@ private fun FullscreenLyricsDesktopChrome(
 ) {
     val controllerState by sharedViewModel.controllerState.collectAsStateWithLifecycle()
 
-    // The Desktop capsule's volume state machine (MiniPlayer), unchanged.
-    var isVolumeSliding by rememberSaveable {
-        mutableStateOf(false)
-    }
-    var volumeValue by rememberSaveable {
-        mutableFloatStateOf(0f)
-    }
-    LaunchedEffect(key1 = controllerState, key2 = isVolumeSliding) {
-        if (!isVolumeSliding) {
-            volumeValue = controllerState.volume
+    val volume =
+        rememberVolumeControl(controllerState.volume) { level ->
+            sharedViewModel.onUIEvent(UIEvent.UpdateVolume(level))
         }
-    }
     // Remembers the level to come back to when unmuting, so the button restores
     // what the user was listening at instead of jumping to full volume.
     // Starting muted leaves nothing to restore, so full volume stays the fallback.
@@ -1044,6 +1036,7 @@ private fun FullscreenLyricsDesktopChrome(
                     // Static glass: the press swell scales the whole pill, which would slide the
                     // slider out from under a pointer that is dragging it.
                     .liquidGlass(backdrop, RoundedCornerShape(24.dp), interactive = false)
+                    .volumeGestures(volume)
                     .padding(end = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -1072,17 +1065,9 @@ private fun FullscreenLyricsDesktopChrome(
             }
             CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
                 Slider(
-                    value = volumeValue,
-                    onValueChangeFinished = {
-                        isVolumeSliding = false
-                        sharedViewModel.onUIEvent(
-                            UIEvent.UpdateVolume(volumeValue.coerceIn(0f, 1f)),
-                        )
-                    },
-                    onValueChange = {
-                        isVolumeSliding = true
-                        volumeValue = it
-                    },
+                    value = volume.shown,
+                    onValueChangeFinished = { volume.onDragFinished() },
+                    onValueChange = { volume.onDrag(it) },
                     valueRange = 0f..1f,
                     modifier = Modifier.width(CHROME_VOLUME_SLIDER_WIDTH),
                     track = { sliderState ->
