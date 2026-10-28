@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -69,14 +70,15 @@ fun DiscordLoginScreen(
 
     val state = rememberWebViewState()
     Box(modifier = Modifier.fillMaxSize()) {
-        Column {
+        Column(Modifier.fillMaxSize()) {
             Spacer(
                 Modifier
                     .size(
                         innerPadding.calculateTopPadding() + 64.dp,
                     ),
             )
-            // WebView for Discord login
+            // Desktop has no WebView. The JVM actual fills this box with the Windows link flow.
+            Box(Modifier.weight(1f).fillMaxWidth()) {
             DiscordWebView(
                 state,
                 aboveContent = {
@@ -99,6 +101,7 @@ fun DiscordLoginScreen(
                 viewModel.saveDiscordToken(token)
                 viewModel.makeToast(getStringBlocking(Res.string.login_success))
                 navController.navigateUp()
+            }
             }
         }
         TopAppBar(

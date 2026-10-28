@@ -34,7 +34,7 @@ import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
-import coil3.request.crossfade
+
 import com.maxrave.domain.data.model.library.LibraryCollectionPreview
 import com.maxrave.domain.data.model.library.LibraryOverview
 import com.maxrave.simpmusic.Platform
@@ -255,6 +255,7 @@ private fun SleeveFan(
     ring: Color,
     modifier: Modifier = Modifier,
 ) {
+    val sleevePx = rememberThumbPx(sleeve)
     Box(modifier, contentAlignment = Alignment.Center) {
         if (thumbnails == null) return@Box
         val shape = if (round) CircleShape else RoundedCornerShape(8.dp)
@@ -276,7 +277,7 @@ private fun SleeveFan(
                         ImageRequest
                             .Builder(LocalPlatformContext.current)
                             .data(covers[count - 1 - i])
-                            .crossfade(true)
+                            .boundedDecode(sleevePx)
                             .build(),
                     placeholder = rememberHolderPainter(),
                     error = rememberHolderPainter(),

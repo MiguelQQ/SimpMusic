@@ -60,7 +60,6 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.maxrave.domain.data.entities.AlbumEntity
 import com.maxrave.domain.data.entities.ArtistEntity
 import com.maxrave.domain.data.entities.DownloadState
@@ -230,7 +229,7 @@ fun SongFullWidthItems(
                                         .data(thumb)
                                         .diskCachePolicy(CachePolicy.ENABLED)
                                         .diskCacheKey(thumb)
-                                        .crossfade(true)
+                                        .boundedDecode(rememberThumbPx(48.dp))
                                         .build(),
                                 placeholder = rememberHolderPainter(),
                                 error = rememberHolderPainter(),
@@ -392,7 +391,7 @@ fun SuggestItems(
                                     .data(thumb)
                                     .diskCachePolicy(CachePolicy.ENABLED)
                                     .diskCacheKey(thumb)
-                                    .crossfade(true)
+                                    .boundedDecode(rememberThumbPx(40.dp))
                                     .build(),
                             placeholder = rememberHolderPainter(),
                             error = rememberHolderPainter(),
@@ -550,7 +549,7 @@ fun PlaylistFullWidthItems(
                             .data(thumb)
                             .diskCachePolicy(CachePolicy.ENABLED)
                             .diskCacheKey(thumb)
-                            .crossfade(true)
+                            .boundedDecode(rememberThumbPx(48.dp))
                             .build(),
                     placeholder = rememberHolderPainter(),
                     error = rememberHolderPainter(),
@@ -672,7 +671,7 @@ fun ArtistFullWidthItems(
                             .data(thumbnails)
                             .diskCachePolicy(CachePolicy.ENABLED)
                             .diskCacheKey(thumbnails)
-                            .crossfade(true)
+                            .boundedDecode(rememberThumbPx(48.dp))
                             .build(),
                     placeholder = rememberHolderPainter(),
                     error = rememberHolderPainter(),

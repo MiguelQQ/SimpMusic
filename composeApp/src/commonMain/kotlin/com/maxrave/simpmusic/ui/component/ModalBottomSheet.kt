@@ -1003,7 +1003,7 @@ fun QueueBottomSheet(
             queueData?.queueState ?: QueueData.StateSource.STATE_CREATED
         }
     }
-    val endlessQueueEnable by dataStoreManager.endlessQueue.map { it == DataStoreManager.TRUE }.collectAsState(false)
+    val endlessQueueEnable by dataStoreManager.endlessQueue.map { it == DataStoreManager.TRUE }.collectAsState(true)
 
     val shouldLoadMore =
         remember {
@@ -1950,7 +1950,7 @@ fun rememberAddToQueueBlock(): AddToQueueBlock? {
         remember(dataStoreManager) {
             dataStoreManager.endlessQueue.map { it == DataStoreManager.TRUE }
         }
-    val endlessQueue by endlessQueueFlow.collectAsState(false)
+    val endlessQueue by endlessQueueFlow.collectAsState(true)
     return queueData.addToQueueBlock(endlessQueue)
 }
 

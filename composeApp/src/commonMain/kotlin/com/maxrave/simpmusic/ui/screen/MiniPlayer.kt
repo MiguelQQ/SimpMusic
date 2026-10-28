@@ -32,6 +32,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -81,6 +82,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
@@ -167,12 +169,44 @@ private fun artistWithDevice(artist: String, device: String?): String {
     return if (artist.isBlank()) line else "$artist · $line"
 }
 
-/** Charcoal card shared with the Android bar. Desktop uses the opaque colour so the capsule is not glass. */
-private val MiniPlayerCard = Color(0xFF2A2A2A).copy(alpha = 0.97f)
+/** Slightly translucent charcoal. No blur: the shelf behind the bar stays sharp. */
+private const val PLAYER_BAR_ALPHA = 0.88f
+
+private val MiniPlayerCard = Color(0xFF2A2A2A).copy(alpha = PLAYER_BAR_ALPHA)
+
+/** Opaque fill for the volume popup, which is a menu, not the bar. */
 private val MiniPlayerSolid = Color(0xFF2A2A2A)
+
+/** Desktop dark theme surface. Used when the scheme surface is light, so white glyphs stay readable. */
+private val MiniPlayerDesktopFallback = Color(0xFF1A1028)
+
+private val PlayerBarHairline = Color.White.copy(alpha = 0.06f)
 private val MiniPlayerArtist = Color(0xFFB3B3B3)
 private val MiniPlayerTouch = 48.dp
 private val MiniPlayerIcon = 26.dp
+
+/**
+ * Desktop capsule / window fill: the current purple theme surface at [PLAYER_BAR_ALPHA].
+ * A light scheme surface would wash out the white glyphs, so that case keeps the dark surface.
+ */
+@Composable
+private fun playerBarDesktopColor(): Color {
+    val surface = MaterialTheme.colorScheme.surface
+    val base = if (surface.luminance() > 0.5f) MiniPlayerDesktopFallback else surface
+    return base.copy(alpha = PLAYER_BAR_ALPHA)
+}
+
+/** 1dp line along the top edge. Drawn inside an already clipped box, so it follows the shape. */
+@Composable
+private fun BoxScope.PlayerBarTopHairline() {
+    Box(
+        Modifier
+            .align(Alignment.TopCenter)
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(PlayerBarHairline),
+    )
+}
 
 /** Glyph centred in a 48dp target so the three controls stay apart. */
 @Composable
@@ -388,6 +422,7 @@ fun MiniPlayer(
                             },
                     ),
         ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -536,6 +571,8 @@ fun MiniPlayer(
                     )
                 }
             }
+            PlayerBarTopHairline()
+            }
         }
     } else {
         // Solid charcoal, same family as the Android card. White glyphs stay readable on it
@@ -593,14 +630,14 @@ fun MiniPlayer(
         }
         // Floating capsule: transport on the left, the track and its slim progress slider in the
         // middle, the action cluster on the right. Size and placement come from the caller (App.kt).
-        // Opaque charcoal, like the Android mini player. No liquid glass, blur, or backdrop sample:
-        // a glass capsule reads as a transparent smear over the window, which is not the look we want.
+        // Flat purple surface at ~0.88 alpha. No liquid glass, blur, haze, or backdrop sample.
         val capsuleShape = RoundedCornerShape(50)
         val density = LocalDensity.current
+        val capsuleColor = playerBarDesktopColor()
         Box(
             modifier
                 .clip(capsuleShape)
-                .background(MiniPlayerSolid)
+                .background(capsuleColor)
                 .clickable {
                     onClick()
                 },
@@ -1134,6 +1171,7 @@ fun MiniPlayer(
                     }
                 }
             }
+            PlayerBarTopHairline()
         }
     }
 }

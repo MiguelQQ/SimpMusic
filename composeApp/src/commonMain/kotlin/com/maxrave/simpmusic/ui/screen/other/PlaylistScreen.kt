@@ -179,7 +179,6 @@ fun PlaylistScreen(
     // prefix check and the watch endpoint expect the bare id, so normalise once on the way in
     // rather than stripping "VL" again at each consumer.
     val id = playlistId.removePrefix("VL")
-    val tag = "PlaylistScreen"
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val continuation by viewModel.continuation.collectAsStateWithLifecycle()
@@ -219,11 +218,6 @@ fun PlaylistScreen(
         }
     }
 
-    LaunchedEffect(uiState) {
-        Logger.d(tag, "uiState hash: ${uiState.hashCode()}")
-        Logger.d(tag, "uiState data: ${uiState.data}")
-    }
-
     LaunchedEffect(showSearchBar) {
         if (showSearchBar) {
             viewModel.getFullTracks {}
@@ -244,9 +238,6 @@ fun PlaylistScreen(
         }
 
     LaunchedEffect(key1 = shouldStartPaginate.value) {
-        Logger.d(tag, "shouldStartPaginate: ${shouldStartPaginate.value}")
-        Logger.d(tag, "tracksListState: $tracksListState")
-        Logger.d(tag, "Continuation: $continuation")
         if (shouldStartPaginate.value && tracksListState == ListState.IDLE) {
             viewModel.getContinuationTrack(
                 id,
@@ -298,7 +289,6 @@ fun PlaylistScreen(
 
     LaunchedEffect(key1 = id) {
         if (id != uiState.data?.id) {
-            Logger.w(tag, "new id: $id")
             viewModel.getData(id)
         }
     }
@@ -358,11 +348,9 @@ fun PlaylistScreen(
     Crossfade(
         targetState = uiState,
     ) { state ->
-        Logger.w(tag, "State hash: ${state.hashCode()}")
         when (state) {
             is PlaylistUIState.Success -> {
                 val data = state.data
-                Logger.d(tag, "data: $data")
                 if (data == null) return@Crossfade
                 val hazeState =
                     rememberHazeState()
@@ -1053,10 +1041,14 @@ fun PlaylistScreen(
                             )
                         }
                     }
-                    items(count = filteredTrack.size, key = { index ->
-                        val item = filteredTrack.getOrNull(index)
-                        (item?.videoId ?: "") + "item_$index"
-                    }) { index ->
+                    items(
+                        count = filteredTrack.size,
+                        key = { index ->
+                            val item = filteredTrack.getOrNull(index)
+                            (item?.videoId ?: "") + "item_$index"
+                        },
+                        contentType = { "track" },
+                    ) { index ->
                         val item = filteredTrack.getOrNull(index)
                         if (item != null) {
                             Column(modifier = Modifier.animateItem()) {

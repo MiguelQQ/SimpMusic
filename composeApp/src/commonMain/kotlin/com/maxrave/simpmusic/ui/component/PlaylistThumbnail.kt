@@ -16,7 +16,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
@@ -31,7 +30,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.maxrave.logger.Logger
 import org.jetbrains.compose.resources.painterResource
 import simpmusic.composeapp.generated.resources.Res
 import simpmusic.composeapp.generated.resources.monochrome
@@ -140,8 +138,6 @@ private class PlaylistThumbnailPainter(
                 size.height.toInt(),
             ),
         ))
-        Logger.d("PlaylistThumbnailPainter", "Drawing icon $title")
-        Logger.d("PlaylistThumbnailPainter", "Colors: ${colors.map { it.toArgb() }}")
         val centerX = size.width * 0.9f
         val centerY = size.height * 0.1f
         val circleRadius = size.width * 0.1f / 2

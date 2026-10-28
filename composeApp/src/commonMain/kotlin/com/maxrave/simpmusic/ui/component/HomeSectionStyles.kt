@@ -34,7 +34,6 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.maxrave.domain.data.model.browse.album.Track
 import com.maxrave.domain.data.model.home.HomeItem
 import com.maxrave.domain.utils.connectArtists
@@ -119,7 +118,7 @@ fun HomeDiscoverSection(
                                 .data(song.thumbnails.lastOrNull()?.url)
                                 .diskCachePolicy(CachePolicy.ENABLED)
                                 .diskCacheKey(song.thumbnails.lastOrNull()?.url)
-                                .crossfade(550)
+                                .boundedDecode(rememberThumbPx(320.dp))
                                 .build(),
                         contentDescription = null,
                         placeholder = rememberHolderPainter(),

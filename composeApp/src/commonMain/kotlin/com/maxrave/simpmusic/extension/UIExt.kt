@@ -70,7 +70,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.kmpalette.palette.graphics.Palette
 import com.maxrave.domain.data.model.ui.ScreenSizeInfo
-import com.maxrave.logger.Logger
 import com.maxrave.simpmusic.getPlatform
 import com.maxrave.simpmusic.ui.theme.LocalAppColors
 import dev.chrisbanes.haze.blur.HazeBlurStyle
@@ -568,7 +567,6 @@ fun LazyListState.isScrollingUp(): State<Boolean> {
 
     LaunchedEffect(Unit) {
         snapshotFlow { layoutInfo.totalItemsCount }.collect {
-            Logger.w("isScrollingUp", "firstVisibleItemIndex: $firstVisibleItemIndex")
             previousIndex = firstVisibleItemIndex
             previousScrollOffset = firstVisibleItemScrollOffset
         }
@@ -599,7 +597,6 @@ fun LazyGridState.isScrollingUp(): State<Boolean> {
 
     LaunchedEffect(Unit) {
         snapshotFlow { layoutInfo.totalItemsCount }.collect {
-            Logger.w("isScrollingUp", "firstVisibleItemIndex: $firstVisibleItemIndex")
             previousIndex = firstVisibleItemIndex
             previousScrollOffset = firstVisibleItemScrollOffset
         }

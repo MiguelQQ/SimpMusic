@@ -26,7 +26,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
-import coil3.request.crossfade
+
 import com.maxrave.domain.data.model.podcast.PodcastBrowse
 import com.maxrave.simpmusic.ui.icon.MoreVert
 import com.maxrave.simpmusic.ui.icon.SimpIcons
@@ -61,7 +61,7 @@ fun PodcastEpisodeFullWidthItem(
                             .data(episode.thumbnail.lastOrNull()?.url)
                             .diskCachePolicy(CachePolicy.ENABLED)
                             .diskCacheKey(episode.thumbnail.lastOrNull()?.url)
-                            .crossfade(true)
+                            .boundedDecode(rememberThumbPx(50.dp))
                             .build(),
                     placeholder = rememberHolderPainter(),
                     error = rememberHolderPainter(),

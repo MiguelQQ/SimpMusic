@@ -30,7 +30,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
-import coil3.request.crossfade
+
 import com.maxrave.simpmusic.extension.artworkScrimBrush
 import com.maxrave.simpmusic.ui.theme.typo
 
@@ -158,8 +158,10 @@ private fun MosaicTile(
                     .data(image.imageUrl)
                     .diskCachePolicy(CachePolicy.ENABLED)
                     .diskCacheKey(image.imageUrl)
-                    .crossfade(550)
+                    .boundedDecode(rememberThumbPx(240.dp))
                     .build(),
+            placeholder = rememberHolderPainter(),
+            error = rememberHolderPainter(),
             contentDescription = "",
             contentScale = ContentScale.Crop,
             modifier =

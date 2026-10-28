@@ -1337,10 +1337,14 @@ fun LocalPlaylistScreen(
                 }
             }
         }
-        items(count = trackPagingItems.itemCount, key = { index ->
-            val item = trackPagingItems[index]
-            (item?.first?.videoId ?: "") + "item_$index" + item?.second?.inPlaylist + item?.second?.position
-        }) { index ->
+        items(
+            count = trackPagingItems.itemCount,
+            key = { index ->
+                val item = trackPagingItems[index]
+                (item?.first?.videoId ?: "") + "item_$index" + item?.second?.inPlaylist + item?.second?.position
+            },
+            contentType = { "track" },
+        ) { index ->
             val item = trackPagingItems[index]?.first
             if (item != null) {
                 val content = @Composable { mod: Modifier ->
@@ -1679,8 +1683,9 @@ fun LocalPlaylistScreen(
             }
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(
-                    searchResults,
+                    items = searchResults,
                     key = { (song, pair) -> song.videoId + "_" + pair.position },
+                    contentType = { "track" },
                 ) { (song, _) ->
                     SongFullWidthItems(
                         forceDark = true,

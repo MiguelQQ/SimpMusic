@@ -37,6 +37,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -85,7 +86,8 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
-import coil3.request.crossfade
+import com.maxrave.simpmusic.ui.component.boundedDecode
+import com.maxrave.simpmusic.ui.component.rememberThumbPx
 import com.maxrave.common.Config
 import com.maxrave.domain.data.entities.SongEntity
 import com.maxrave.domain.data.model.browse.album.Track
@@ -424,7 +426,11 @@ fun SearchScreen(
                         state = suggestionsState,
                         contentPadding = PaddingValues(top = searchBarHeight, bottom = 10.dp),
                     ) {
-                        items(searchScreenState.suggestYTItems) { item ->
+                        itemsIndexed(
+                            items = searchScreenState.suggestYTItems,
+                            key = { index, item -> "${item.searchListKey()}#$index" },
+                            contentType = { _, item -> item.objectType() },
+                        ) { _, item ->
                             SuggestItemRow(
                                 searchResult = item,
                                 onItemClick = { item ->
@@ -468,7 +474,11 @@ fun SearchScreen(
                                 },
                             )
                         }
-                        items(searchScreenState.suggestQueries) { suggestion ->
+                        itemsIndexed(
+                            items = searchScreenState.suggestQueries,
+                            key = { index, suggestion -> "q:$suggestion#$index" },
+                            contentType = { _, _ -> "suggestion" },
+                        ) { _, suggestion ->
                             Row(
                                 modifier =
                                     Modifier
@@ -541,7 +551,7 @@ fun SearchScreen(
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                             )
                         }
-                        items(recentSearches, key = { it.id }) { item ->
+                        items(recentSearches, key = { it.id }, contentType = { "recent" }) { item ->
                             RecentSearchRow(
                                 item = item,
                                 onClick = { openRecent(item) },
@@ -654,7 +664,11 @@ fun SearchScreen(
                                 // Key must include the section: every section lives in this ONE
                                 // grid, and "For you" repeats categories that also appear under
                                 // Moods or Genres, so params alone collides.
-                                items(section.items, key = { "${section.title}/${it.params}" }) { item ->
+                                items(
+                                    items = section.items,
+                                    key = { "${section.title}/${it.params}" },
+                                    contentType = { "mood" },
+                                ) { item ->
                                     // LazyVerticalGrid only composes tiles inside the viewport, so
                                     // putting the request here IS the laziness — a category the
                                     // user never scrolls to never costs a browse.
@@ -730,7 +744,7 @@ fun SearchScreen(
                                                     bottom = 10.dp,
                                                 ),
                                         ) {
-                                            items(10) {
+                                            items(count = 10, contentType = { "shimmer" }) {
                                                 ShimmerSearchItem()
                                             }
                                         }
@@ -764,7 +778,11 @@ fun SearchScreen(
                                                             ),
                                                         state = resultsState,
                                                     ) {
-                                                        items(currentResults) { result ->
+                                                        itemsIndexed(
+                                                            items = currentResults,
+                                                            key = { index, result -> "${result.searchListKey()}#$index" },
+                                                            contentType = { _, result -> result.objectType() },
+                                                        ) { _, result ->
                                                             when (result) {
                                                                 is SongsResult -> {
                                                                     SongFullWidthItems(
@@ -1197,7 +1215,7 @@ fun SuggestItemRow(
                         .data(url)
                         .diskCachePolicy(CachePolicy.ENABLED)
                         .diskCacheKey(url)
-                        .crossfade(true)
+                        .boundedDecode(rememberThumbPx(40.dp))
                         .build(),
                 placeholder = rememberHolderPainter(),
                 error = rememberHolderPainter(),
@@ -1276,6 +1294,16 @@ fun SuggestItemRow(
         }
     }
 }
+
+private fun SearchResultType.searchListKey(): String =
+    when (this) {
+        is SongsResult -> "song:$videoId"
+        is VideosResult -> "video:$videoId"
+        is ArtistsResult -> "artist:$browseId"
+        is AlbumsResult -> "album:$browseId"
+        is PlaylistsResult -> "playlist:$browseId"
+        else -> "other:${hashCode()}"
+    }
 
 enum class SearchUIType {
     EMPTY,

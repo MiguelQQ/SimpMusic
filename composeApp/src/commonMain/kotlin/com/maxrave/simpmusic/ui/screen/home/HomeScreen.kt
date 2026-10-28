@@ -303,7 +303,8 @@ fun HomeScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberLazyListState()
-    val isScrollingUp by scrollState.isScrollingUp()
+    // State, not `by`: reading it in composition would recompose Home on every scroll pixel.
+    val scrollingUp = scrollState.isScrollingUp()
     val accountInfo by viewModel.accountInfo.collectAsStateWithLifecycle()
     val killmonUser by koinInject<KillmonAccountRepository>().session.collectAsStateWithLifecycle()
     val homeData by viewModel.homeItemList.collectAsStateWithLifecycle()
@@ -482,11 +483,11 @@ fun HomeScreen(
 
     LaunchedEffect(scrollState) {
         snapshotFlow { scrollState.firstVisibleItemIndex }
-            .collect {
-                if (it <= 1) {
+            .collect { index ->
+                if (index <= 1) {
                     onScrolling.invoke(true)
                 } else {
-                    onScrolling.invoke(isScrollingUp)
+                    onScrolling.invoke(scrollingUp.value)
                 }
             }
     }
@@ -494,16 +495,13 @@ fun HomeScreen(
     val onRefresh: () -> Unit = {
         isRefreshing = true
         viewModel.getHomeItemList(params)
-        Logger.w("HomeScreen", "onRefresh")
     }
     LaunchedEffect(key1 = reloadDestination) {
         if (reloadDestination == HomeDestination::class) {
             if (scrollState.firstVisibleItemIndex > 1) {
-                Logger.w("HomeScreen", "scrollState.firstVisibleItemIndex: ${scrollState.firstVisibleItemIndex}")
                 scrollState.animateScrollToItem(0)
                 sharedViewModel.reloadDestinationDone()
             } else {
-                Logger.w("HomeScreen", "scrollState.firstVisibleItemIndex: ${scrollState.firstVisibleItemIndex}")
                 onRefresh.invoke()
             }
         }
@@ -532,9 +530,6 @@ fun HomeScreen(
         }
 
     LaunchedEffect(key1 = shouldStartPaginate.value) {
-        Logger.d("HomeScreen", "shouldStartPaginate: ${shouldStartPaginate.value}")
-        Logger.d("HomeScreen", "homeListState: $homeListState")
-        Logger.d("HomeScreen", "Continuation: $continuation")
         if (shouldStartPaginate.value && homeListState == ListState.IDLE) {
             viewModel.getContinueHomeItem(
                 continuation,
@@ -830,9 +825,13 @@ fun HomeScreen(
                         state = scrollState,
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
-                        itemsIndexed(visibleShelves, key = { _, item ->
-                            item.hashCode().toString() + (mainHomeThumbnail ?: "nothumb")
-                        }) { index, item ->
+                        itemsIndexed(
+                            items = visibleShelves,
+                            key = { _, item ->
+                                item.hashCode().toString() + (mainHomeThumbnail ?: "nothumb")
+                            },
+                            contentType = { _, _ -> "shelf" },
+                        ) { index, item ->
                             Box {
                                 if (index == 0) {
                                     Box(
@@ -932,7 +931,7 @@ fun HomeScreen(
                                 }
                             }
                         }
-                        item {
+                        item(contentType = "loading") {
                             AnimatedVisibility(
                                 homeListState == ListState.PAGINATING,
                                 enter = expandVertically() + expandVertically(),
@@ -947,7 +946,7 @@ fun HomeScreen(
                             }
                         }
                         if (homeListState == ListState.PAGINATION_EXHAUST) {
-                            items(newRelease, key = { it.hashCode() }) {
+                            items(newRelease, key = { it.hashCode() }, contentType = { "release" }) {
                                 AnimatedVisibility(
                                     visible = newRelease.isNotEmpty(),
                                 ) {
@@ -1544,7 +1543,7 @@ fun MoodMomentAndGenre(
                 state = gridState,
                 flingBehavior = flingBehavior,
             ) {
-                items(section.items, key = { it.params }) { item ->
+                items(section.items, key = { it.params }, contentType = { "mood" }) { item ->
                     MoodMomentAndGenreHomeItem(
                         title = item.title,
                         stripeColor = item.stripeColor,
@@ -1621,10 +1620,14 @@ fun ChartData(
             val lazyListState = rememberLazyListState()
             val snapperFlingBehavior = rememberSnapFlingBehavior(SnapLayoutInfoProvider(lazyListState = lazyListState))
             LazyRow(flingBehavior = snapperFlingBehavior) {
-                items(item.playlists.size, key = { index ->
-                    val data = item.playlists[index]
-                    data.id + data.title + index
-                }) {
+                items(
+                    count = item.playlists.size,
+                    key = { index ->
+                        val data = item.playlists[index]
+                        data.id + data.title + index
+                    },
+                    contentType = { "chart-playlist" },
+                ) {
                     HomeItemContentPlaylist(
                         onClick = {
                             navController.navigate(
@@ -1655,10 +1658,14 @@ fun ChartData(
             state = lazyListState2,
             flingBehavior = snapperFlingBehavior2,
         ) {
-            items(chart.artists.itemArtists.size, key = { index ->
-                val item = chart.artists.itemArtists[index]
-                item.title + item.browseId + index
-            }) {
+            items(
+                count = chart.artists.itemArtists.size,
+                key = { index ->
+                    val item = chart.artists.itemArtists[index]
+                    item.title + item.browseId + index
+                },
+                contentType = { "chart-artist" },
+            ) {
                 val data = chart.artists.itemArtists[it]
                 ItemArtistChart(
                     onClick = {
@@ -1698,7 +1705,11 @@ fun ChartData(
                 state = podcastGridState,
                 flingBehavior = podcastFlingBehavior,
             ) {
-                items(podcasts.shows.size, key = { index -> podcasts.shows[index].browseId + index }) {
+                items(
+                    count = podcasts.shows.size,
+                    key = { index -> podcasts.shows[index].browseId + index },
+                    contentType = { "chart-podcast" },
+                ) {
                     val data = podcasts.shows[it]
                     ItemArtistChart(
                         onClick = { navController.navigate(PodcastDestination(podcastId = data.browseId)) },

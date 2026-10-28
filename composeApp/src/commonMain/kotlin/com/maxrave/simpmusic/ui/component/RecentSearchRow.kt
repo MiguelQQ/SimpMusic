@@ -27,7 +27,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
-import coil3.request.crossfade
+
 import com.maxrave.domain.data.entities.RecentSearchItem
 import com.maxrave.domain.data.entities.SongEntity
 import com.maxrave.domain.data.model.browse.album.Track
@@ -222,7 +222,7 @@ private fun RecentSearchRowContent(
                     .data(item.thumbnail)
                     .diskCachePolicy(CachePolicy.ENABLED)
                     .diskCacheKey(item.thumbnail)
-                    .crossfade(true)
+                    .boundedDecode(rememberThumbPx(48.dp))
                     .build(),
             placeholder = rememberHolderPainter(),
             error = rememberHolderPainter(),

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.background
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -70,10 +71,17 @@ fun MiniPlayerRoot(
     // Check if there's any track playing
     val hasTrack = nowPlayingData.nowPlayingTitle.isNotBlank()
 
+    // One flat layer. Layout surfaces stay transparent so this alpha is not stacked into a solid fill.
+    // This window is outside AppTheme, so the fill is the desktop dark surface (#1A1028) directly.
+    // White glyphs stay readable; there is no blur.
+    val barColor = Color(0xFF1A1028).copy(alpha = 0.88f)
+
     Surface(
         modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-        color = Color(0xFF1C1C1E),
+        color = barColor,
         shape = RoundedCornerShape(12.dp),
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
     ) {
         Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
             if (!hasTrack) {
@@ -183,6 +191,13 @@ fun MiniPlayerRoot(
                                 },
                             )
                         }.pointerHoverIcon(PointerIcon(Cursor(Cursor.MOVE_CURSOR))),
+            )
+            Box(
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(Color.White.copy(alpha = 0.06f)),
             )
         }
     }

@@ -27,7 +27,6 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.maxrave.common.Config
 import com.maxrave.domain.mediaservice.handler.PlaylistType
 import com.maxrave.domain.mediaservice.handler.QueueData
@@ -97,7 +96,7 @@ private fun QuickTileCard(
                     .data(tile.thumbnail)
                     .diskCachePolicy(CachePolicy.ENABLED)
                     .diskCacheKey(tile.thumbnail)
-                    .crossfade(true)
+                    .boundedDecode(rememberThumbPx(TileHeight))
                     .build(),
             placeholder = rememberHolderPainter(),
             error = rememberHolderPainter(),

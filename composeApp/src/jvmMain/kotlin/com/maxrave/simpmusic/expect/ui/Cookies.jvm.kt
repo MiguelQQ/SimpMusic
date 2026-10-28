@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -67,22 +68,16 @@ actual fun PlatformWebView(
 actual fun DiscordWebView(
     state: MutableState<WebViewState>,
     aboveContent: @Composable (BoxScope.() -> Unit),
-    onLoginDone: (String) -> Unit
+    onLoginDone: (String) -> Unit,
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                stringResource(Res.string.desktop_webview_description),
-                style = typo().labelMedium,
-                color = Color.White,
-                textAlign = TextAlign.Center
-            )
-        }
-        aboveContent()
+    // There is no desktop WebView in this build. JCEF is not bundled, and Compose Multiplatform
+    // cannot host the Discord login page on Windows, so the Android localStorage scrape never runs.
+    LaunchedEffect(Unit) {
+        state.value = WebViewState.Finished
     }
+    DiscordDesktopLink(
+        modifier = Modifier.fillMaxSize(),
+        onLoginDone = onLoginDone,
+        aboveContent = aboveContent,
+    )
 }

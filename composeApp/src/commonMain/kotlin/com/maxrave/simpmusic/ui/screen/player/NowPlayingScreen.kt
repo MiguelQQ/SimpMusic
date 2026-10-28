@@ -449,8 +449,7 @@ fun NowPlayingScreenContent(
         mutableStateOf(Color.White)
     }
 
-    LaunchedEffect(screenDataState) {
-        Logger.d(TAG, "ScreenDataState: $screenDataState")
+    LaunchedEffect(screenDataState.fullscreenCanvas()) {
         // Only a canvas that fills the page replaces it; animated artwork sits at its top.
         showHideMiddleLayout = screenDataState.fullscreenCanvas() == null
     }
@@ -480,10 +479,6 @@ fun NowPlayingScreenContent(
                 // use, so the palette ramp resolves into the surface instead of a black patch.
                 endColor.animateTo(PlayerBackdropColor)
             }
-    }
-
-    LaunchedEffect(spotShadowColor) {
-        Logger.d(TAG, "spotShadowColor: $spotShadowColor")
     }
 
     var isSliding by rememberSaveable {

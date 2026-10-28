@@ -23,6 +23,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
 import com.maxrave.simpmusic.extension.angledGradientBackground
 import com.maxrave.simpmusic.ui.theme.typo
 import org.jetbrains.compose.resources.painterResource
@@ -81,7 +83,14 @@ fun MoodCategoryCard(
     ) {
         if (artworkUrl != null) {
             AsyncImage(
-                model = artworkUrl,
+                model =
+                    ImageRequest
+                        .Builder(LocalPlatformContext.current)
+                        .data(artworkUrl)
+                        .boundedDecode(rememberThumbPx(64.dp))
+                        .build(),
+                placeholder = rememberHolderPainter(),
+                error = rememberHolderPainter(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier =

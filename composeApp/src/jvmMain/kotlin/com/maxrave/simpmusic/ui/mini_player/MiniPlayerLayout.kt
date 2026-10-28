@@ -190,7 +190,9 @@ fun CompactMiniLayout(
                 .fillMaxSize()
                 .animateContentSize(animationSpec = tween(300))
                 .hoverable(interactionSource),
-        color = Color(0xFF1C1C1E),
+        // Fill is MiniPlayerRoot's one translucent layer. A colour here would stack the alpha solid.
+        color = Color.Transparent,
+        contentColor = Color.White,
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Controls only - centered
@@ -275,7 +277,9 @@ fun MediumMiniLayout(
             Modifier
                 .fillMaxSize()
                 .animateContentSize(animationSpec = tween(300)),
-        color = Color(0xFF1C1C1E),
+        // Fill is MiniPlayerRoot's one translucent layer. A colour here would stack the alpha solid.
+        color = Color.Transparent,
+        contentColor = Color.White,
     ) {
         BoxWithConstraints {
             val showExtraButtons = maxWidth >= 300.dp
@@ -500,7 +504,9 @@ fun SquareMiniLayout(
             Modifier
                 .fillMaxSize()
                 .animateContentSize(animationSpec = tween(300)),
-        color = Color(0xFF1C1C1E),
+        // Fill is MiniPlayerRoot's one translucent layer. A colour here would stack the alpha solid.
+        color = Color.Transparent,
+        contentColor = Color.White,
     ) {
         Column(
             modifier =
@@ -763,7 +769,9 @@ fun ExpandedMiniLayout(
             Modifier
                 .fillMaxSize()
                 .animateContentSize(animationSpec = tween(300)),
-        color = Color(0xFF1C1C1E),
+        // Fill is MiniPlayerRoot's one translucent layer. A colour here would stack the alpha solid.
+        color = Color.Transparent,
+        contentColor = Color.White,
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),

@@ -57,7 +57,6 @@ import com.maxrave.common.LibraryChipType
 import com.maxrave.domain.data.entities.SongEntity
 import com.maxrave.domain.data.model.taste.TasteProfile
 import com.maxrave.domain.utils.LocalResource
-import com.maxrave.logger.Logger
 import com.maxrave.simpmusic.Platform
 import com.maxrave.simpmusic.expect.ui.layerBackdrop
 import com.maxrave.simpmusic.expect.ui.rememberBackdrop
@@ -171,7 +170,6 @@ fun LibraryScreen(
     var showAddSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(nowPlaying) {
-        Logger.w("LibraryScreen", "Check nowPlaying: $nowPlaying")
         viewModel.getRecentlyAdded()
     }
 
@@ -244,14 +242,14 @@ fun LibraryScreen(
         when (filter) {
             LibraryChipType.YOUR_LIBRARY -> {
                 val state = rememberLazyListState()
-                val isScrollingUp by state.isScrollingUp()
+                val scrollingUp = state.isScrollingUp()
                 LaunchedEffect(state) {
                     snapshotFlow { state.firstVisibleItemIndex }
-                        .collect {
-                            if (it <= 1) {
+                        .collect { index ->
+                            if (index <= 1) {
                                 onScrolling.invoke(true)
                             } else {
-                                onScrolling.invoke(isScrollingUp)
+                                onScrolling.invoke(scrollingUp.value)
                             }
                         }
                 }
@@ -278,14 +276,14 @@ fun LibraryScreen(
                             ),
                         state = state,
                     ) {
-                        item {
+                        item(key = "overview", contentType = "overview") {
                             LibraryTilingBox(navController, libraryOverview, cachedPreview)
                         }
 
                         // The reading is drawn from playback_event, so the card follows the same
                         // setting the Wrapped chip and the Analytics tab do.
                         if (localTrackingEnabled) {
-                            item(key = "taste") {
+                            item(key = "taste", contentType = "taste") {
                                 val tasteState by tasteViewModel.uiState.collectAsStateWithLifecycle()
                                 if (tasteState != TasteUiState.Hidden) {
                                     TasteCard(
@@ -300,7 +298,7 @@ fun LibraryScreen(
                         }
 
                         if (!listCanvasSong.data.isNullOrEmpty()) {
-                            item {
+                            item(key = "canvas", contentType = "canvas") {
                                 LibraryItem(
                                     state =
                                         LibraryItemState(
@@ -313,7 +311,7 @@ fun LibraryScreen(
                             }
                         }
 
-                        item {
+                        item(key = "recent", contentType = "recent") {
                             LibraryItem(
                                 state =
                                     LibraryItemState(
@@ -328,7 +326,7 @@ fun LibraryScreen(
                                 selectionState = selectionState,
                             )
                         }
-                        item {
+                        item(key = "end", contentType = "end") {
                             EndOfPage()
                         }
                     }

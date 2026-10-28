@@ -70,7 +70,9 @@ import com.maxrave.domain.manager.DataStoreManager
 import com.maxrave.domain.data.model.lyrics.RomanizationDictionaryState
 import com.maxrave.domain.data.model.lyrics.RomanizationLanguage
 import com.maxrave.domain.repository.LyricsRomanizerRepository
+import com.maxrave.simpmusic.Platform
 import com.maxrave.simpmusic.expect.ui.isLyricsBlurSupported
+import com.maxrave.simpmusic.getPlatform
 import com.maxrave.domain.data.model.metadata.Line
 import com.maxrave.simpmusic.ui.screen.player.content.NowPlayingContentActions
 import com.maxrave.simpmusic.ui.screen.player.content.NowPlayingContentState
@@ -588,7 +590,16 @@ fun LyricsView(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = tailPadding),
         ) {
-            items(displayLines.lines.size) { index ->
+            items(
+                count = displayLines.lines.size,
+                key = { index ->
+                    val line = displayLines.lines.getOrNull(index)
+                    "${line?.startTimeMs ?: 0}:$index"
+                },
+                contentType = { index ->
+                    if (index in displayLines.interludeIndices) "interlude" else "line"
+                },
+            ) { index ->
                 val line = displayLines.lines.getOrNull(index)
                 // A dots line stands for silence, so it has nothing to translate or romanize. Worth
                 // saying out loud for the translation: that map matches by TIME, and the silence
@@ -792,7 +803,9 @@ fun LyricsView(
                                         .fillMaxWidth()
                                         .appleMusicLyricFocus(
                                             distanceFromCurrent,
-                                            blurEnabled = !isDragging,
+                                            // Skiko blur is a saveLayer per lyric row. On desktop that
+                                            // stalls the list while it scrolls. The alpha falloff stays.
+                                            blurEnabled = !isDragging && getPlatform() != Platform.Desktop,
                                             hasActiveLine = currentLineIndex >= 0,
                                             allLinesCurrent = allLinesCurrent,
                                         ),

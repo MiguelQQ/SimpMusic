@@ -32,7 +32,6 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
-import com.maxrave.logger.Logger
 import com.maxrave.simpmusic.ui.theme.typo
 import org.jetbrains.compose.resources.stringResource
 import simpmusic.composeapp.generated.resources.Res
@@ -76,48 +75,8 @@ fun DescriptionView(
         }
     }
 
-    val timeRegex = Regex("""(\d+):(\d+)(?::(\d+))?""")
-    // Parentheses count only as a pair: descriptions wrap links in them — "From Wikipedia
-    // (https://…/Ariana_Grande)" — and `\S+` swallowed the closing one into the URL, while
-    // "…/Queen_(band)" must keep its own.
-    val urlRegex = Regex("""https?://(?:[^\s()]|\([^\s()]*\))+""")
-    val annotatedString = AnnotatedString.Builder()
-    var currentIndex = 0
-    val style =
-        SpanStyle(
-            color = Color(0xFF00B0FF),
-            fontWeight = FontWeight.Normal,
-        )
-    val combinedRegex = Regex("${timeRegex.pattern}|${urlRegex.pattern}")
-    val matchedWords = combinedRegex.findAll(text)
-    matchedWords.forEachIndexed { index, matchResult ->
-        // Add text before the match
-        if (matchResult.range.first > currentIndex) {
-            annotatedString.append(text.substring(currentIndex, matchResult.range.first))
-        }
-
-        // Add the matched text with the given style
-        annotatedString.withStyle(style) {
-            if (timeRegex.matches(matchResult.value)) {
-                pushStringAnnotation("CLICKABLE_USER_TIME", matchResult.value)
-                append(matchResult.value)
-                pop()
-            } else if (urlRegex.matches(matchResult.value)) {
-                pushStringAnnotation("CLICKABLE_USER_URL", matchResult.value)
-                append(matchResult.value)
-                pop()
-            }
-        }
-        if (index == matchedWords.count() - 1) {
-            annotatedString.append(text.substring(matchResult.range.last + 1, text.length))
-        }
-
-        // Update the current index to the end of the match
-        currentIndex = matchResult.range.last + 1
-    }
-    if (matchedWords.count() == 0) {
-        annotatedString.append(text)
-    }
+    // Built once per text. Playlist and album headers recompose while the list scrolls.
+    val annotated = remember(text) { descriptionAnnotations(text) }
 
     val textMeasurer = rememberTextMeasurer()
     val textStyle = typo().bodyMedium.let { if (color.isSpecified) it.copy(color = color) else it }
@@ -134,7 +93,7 @@ fun DescriptionView(
                 remember(text, maxWidthPx, textStyle, limitLine) {
                     val layout =
                         textMeasurer.measure(
-                            annotatedString.toAnnotatedString(),
+                            annotated,
                             textStyle,
                             constraints = Constraints(maxWidth = maxWidthPx),
                         )
@@ -151,36 +110,26 @@ fun DescriptionView(
                 animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing),
             )
             Text(
-                text = annotatedString.toAnnotatedString(),
+                text = annotated,
                 modifier =
                     Modifier
                         .fillMaxWidth()
                         .height(with(LocalDensity.current) { heightPx.toDp() })
                         .clipToBounds()
-                        .pointerInput(Unit) {
+                        .pointerInput(annotated) {
                             detectTapGestures { offset ->
                                 layoutResult?.let { layoutResult ->
                                     val position = layoutResult.getOffsetForPosition(offset)
-                                    Logger.w("DescriptionView", "Position: $position")
-                                    annotatedString
-                                        .toAnnotatedString()
+                                    annotated
                                         .getStringAnnotations(
                                             start = position,
                                             end = position,
                                         ).firstOrNull { annotation ->
-                                            Logger.w("DescriptionView", "Annotation: ${annotation.tag}")
                                             annotation.tag.startsWith("CLICKABLE_USER_")
                                         }?.let { annotation ->
                                             when (annotation.tag) {
-                                                "CLICKABLE_USER_TIME" -> {
-                                                    Logger.w("DescriptionView", "Time clicked: ${annotation.item}")
-                                                    onTimeClicked(annotation.item)
-                                                }
-
-                                                "CLICKABLE_USER_URL" -> {
-                                                    Logger.w("DescriptionView", "URL clicked: ${annotation.item}")
-                                                    onURLClicked(annotation.item)
-                                                }
+                                                "CLICKABLE_USER_TIME" -> onTimeClicked(annotation.item)
+                                                "CLICKABLE_USER_URL" -> onURLClicked(annotation.item)
                                             }
                                         }
                                 }
@@ -203,4 +152,46 @@ fun DescriptionView(
             )
         }
     }
+}
+
+// Parentheses count only as a pair: descriptions wrap links in them — "From Wikipedia
+// (https://…/Ariana_Grande)" — and `\S+` swallowed the closing one into the URL, while
+// "…/Queen_(band)" must keep its own.
+private val descriptionTimeRegex = Regex("""(\d+):(\d+)(?::(\d+))?""")
+private val descriptionUrlRegex = Regex("""https?://(?:[^\s()]|\([^\s()]*\))+""")
+private val descriptionCombinedRegex = Regex("${descriptionTimeRegex.pattern}|${descriptionUrlRegex.pattern}")
+private val descriptionLinkStyle =
+    SpanStyle(
+        color = Color(0xFF00B0FF),
+        fontWeight = FontWeight.Normal,
+    )
+
+private fun descriptionAnnotations(text: String): AnnotatedString {
+    val annotatedString = AnnotatedString.Builder()
+    var currentIndex = 0
+    val matchedWords = descriptionCombinedRegex.findAll(text).toList()
+    matchedWords.forEachIndexed { index, matchResult ->
+        if (matchResult.range.first > currentIndex) {
+            annotatedString.append(text.substring(currentIndex, matchResult.range.first))
+        }
+        annotatedString.withStyle(descriptionLinkStyle) {
+            if (descriptionTimeRegex.matches(matchResult.value)) {
+                pushStringAnnotation("CLICKABLE_USER_TIME", matchResult.value)
+                append(matchResult.value)
+                pop()
+            } else if (descriptionUrlRegex.matches(matchResult.value)) {
+                pushStringAnnotation("CLICKABLE_USER_URL", matchResult.value)
+                append(matchResult.value)
+                pop()
+            }
+        }
+        if (index == matchedWords.lastIndex) {
+            annotatedString.append(text.substring(matchResult.range.last + 1, text.length))
+        }
+        currentIndex = matchResult.range.last + 1
+    }
+    if (matchedWords.isEmpty()) {
+        annotatedString.append(text)
+    }
+    return annotatedString.toAnnotatedString()
 }

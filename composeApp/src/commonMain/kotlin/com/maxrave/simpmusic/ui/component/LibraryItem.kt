@@ -39,7 +39,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
-import coil3.request.crossfade
+
 import com.maxrave.common.Config
 import com.maxrave.domain.data.entities.AlbumEntity
 import com.maxrave.domain.data.entities.ArtistEntity
@@ -243,7 +243,11 @@ fun LibraryItem(
                                 top = 10.dp,
                             ),
                         ) {
-                            items(state.data) { item ->
+                            items(
+                                items = state.data,
+                                key = { (it as? SongEntity)?.videoId ?: it.hashCode() },
+                                contentType = { "canvas" },
+                            ) { item ->
                                 val song = item as? SongEntity ?: return@items
                                 Box(
                                     Modifier
@@ -275,7 +279,7 @@ fun LibraryItem(
                                                 .data(item.canvasThumbUrl)
                                                 .diskCachePolicy(CachePolicy.ENABLED)
                                                 .diskCacheKey(item.canvasThumbUrl)
-                                                .crossfade(true)
+                                                .boundedDecode(rememberThumbPx(170.dp), rememberThumbPx(300.dp))
                                                 .build(),
                                         placeholder = rememberHolderPainter(),
                                         error = rememberHolderPainter(),
@@ -342,7 +346,11 @@ fun LibraryItem(
                     } else {
                         if (state.data.isNotEmpty()) {
                             LazyRow {
-                                items(items = state.data) { item ->
+                                items(
+                                    items = state.data,
+                                    key = { playlistGridKey(it) },
+                                    contentType = { "playlist" },
+                                ) { item ->
                                     Box(modifier = Modifier.animateItem()) {
                                         HomeItemContentPlaylist(
                                             onClick = {

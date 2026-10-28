@@ -31,7 +31,6 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,7 +48,6 @@ import com.maxrave.domain.data.type.ChartItem
 import com.maxrave.domain.data.type.MonthlyRecapItem
 import com.maxrave.domain.data.type.PlaylistType
 import com.maxrave.domain.utils.LocalResource
-import com.maxrave.logger.Logger
 import com.maxrave.simpmusic.extension.angledGradientBackground
 import com.maxrave.simpmusic.extension.isScrollingUp
 import com.maxrave.simpmusic.ui.icon.Add
@@ -115,16 +113,15 @@ internal inline fun <reified T> GridLibraryPlaylist(
     noinline createNewPlaylist: (() -> Unit)? = null,
     noinline onReload: () -> Unit,
 ) {
-    Logger.w("GridLibraryPlaylist", "Generic Type: ${T::class.simpleName}")
-    val isScrollingUp by state.isScrollingUp()
+    val scrollingUp = state.isScrollingUp()
 
     LaunchedEffect(state) {
         snapshotFlow { state.firstVisibleItemIndex }
-            .collect {
-                if (it <= 1) {
+            .collect { index ->
+                if (index <= 1) {
                     onScrolling.invoke(true)
                 } else {
-                    onScrolling.invoke(isScrollingUp)
+                    onScrolling.invoke(scrollingUp.value)
                 }
             }
     }
@@ -161,12 +158,12 @@ internal inline fun <reified T> GridLibraryPlaylist(
                     state = state,
                 ) {
                     if (header != null) {
-                        item(span = { GridItemSpan(maxLineSpan) }) {
+                        item(key = "header", contentType = "header", span = { GridItemSpan(maxLineSpan) }) {
                             header()
                         }
                     }
                     if (createNewPlaylist != null) {
-                        item {
+                        item(key = "create", contentType = "create") {
                             Box(
                                 modifier =
                                     Modifier.clickable {
@@ -222,7 +219,11 @@ internal inline fun <reified T> GridLibraryPlaylist(
                             }
                         }
                     }
-                    items(list) { item ->
+                    items(
+                        items = list,
+                        key = { playlistGridKey(it) },
+                        contentType = { "playlist" },
+                    ) { item ->
                         if (item !is PlaylistType) {
                             return@items
                         }
@@ -304,7 +305,7 @@ internal inline fun <reified T> GridLibraryPlaylist(
                         )
                     }
 
-                    item(span = { GridItemSpan(maxLineSpan) }) {
+                    item(key = "end", contentType = "end", span = { GridItemSpan(maxLineSpan) }) {
                         EndOfPage()
                     }
                 }
@@ -329,3 +330,15 @@ internal inline fun <reified T> GridLibraryPlaylist(
         }
     }
 }
+
+internal fun playlistGridKey(item: Any?): Any =
+    when (item) {
+        is ChartItem -> "chart:${item.ytPlaylistId}"
+        is LocalPlaylistEntity -> "local:${item.id}"
+        is PlaylistsResult -> "yt:${item.browseId}"
+        is AlbumEntity -> "album:${item.browseId}"
+        is PlaylistEntity -> "pl:${item.id}"
+        is PodcastsEntity -> "pod:${item.podcastId}"
+        is MonthlyRecapItem -> "recap:${item.year}-${item.month}"
+        else -> "other:${item?.hashCode()}"
+    }

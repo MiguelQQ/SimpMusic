@@ -75,7 +75,6 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.maxrave.common.Config
 import com.maxrave.domain.data.entities.AlbumEntity
 import com.maxrave.domain.data.entities.LocalPlaylistEntity
@@ -168,6 +167,7 @@ fun HomeItem(
                 key = { item ->
                     item?.videoId ?: item?.browseId ?: item?.playlistId ?: item?.title ?: item.hashCode()
                 },
+                contentType = { "card" },
             ) { temp ->
                 if (temp != null) {
                     HomeContentCard(
@@ -243,7 +243,7 @@ fun HomeSectionHeader(
                         .data(data.thumbnail?.lastOrNull()?.url)
                         .diskCachePolicy(CachePolicy.ENABLED)
                         .diskCacheKey(data.thumbnail?.lastOrNull()?.url)
-                        .crossfade(550)
+                        .boundedDecode(rememberThumbPx(36.dp))
                         .build(),
                 contentDescription = "",
                 placeholder = rememberHolderPainter(),
@@ -610,7 +610,7 @@ fun HomeItemContentPlaylist(
                             .data(thumb)
                             .diskCachePolicy(CachePolicy.ENABLED)
                             .diskCacheKey(thumb)
-                            .crossfade(550)
+                            .boundedDecode(rememberThumbPx(if (fillMaxWidth) 180.dp else thumbSize))
                             .build(),
                     placeholder =
                         when (data) {
@@ -845,9 +845,9 @@ fun QuickPicksItem(
                     ImageRequest
                         .Builder(LocalPlatformContext.current)
                         .data(data.thumbnails.lastOrNull()?.url)
-                        .crossfade(550)
                         .diskCacheKey(data.thumbnails.lastOrNull()?.url)
                         .diskCachePolicy(CachePolicy.ENABLED)
+                        .boundedDecode(rememberThumbPx(56.dp))
                         .build(),
                 placeholder = rememberHolderPainter(),
                 contentDescription = stringResource(Res.string.description),
@@ -923,6 +923,8 @@ fun QuickPicksItem(
     }
 }
 
+private val thumbSize120 = Regex("([wh])120")
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeItemSong(
@@ -954,13 +956,10 @@ fun HomeItemSong(
                     .padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 6.dp)
                     .heightIn(min = 230.dp),
         ) {
+            val rawThumb = data.thumbnails.lastOrNull()?.url
             val thumb =
-                data.thumbnails.lastOrNull()?.url?.let {
-                    if (it.contains("w120")) {
-                        Regex("([wh])120").replace(it, "$1544")
-                    } else {
-                        it
-                    }
+                remember(rawThumb) {
+                    rawThumb?.let { if (it.contains("w120")) thumbSize120.replace(it, "$1544") else it }
                 }
             Box(Modifier.align(Alignment.CenterHorizontally)) {
                 AsyncImage(
@@ -970,7 +969,7 @@ fun HomeItemSong(
                             .data(thumb)
                             .diskCachePolicy(CachePolicy.ENABLED)
                             .diskCacheKey(thumb)
-                            .crossfade(550)
+                            .boundedDecode(rememberThumbPx(if (fillMaxWidth) 200.dp else 160.dp))
                             .build(),
                     placeholder = rememberHolderPainter(),
                     error = rememberHolderPainter(),
@@ -1074,7 +1073,7 @@ fun HomeItemVideo(
                             .data(thumb)
                             .diskCachePolicy(CachePolicy.ENABLED)
                             .diskCacheKey(thumb)
-                            .crossfade(550)
+                            .boundedDecode(rememberThumbPx(284.dp), rememberThumbPx(160.dp))
                             .build(),
                     placeholder = rememberHolderPainter(),
                     error = rememberHolderPainter(),
@@ -1191,7 +1190,7 @@ fun HomeItemArtist(
                         .data(thumb)
                         .diskCachePolicy(CachePolicy.ENABLED)
                         .diskCacheKey(thumb)
-                        .crossfade(550)
+                        .boundedDecode(rememberThumbPx(if (fillMaxWidth) 200.dp else 160.dp))
                         .build(),
                 placeholder = rememberHolderPainter(),
                 error = rememberHolderPainter(),
@@ -1309,7 +1308,7 @@ fun ItemVideoChart(
                         .data(thumb)
                         .diskCachePolicy(CachePolicy.ENABLED)
                         .diskCacheKey(thumb)
-                        .crossfade(550)
+                        .boundedDecode(rememberThumbPx(280.dp), rememberThumbPx(160.dp))
                         .build(),
                 placeholder = rememberHolderPainter(),
                 error = rememberHolderPainter(),
@@ -1422,7 +1421,7 @@ fun ItemArtistChart(
                         .data(thumb)
                         .diskCachePolicy(CachePolicy.ENABLED)
                         .diskCacheKey(thumb)
-                        .crossfade(550)
+                        .boundedDecode(rememberThumbPx(60.dp))
                         .build(),
                 placeholder = rememberHolderPainter(),
                 error = rememberHolderPainter(),
@@ -1530,7 +1529,7 @@ fun ItemTrackChart(
                         .data(thumb)
                         .diskCachePolicy(CachePolicy.ENABLED)
                         .diskCacheKey(thumb)
-                        .crossfade(550)
+                        .boundedDecode(rememberThumbPx(50.dp))
                         .build(),
                 placeholder = rememberHolderPainter(),
                 error = rememberHolderPainter(),
@@ -1624,7 +1623,16 @@ fun MoodAndGenresContentItem(
                     is Item -> (data).contents
                     else -> listOf()
                 }
-            items(itemList) { item ->
+            items(
+                items = itemList,
+                key = { item ->
+                    when (item) {
+                        is Content -> item.videoId ?: item.browseId ?: item.playlistId ?: item.title
+                        else -> item.hashCode()
+                    }
+                },
+                contentType = { "card" },
+            ) { item ->
                 HomeItemContentPlaylist(onClick = {
                     // The "Songs" shelf mixes tracks into a list that is otherwise all playlists,
                     // so route by videoId: a track starts its radio, everything else opens a page.
