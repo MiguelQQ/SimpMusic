@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowState
 import com.maxrave.simpmusic.extension.DesktopWindowChrome
@@ -70,6 +71,7 @@ fun CustomTitleBar(
     // MaterialTheme here would hand back the default light scheme no matter what the user picked.
     containerColor: Color = Color.Black,
     titleColor: Color = Color.White,
+    accentColor: Color = Color.Transparent,
 ) {
     var isMaximized by remember { mutableStateOf(windowState.placement == WindowPlacement.Maximized) }
 
@@ -176,10 +178,19 @@ fun CustomTitleBar(
             // Title text (optional)
             Text(
                 text = title,
-                style = typo().labelSmall,
+                style = typo().labelSmall.copy(letterSpacing = 0.6.sp),
                 color = titleColor,
             )
             Spacer(modifier = Modifier.weight(1f))
+        }
+        if (accentColor.alpha > 0f) {
+            Box(
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .background(accentColor),
+            )
         }
     }
 }

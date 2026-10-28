@@ -58,10 +58,10 @@ import com.maxrave.simpmusic.ui.icon.ArrowBackIosNew
 import com.maxrave.simpmusic.ui.icon.SimpIcons
 import com.maxrave.simpmusic.ui.navigation.destination.home.HomeDestination
 import com.maxrave.simpmusic.ui.navigation.destination.login.KillmonRegisterDestination
-import com.maxrave.simpmusic.ui.theme.killmonAccentGradient
 import com.maxrave.simpmusic.ui.theme.killmonBlack
-import com.maxrave.simpmusic.ui.theme.killmonCyan
-import com.maxrave.simpmusic.ui.theme.killmonGreen
+import com.maxrave.simpmusic.ui.theme.killmonBrand
+import com.maxrave.simpmusic.ui.theme.killmonBrandGradient
+import com.maxrave.simpmusic.ui.theme.killmonBrandSecondary
 import com.maxrave.simpmusic.ui.theme.killmonSurface
 import com.maxrave.simpmusic.viewModel.KillmonAccountViewModel
 import org.jetbrains.compose.resources.painterResource
@@ -75,12 +75,12 @@ import simpmusic.composeapp.generated.resources.cd_app_icon
 private val fieldColors
     @Composable get() =
         OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = killmonCyan,
+            focusedBorderColor = killmonBrandSecondary(),
             unfocusedBorderColor = Color(0xFF3A3A3A),
             focusedTextColor = Color.White,
             unfocusedTextColor = Color.White,
-            cursorColor = killmonGreen,
-            focusedLabelColor = killmonCyan,
+            cursorColor = killmonBrand(),
+            focusedLabelColor = killmonBrandSecondary(),
             unfocusedLabelColor = Color(0xFFB3B3B3),
             focusedContainerColor = killmonSurface,
             unfocusedContainerColor = killmonSurface,
@@ -132,7 +132,7 @@ fun KillmonLoginScreen(
             onClick = { navController.navigate(KillmonRegisterDestination) },
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Crear cuenta", color = killmonCyan, fontWeight = FontWeight.SemiBold)
+            Text("Crear cuenta", color = killmonBrandSecondary(), fontWeight = FontWeight.SemiBold)
         }
     }
 }
@@ -182,7 +182,7 @@ fun KillmonRegisterScreen(
             onClick = { leaveGate(navController) },
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Ya tengo cuenta", color = killmonCyan, fontWeight = FontWeight.SemiBold)
+            Text("Ya tengo cuenta", color = killmonBrandSecondary(), fontWeight = FontWeight.SemiBold)
         }
     }
 }
@@ -406,7 +406,7 @@ fun KillmonBootScreen() {
         ) {
             KillmonBrand()
             Spacer(Modifier.height(28.dp))
-            CircularProgressIndicator(color = killmonCyan, strokeWidth = 3.dp, modifier = Modifier.size(28.dp))
+            CircularProgressIndicator(color = killmonBrandSecondary(), strokeWidth = 3.dp, modifier = Modifier.size(28.dp))
         }
     }
 }
@@ -471,7 +471,7 @@ private fun KillmonBrand() {
         text = stringResource(Res.string.app_name),
         style =
             TextStyle(
-                brush = Brush.horizontalGradient(killmonAccentGradient),
+                brush = Brush.horizontalGradient(killmonBrandGradient()),
                 fontWeight = FontWeight.Bold,
                 fontSize = 34.sp,
             ),

@@ -353,9 +353,10 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
                 exitApplication()
             }
         }
-        // Windows and Linux keep the native title bar (on Linux, undecorated + transparent
-        // breaks on some distros/WMs). Only macOS draws the custom one.
-        val nativeTitleBar = !isMacOS
+        // Linux keeps the native title bar: undecorated + transparent breaks on some window
+        // managers. Windows and macOS draw the custom bar (Windows gets the purple tint).
+        val isWindows = System.getProperty("os.name", "").contains("Windows", ignoreCase = true)
+        val nativeTitleBar = !isMacOS && !isWindows
         // Publish whether the custom title bar will be mounted so getScreenSizeInfo() can
         // subtract the 40dp strip it occupies above the content (see DesktopWindowChrome).
         LaunchedEffect(nativeTitleBar) {
@@ -459,6 +460,7 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
                         .getThemeMode()
                         .collectAsState(DataStoreManager.THEME_MODE_DARK)
                     val isDark = isDarkTheme(themeMode)
+                    val isWindows = System.getProperty("os.name", "").contains("Windows", ignoreCase = true)
                     CustomTitleBar(
                         title = stringResource(Res.string.app_name),
                         windowState = windowState,
@@ -466,8 +468,15 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
                         onCloseRequest = {
                             isVisible = false
                         },
-                        containerColor = if (isDark) Color.Black else Color.White,
-                        titleColor = if (isDark) Color.White else Color.Black,
+                        containerColor =
+                            when {
+                                isWindows && isDark -> Color(0xFF1A1030)
+                                isWindows -> Color(0xFFF3E9FF)
+                                isDark -> Color.Black
+                                else -> Color.White
+                            },
+                        titleColor = if (isDark) Color(0xFFF6EEFF) else Color(0xFF1A1028),
+                        accentColor = if (isWindows) Color(0xFF7C4DFF) else Color.Transparent,
                     )
                 }
 

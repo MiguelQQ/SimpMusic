@@ -144,7 +144,7 @@ import com.maxrave.simpmusic.ui.icon.VolumeOff
 import com.maxrave.simpmusic.ui.icon.VolumeUp
 import com.maxrave.simpmusic.ui.screen.player.content.toAudioQualityLabel
 import com.maxrave.simpmusic.ui.theme.LocalIsDarkTheme
-import com.maxrave.simpmusic.ui.theme.killmonGreen
+import com.maxrave.simpmusic.ui.theme.killmonBrand
 import com.maxrave.simpmusic.ui.theme.typo
 import com.maxrave.simpmusic.viewModel.SharedViewModel
 import com.maxrave.simpmusic.viewModel.UIEvent
@@ -219,7 +219,7 @@ private fun MiniPlayerSaveButton(
                 modifier =
                     Modifier
                         .size(MiniPlayerIcon)
-                        .background(killmonGreen, CircleShape),
+                        .background(killmonBrand(), CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -720,7 +720,7 @@ fun MiniPlayer(
                         horizontalPadding = 0.dp,
                         // Dark keeps the familiar seed; light needs the darker seed-derived
                         // primary or the active state washes out on the light glass.
-                        activeColor = if (isDarkTheme) com.maxrave.simpmusic.ui.theme.seed else MaterialTheme.colorScheme.primary,
+                        activeColor = if (getPlatform() == com.maxrave.simpmusic.Platform.Desktop) com.maxrave.simpmusic.ui.theme.killmonPurple else if (isDarkTheme) com.maxrave.simpmusic.ui.theme.seed else MaterialTheme.colorScheme.primary,
                         contentColor = textColor,
                     ) {
                         sharedViewModel.onUIEvent(it)

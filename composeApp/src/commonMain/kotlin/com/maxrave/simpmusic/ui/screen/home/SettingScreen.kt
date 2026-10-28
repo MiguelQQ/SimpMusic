@@ -708,6 +708,7 @@ fun SettingScreen(
                 SettingGroup(
                     title = stringResource(Res.string.login_sync_section),
                 ) {
+                    com.maxrave.simpmusic.ui.component.KillmonDevicesSettings()
                     SettingItem(
                         title =
                             stringResource(

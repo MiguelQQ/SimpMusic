@@ -18,8 +18,10 @@ import androidx.compose.ui.graphics.Color
 import com.materialkolor.PaletteStyle
 import com.materialkolor.rememberDynamicColorScheme
 import com.maxrave.domain.manager.DataStoreManager
+import com.maxrave.simpmusic.Platform
 import com.maxrave.simpmusic.expect.ui.SystemBarAppearanceEffect
 import com.maxrave.simpmusic.expect.ui.platformDynamicColorScheme
+import com.maxrave.simpmusic.getPlatform
 
 /**
  * Semantic colors that sit outside the Material 3 ColorScheme.
@@ -115,6 +117,29 @@ private fun ColorScheme.withNeutralLightSurfaces(): ColorScheme =
         inverseOnSurface = Color(0xFFF1F1F1),
     )
 
+/** Desktop dark: purple-tinted panels, not a flat black window. Primary stays seed-derived. */
+private fun ColorScheme.withDesktopPurpleSurfaces(): ColorScheme =
+    copy(
+        background = Color(0xFF100818),
+        onBackground = Color(0xFFF6EEFF),
+        surface = Color(0xFF1A1028),
+        onSurface = Color(0xFFF6EEFF),
+        surfaceVariant = Color(0xFF2C1B48),
+        onSurfaceVariant = Color(0xFFCBB6E6),
+        surfaceTint = primary,
+        surfaceBright = Color(0xFF3A2460),
+        surfaceDim = Color(0xFF0C0614),
+        surfaceContainerLowest = Color(0xFF0C0614),
+        surfaceContainerLow = Color(0xFF140A22),
+        surfaceContainer = Color(0xFF1C1230),
+        surfaceContainerHigh = Color(0xFF26183E),
+        surfaceContainerHighest = Color(0xFF322050),
+        outline = Color(0xFF6E5A96),
+        outlineVariant = Color(0xFF3A2860),
+        inverseSurface = Color(0xFFF3E9FF),
+        inverseOnSurface = Color(0xFF1A1028),
+    )
+
 /** Killmon dark: AMOLED page (#000), raised surface (#121212), compact cards (#2A2A2A). */
 private fun ColorScheme.withKillmonDarkSurfaces(): ColorScheme =
     copy(
@@ -150,20 +175,22 @@ fun AppTheme(
         () -> Unit,
 ) {
     val isDark = isDarkTheme(themeMode)
+    val desktop = getPlatform() == Platform.Desktop
     val wallpaperScheme =
-        if (themeColorSource == DataStoreManager.THEME_COLOR_WALLPAPER) {
+        if (!desktop && themeColorSource == DataStoreManager.THEME_COLOR_WALLPAPER) {
             platformDynamicColorScheme(isDark)
         } else {
             null
         }
+    val brandSeed = if (desktop) killmonPurple else seed
     val seedColor =
-        if (themeColorSource == DataStoreManager.THEME_COLOR_CUSTOM) {
-            customThemeColor ?: seed
+        if (!desktop && themeColorSource == DataStoreManager.THEME_COLOR_CUSTOM) {
+            customThemeColor ?: brandSeed
         } else {
-            seed
+            brandSeed
         }
     // Light pins the neutrals to a neutral-grey ramp (the seed otherwise tints them warm/cream);
-    // dark keeps the generated neutrals as they are.
+    // dark keeps the generated neutrals as they are. Desktop dark uses a purple panel ramp.
     val generatedScheme =
         wallpaperScheme
             ?: rememberDynamicColorScheme(
@@ -171,7 +198,11 @@ fun AppTheme(
                 isDark = isDark,
                 style = PaletteStyle.TonalSpot,
                 modifyColorScheme = { cs ->
-                    if (isDark) cs.withKillmonDarkSurfaces() else cs.withNeutralLightSurfaces()
+                    when {
+                        desktop && isDark -> cs.withDesktopPurpleSurfaces()
+                        isDark -> cs.withKillmonDarkSurfaces()
+                        else -> cs.withNeutralLightSurfaces()
+                    }
                 },
             )
     val colorScheme =
@@ -186,7 +217,9 @@ fun AppTheme(
                 seedColor = seedColor,
                 isDark = true,
                 style = PaletteStyle.TonalSpot,
-                modifyColorScheme = { cs -> cs.withKillmonDarkSurfaces() },
+                modifyColorScheme = { cs ->
+                    if (desktop) cs.withDesktopPurpleSurfaces() else cs.withKillmonDarkSurfaces()
+                },
             )
         }
     SystemBarAppearanceEffect(isDark)

@@ -387,7 +387,9 @@ class SettingsViewModel(
     private fun getDownloadQuality() {
         viewModelScope.launch {
             dataStoreManager.downloadQuality.collect { quality ->
-                _downloadQuality.emit(QUALITY.normalize(quality))
+                val shown = QUALITY.normalize(quality)
+                if (shown != quality) dataStoreManager.setDownloadQuality(shown)
+                _downloadQuality.emit(shown)
             }
         }
     }
@@ -1249,7 +1251,9 @@ class SettingsViewModel(
     fun getQuality() {
         viewModelScope.launch {
             dataStoreManager.quality.collect { quality ->
-                _quality.emit(QUALITY.normalize(quality))
+                val shown = QUALITY.normalize(quality)
+                if (shown != quality) dataStoreManager.setQuality(shown)
+                _quality.emit(shown)
             }
         }
     }

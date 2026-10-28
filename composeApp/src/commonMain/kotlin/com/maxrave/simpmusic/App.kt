@@ -8,6 +8,7 @@ import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -67,6 +68,7 @@ import com.maxrave.common.LibraryChipType
 import com.maxrave.domain.data.player.GenericMediaItem
 import com.maxrave.domain.manager.DataStoreManager
 import com.maxrave.domain.manager.DataStoreManager.Values.TRUE
+import com.maxrave.domain.repository.AccountConnectRepository
 import com.maxrave.domain.repository.KillmonAccountRepository
 import com.maxrave.logger.Logger
 import com.maxrave.simpmusic.expect.Orientation
@@ -76,6 +78,7 @@ import com.maxrave.simpmusic.expect.ui.rememberBackdrop
 import com.maxrave.simpmusic.extension.copy
 import com.maxrave.simpmusic.extension.smoothScrimBrush
 import com.maxrave.simpmusic.ui.component.AppBottomNavigationBar
+import com.maxrave.simpmusic.ui.component.ConnectSessionBar
 import com.maxrave.simpmusic.ui.component.AppNavigationRail
 import com.maxrave.simpmusic.ui.component.DesktopSidebar
 import com.maxrave.simpmusic.ui.component.LiquidGlassAppBottomNavigationBar
@@ -167,6 +170,8 @@ fun App(
     val windowSize = currentWindowAdaptiveInfo().windowSizeClass
     val navController = rememberNavController()
     val killmonAccount = koinInject<KillmonAccountRepository>()
+    val connectState by koinInject<AccountConnectRepository>().state.collectAsStateWithLifecycle()
+    val connectFollows = connectState.isFollowingRemote()
     val killmonReady by killmonAccount.ready.collectAsStateWithLifecycle()
     val killmonSession by killmonAccount.session.collectAsStateWithLifecycle()
     KillmonInAppUpdate(active = true)
@@ -581,7 +586,7 @@ fun App(
                         val useFoldingBar = getPlatform() != Platform.Android && isLiquidGlassEnabled == TRUE
                         // A single brush spans the card, its margins, the gap and navigation.
                         // Reach near-black around the icons, then hold it through the labels/inset.
-                        val showCard = isShowMiniPlayer && !useFoldingBar && !killmonBlocksChrome
+                        val showCard = isShowMiniPlayer && !useFoldingBar && !killmonBlocksChrome && !connectFollows
                         Column(
                             Modifier.fillMaxWidth().then(
                                 if (useFoldingBar) {
@@ -597,8 +602,16 @@ fun App(
                                 },
                             ),
                         ) {
-                            if (!useFoldingBar && !showCard) {
+                            if (!useFoldingBar && !showCard && !connectFollows) {
                                 Spacer(Modifier.height(72.dp))
+                            }
+                            if (connectFollows) {
+                                ConnectSessionBar(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp)
+                                        .padding(bottom = 8.dp),
+                                )
                             }
                             AnimatedVisibility(
                                 showCard,
@@ -662,12 +675,19 @@ fun App(
                 ) {
                     val tabletMiniPlayer: @Composable (Modifier) -> Unit = { modifier ->
                         androidx.compose.animation.AnimatedVisibility(
-                            visible = isShowMiniPlayer && isTablet && !isInFullscreen && !killmonBlocksChrome,
+                            visible = (isShowMiniPlayer || connectFollows) && isTablet && !isInFullscreen && !killmonBlocksChrome,
                             modifier = modifier,
                             enter = fadeIn() + slideInHorizontally(),
                             exit = fadeOut(),
                         ) {
-                            MiniPlayer(
+                            if (connectFollows) {
+                                ConnectSessionBar(
+                                    Modifier
+                                        .fillMaxWidth(0.72f)
+                                        .padding(horizontal = 16.dp)
+                                        .padding(bottom = 16.dp),
+                                )
+                            } else MiniPlayer(
                                 if (getPlatform() == Platform.Android) {
                                     Modifier
                                         .fillMaxWidth(0.8f)
@@ -768,7 +788,12 @@ fun App(
                                             if (isDesktopShell) {
                                                 Modifier
                                                     .padding(8.dp)
-                                                    .clip(RoundedCornerShape(12.dp))
+                                                    .border(
+                                                        1.dp,
+                                                        Color(0xFF7C4DFF).copy(alpha = 0.45f),
+                                                        RoundedCornerShape(14.dp),
+                                                    )
+                                                    .clip(RoundedCornerShape(14.dp))
                                                     .background(desktopPanel)
                                             } else {
                                                 Modifier

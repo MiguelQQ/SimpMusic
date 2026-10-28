@@ -1368,7 +1368,7 @@ private fun AccountAvatar(
         Box(
             modifier =
                 avatarModifier.background(
-                    Brush.horizontalGradient(com.maxrave.simpmusic.ui.theme.killmonAccentGradient),
+                    Brush.horizontalGradient(com.maxrave.simpmusic.ui.theme.killmonBrandGradient()),
                 ),
             contentAlignment = Alignment.Center,
         ) {
