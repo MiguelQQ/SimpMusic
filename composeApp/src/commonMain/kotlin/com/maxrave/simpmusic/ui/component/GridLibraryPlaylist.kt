@@ -126,7 +126,7 @@ internal inline fun <reified T> GridLibraryPlaylist(
             }
     }
     val pullToRefreshState = rememberPullToRefreshState()
-    PullToRefreshBox(
+    com.maxrave.simpmusic.ui.component.KillmonPullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
         state = pullToRefreshState,
         onRefresh = onReload,

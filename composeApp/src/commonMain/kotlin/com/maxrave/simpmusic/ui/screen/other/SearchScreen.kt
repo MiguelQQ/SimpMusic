@@ -694,7 +694,7 @@ fun SearchScreen(
                 SearchUIType.SEARCH_RESULTS -> {
                     // Content area — chips now live in the blurred bar block above.
                     Column(modifier = Modifier.fillMaxSize()) {
-                        PullToRefreshBox(
+                        com.maxrave.simpmusic.ui.component.KillmonPullToRefreshBox(
                             modifier = Modifier.fillMaxSize(),
                             state = pullToRefreshState,
                             onRefresh = {

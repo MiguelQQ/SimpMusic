@@ -779,7 +779,7 @@ fun HomeScreen(
     }
 
     Box {
-        PullToRefreshBox(
+        com.maxrave.simpmusic.ui.component.KillmonPullToRefreshBox(
             modifier =
                 Modifier
                     .then(if (LocalLiquidGlassEnabled.current) Modifier.layerBackdrop(chipBackdrop) else Modifier)
