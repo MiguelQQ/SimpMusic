@@ -17,7 +17,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.input.pointer.pointerInput
 import kotlin.math.abs
 
 /** What the slider draws: the drag or the wheel step until the player reports that same level. */
@@ -95,11 +95,17 @@ fun Modifier.volumeGestures(control: VolumeControl): Modifier {
     val shown by rememberUpdatedState(control.shown)
     val nudge by rememberUpdatedState(control.nudge)
     return this
-        .onPointerEvent(PointerEventType.Scroll) { event ->
-            val delta = event.changes.firstOrNull()?.scrollDelta?.y ?: 0f
-            if (delta == 0f) return@onPointerEvent
-            nudge(volumeAfterWheel(shown, delta))
-            event.changes.forEach { it.consume() }
+        .pointerInput(Unit) {
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent()
+                    if (event.type != PointerEventType.Scroll) continue
+                    val delta = event.changes.firstOrNull()?.scrollDelta?.y ?: 0f
+                    if (delta == 0f) continue
+                    nudge(volumeAfterWheel(shown, delta))
+                    event.changes.forEach { it.consume() }
+                }
+            }
         }.onPreviewKeyEvent { event ->
             if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
             val up =
