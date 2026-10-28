@@ -79,6 +79,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
@@ -196,17 +197,15 @@ private fun playerBarDesktopColor(): Color {
     return base.copy(alpha = PLAYER_BAR_ALPHA)
 }
 
-/** 1dp line along the top edge. Drawn inside an already clipped box, so it follows the shape. */
-@Composable
-private fun BoxScope.PlayerBarTopHairline() {
-    Box(
-        Modifier
-            .align(Alignment.TopCenter)
-            .fillMaxWidth()
-            .height(1.dp)
-            .background(PlayerBarHairline),
-    )
-}
+/**
+ * 1dp line along the top edge, drawn over the content. A draw modifier (not a child
+ * fillMaxWidth Box) so it never widens a wrapContentWidth capsule.
+ */
+private fun Modifier.playerBarTopHairline(): Modifier =
+    drawWithContent {
+        drawContent()
+        drawRect(PlayerBarHairline, size = androidx.compose.ui.geometry.Size(size.width, 1.dp.toPx()))
+    }
 
 /** Glyph centred in a 48dp target so the three controls stay apart. */
 @Composable
@@ -422,7 +421,7 @@ fun MiniPlayer(
                             },
                     ),
         ) {
-            Box(modifier = Modifier.fillMaxWidth()) {
+            Box(modifier = Modifier.fillMaxWidth().playerBarTopHairline()) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -571,7 +570,6 @@ fun MiniPlayer(
                     )
                 }
             }
-            PlayerBarTopHairline()
             }
         }
     } else {
@@ -638,6 +636,7 @@ fun MiniPlayer(
             modifier
                 .clip(capsuleShape)
                 .background(capsuleColor)
+                .playerBarTopHairline()
                 .clickable {
                     onClick()
                 },
@@ -1171,7 +1170,6 @@ fun MiniPlayer(
                     }
                 }
             }
-            PlayerBarTopHairline()
         }
     }
 }
