@@ -78,6 +78,8 @@ import com.maxrave.simpmusic.expect.ui.rememberBackdrop
 import com.maxrave.simpmusic.extension.copy
 import com.maxrave.simpmusic.extension.smoothScrimBrush
 import com.maxrave.simpmusic.ui.component.AppBottomNavigationBar
+import com.maxrave.simpmusic.ui.component.ConnectRemotePlayer
+import com.maxrave.simpmusic.ui.component.ConnectRemotePlayerSheet
 import com.maxrave.simpmusic.ui.component.ConnectSessionBar
 import com.maxrave.simpmusic.ui.component.AppNavigationRail
 import com.maxrave.simpmusic.ui.component.DesktopSidebar
@@ -611,6 +613,7 @@ fun App(
                                         .fillMaxWidth()
                                         .padding(horizontal = 12.dp)
                                         .padding(bottom = 8.dp),
+                                    onOpen = { isShowNowPlaylistScreen = true },
                                 )
                             }
                             AnimatedVisibility(
@@ -683,9 +686,10 @@ fun App(
                             if (connectFollows) {
                                 ConnectSessionBar(
                                     Modifier
-                                        .fillMaxWidth(0.72f)
+                                        .fillMaxWidth(if (getPlatform() == Platform.Android) 0.72f else 0.42f)
                                         .padding(horizontal = 16.dp)
                                         .padding(bottom = 16.dp),
+                                    onOpen = { isShowNowPlaylistScreen = true },
                                 )
                             } else MiniPlayer(
                                 if (getPlatform() == Platform.Android) {
@@ -904,14 +908,21 @@ fun App(
                                                 },
                                             ),
                                     ) {
-                                        ForceDarkContent {
-                                            NowPlayingScreenContent(
-                                                navController = navController,
-                                                sharedViewModel = viewModel,
-                                                isExpanded = true,
-                                                dismissIcon = SimpIcons.ArrowForwardIos,
-                                            ) {
-                                                isShowNowPlaylistScreen = false
+                                        if (connectFollows) {
+                                            ConnectRemotePlayer(
+                                                onDismiss = { isShowNowPlaylistScreen = false },
+                                                modifier = Modifier.fillMaxSize(),
+                                            )
+                                        } else {
+                                            ForceDarkContent {
+                                                NowPlayingScreenContent(
+                                                    navController = navController,
+                                                    sharedViewModel = viewModel,
+                                                    isExpanded = true,
+                                                    dismissIcon = SimpIcons.ArrowForwardIos,
+                                                ) {
+                                                    isShowNowPlaylistScreen = false
+                                                }
                                             }
                                         }
                                     }
@@ -922,11 +933,15 @@ fun App(
                 }
 
                 if (isShowNowPlaylistScreen && !isTabletLandscape && !killmonBlocksChrome) {
-                    ForceDarkContent {
-                        NowPlayingScreen(
-                            navController = navController,
-                        ) {
-                            isShowNowPlaylistScreen = false
+                    if (connectFollows) {
+                        ConnectRemotePlayerSheet(onDismiss = { isShowNowPlaylistScreen = false })
+                    } else {
+                        ForceDarkContent {
+                            NowPlayingScreen(
+                                navController = navController,
+                            ) {
+                                isShowNowPlaylistScreen = false
+                            }
                         }
                     }
                 }

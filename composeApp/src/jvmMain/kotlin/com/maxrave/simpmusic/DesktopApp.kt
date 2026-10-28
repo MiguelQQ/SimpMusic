@@ -354,7 +354,8 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
             }
         }
         // Linux keeps the native title bar: undecorated + transparent breaks on some window
-        // managers. Windows and macOS draw the custom bar (Windows gets the purple tint).
+        // managers. Windows must NOT use that native bar: it draws CustomTitleBar with caption
+        // buttons on the right. macOS keeps traffic lights on the left.
         val isWindows = System.getProperty("os.name", "").contains("Windows", ignoreCase = true)
         val nativeTitleBar = !isMacOS && !isWindows
         // Publish whether the custom title bar will be mounted so getScreenSizeInfo() can

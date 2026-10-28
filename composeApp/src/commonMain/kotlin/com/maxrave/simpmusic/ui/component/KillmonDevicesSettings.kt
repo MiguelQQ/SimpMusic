@@ -31,18 +31,27 @@ fun KillmonDevicesSettings() {
     }
     val track = state.session?.currentTrack()?.title
     state.devices.forEach { device ->
+        val kind =
+            when (device.platform) {
+                "android" -> "Teléfono"
+                "ios" -> "iPhone"
+                "windows" -> "PC"
+                "macos" -> "Mac"
+                "linux" -> "Linux"
+                else -> "Dispositivo"
+            }
         val status =
             when {
                 device.isActive && !track.isNullOrBlank() -> "Reproduciendo · $track"
                 device.isActive -> "Reproduciendo"
-                device.isSelf -> "Este dispositivo"
-                else -> "En línea"
+                device.isSelf -> "Este dispositivo · $kind"
+                else -> "$kind · En línea · Toca para escuchar aquí"
             }
         SettingItem(
             title = device.displayName,
             subtitle = status,
             onClick = {
-                if (!device.isActive) repo.transferTo(device.deviceId)
+                if (!device.isActive && state.session?.queue?.isNotEmpty() == true) repo.transferTo(device.deviceId)
             },
         )
     }
