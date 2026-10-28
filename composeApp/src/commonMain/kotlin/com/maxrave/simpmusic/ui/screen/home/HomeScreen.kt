@@ -60,6 +60,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -827,8 +828,8 @@ fun HomeScreen(
                     ) {
                         itemsIndexed(
                             items = visibleShelves,
-                            key = { _, item ->
-                                item.hashCode().toString() + (mainHomeThumbnail ?: "nothumb")
+                            key = { index, item ->
+                                homeShelfKey(item.title, item.subtitle, item.channelId, index)
                             },
                             contentType = { _, _ -> "shelf" },
                         ) { index, item ->
@@ -946,7 +947,17 @@ fun HomeScreen(
                             }
                         }
                         if (homeListState == ListState.PAGINATION_EXHAUST) {
-                            items(newRelease, key = { it.hashCode() }, contentType = { "release" }) {
+                            items(
+                                newRelease,
+                                key = { shelf ->
+                                    val fingerprint =
+                                        shelf.contents.joinToString(",") { content ->
+                                            playbackVideoIdForCell(content?.videoId) ?: content?.title ?: ""
+                                        }
+                                    homeShelfKey(shelf.title, shelf.subtitle, shelf.channelId, 0) + fingerprint
+                                },
+                                contentType = { "release" },
+                            ) {
                                 AnimatedVisibility(
                                     visible = newRelease.isNotEmpty(),
                                 ) {
@@ -1465,7 +1476,8 @@ fun QuickPicks(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                row.forEach { item ->
+                row.forEachIndexed { index, item ->
+                    key((playbackVideoIdForCell(item.videoId) ?: item.title) + "#$index") {
                     PlayNextSwipeBox(
                         enabled = !item.videoId.isNullOrEmpty(),
                         onPlayNext = { sharedViewModel.playNext(item.toTrack()) },
@@ -1474,21 +1486,24 @@ fun QuickPicks(
                     ) {
                         QuickPicksItem(
                             onClick = {
-                                val firstQueue: Track = item.toTrack()
-                                viewModel.setQueueData(
-                                    QueueData.Data(
-                                        listTracks = arrayListOf(firstQueue),
-                                        firstPlayedTrack = firstQueue,
-                                        playlistId = "RDAMVM${item.videoId}",
-                                        playlistName = "\"${item.title}\" Radio",
-                                        playlistType = PlaylistType.RADIO,
-                                        continuation = null,
-                                    ),
-                                )
-                                viewModel.loadMediaItem(
-                                    firstQueue,
-                                    type = Config.SONG_CLICK,
-                                )
+                                val id = playbackVideoIdForCell(item.videoId)
+                                if (id != null) {
+                                    val firstQueue: Track = item.toTrack().copy(videoId = id)
+                                    viewModel.setQueueData(
+                                        QueueData.Data(
+                                            listTracks = arrayListOf(firstQueue),
+                                            firstPlayedTrack = firstQueue,
+                                            playlistId = "RDAMVM$id",
+                                            playlistName = "\"${item.title}\" Radio",
+                                            playlistType = PlaylistType.RADIO,
+                                            continuation = null,
+                                        ),
+                                    )
+                                    viewModel.loadMediaItem(
+                                        firstQueue,
+                                        type = Config.SONG_CLICK,
+                                    )
+                                }
                             },
                             onLongClick = {
                                 track = item.toTrack()
@@ -1497,6 +1512,7 @@ fun QuickPicks(
                             data = item,
                             widthDp = if (isPortrait) widthDp else minOf(widthDp, LandscapeGridItemMaxWidth + 30.dp),
                         )
+                    }
                     }
                 }
                 if (row.size == 1) {
@@ -1627,17 +1643,18 @@ fun ChartData(
                         data.id + data.title + index
                     },
                     contentType = { "chart-playlist" },
-                ) {
+                ) { index ->
+                    val playlist = item.playlists[index]
                     HomeItemContentPlaylist(
                         onClick = {
                             navController.navigate(
                                 PlaylistDestination(
-                                    playlistId = item.playlists[it].id,
+                                    playlistId = playlist.id,
                                     isYourYouTubePlaylist = false,
                                 ),
                             )
                         },
-                        data = item.playlists[it],
+                        data = playlist,
                     )
                 }
             }

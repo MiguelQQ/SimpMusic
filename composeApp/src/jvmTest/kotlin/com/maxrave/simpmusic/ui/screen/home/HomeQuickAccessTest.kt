@@ -79,6 +79,35 @@ class HomeQuickAccessTest {
     }
 
     @Test
+    fun eachCellKeepsItsOwnVideoIdWhenTheListShifts() {
+        val morena = song("bbbbbbbbbbb").copy(title = "Morena")
+        val mero = song("aaaaaaaaaaa").copy(title = "Mero tote")
+        fun ids(oldestFirst: List<SongEntity>) =
+            tiles(oldestFirst)
+                .filter { it.target is QuickTarget.LocalSong }
+                .associate { it.title to quickTilePlaybackVideoId(it.target) }
+        assertEquals("aaaaaaaaaaa", ids(listOf(morena, mero))["Mero tote"])
+        assertEquals("bbbbbbbbbbb", ids(listOf(morena, mero))["Morena"])
+        assertEquals("aaaaaaaaaaa", ids(listOf(mero, morena))["Mero tote"])
+        assertEquals("bbbbbbbbbbb", ids(listOf(mero, morena))["Morena"])
+        val shifted =
+            listOf(
+                content("Morena", videoId = "bbbbbbbbbbb"),
+                content("Mero tote", videoId = "aaaaaaaaaaa"),
+            )
+        val keys = shifted.mapIndexed { index, cell -> homeContentItemKey(cell.videoId, cell.browseId, cell.playlistId, cell.title, index) }
+        assertEquals(keys.toSet().size, keys.size)
+        assertEquals("aaaaaaaaaaa", playbackVideoIdForCell(shifted.first { it.title == "Mero tote" }.videoId))
+        assertTrue(keys.first { it.startsWith("aaaaaaaaaaa") }.startsWith("aaaaaaaaaaa"))
+        val blanks =
+            listOf(
+                homeContentItemKey("", null, null, "Mero tote", 0),
+                homeContentItemKey("", null, null, "Morena", 1),
+            )
+        assertEquals(blanks.toSet().size, blanks.size)
+    }
+
+    @Test
     fun favoritesComeFirstAndAreHiddenWithNoLikedSongs() {
         assertEquals("Favoritos", tiles(listOf(song("a"), song("b")), favorites = 3).first().title)
         assertTrue(tiles(listOf(song("a"), song("b"))).none { it.target is QuickTarget.Favorites })

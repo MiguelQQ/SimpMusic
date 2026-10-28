@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +39,7 @@ import com.maxrave.simpmusic.ui.navigation.destination.list.PlaylistDestination
 import com.maxrave.simpmusic.ui.navigation.destination.list.PodcastDestination
 import com.maxrave.simpmusic.ui.screen.home.QuickTarget
 import com.maxrave.simpmusic.ui.screen.home.QuickTile
+import com.maxrave.simpmusic.ui.screen.home.quickTilePlaybackVideoId
 import com.maxrave.simpmusic.ui.screen.library.LibraryDynamicPlaylistType
 import com.maxrave.simpmusic.ui.theme.typo
 import com.maxrave.simpmusic.viewModel.HomeViewModel
@@ -62,11 +64,13 @@ fun HomeQuickAccessGrid(
         tiles.chunked(2).forEach { row ->
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 row.forEach { tile ->
-                    QuickTileCard(
-                        tile = tile,
-                        modifier = Modifier.weight(1f),
-                        onClick = { openQuickTile(tile.target, navController, viewModel) },
-                    )
+                    key(tile.key) {
+                        QuickTileCard(
+                            tile = tile,
+                            modifier = Modifier.weight(1f),
+                            onClick = { openQuickTile(tile.target, navController, viewModel) },
+                        )
+                    }
                 }
                 if (row.size == 1) Spacer(Modifier.weight(1f))
             }
@@ -130,8 +134,14 @@ private fun openQuickTile(
             navController.navigate(
                 LibraryDynamicPlaylistDestination(type = LibraryDynamicPlaylistType.Favorite.toStringParams()),
             )
-        is QuickTarget.LocalSong -> playSingle(viewModel, target.song.toTrack())
-        is QuickTarget.HomeSong -> playSingle(viewModel, target.content.toTrack())
+        is QuickTarget.LocalSong -> {
+            val id = quickTilePlaybackVideoId(target) ?: return
+            playSingle(viewModel, target.song.toTrack().copy(videoId = id))
+        }
+        is QuickTarget.HomeSong -> {
+            val id = quickTilePlaybackVideoId(target) ?: return
+            playSingle(viewModel, target.content.toTrack().copy(videoId = id))
+        }
     }
 }
 

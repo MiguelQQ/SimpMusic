@@ -20,6 +20,7 @@ import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -43,6 +44,7 @@ import com.maxrave.domain.utils.toTrack
 import com.maxrave.simpmusic.extension.smoothScrimBrush
 import com.maxrave.simpmusic.ui.theme.ForceDarkContent
 import com.maxrave.simpmusic.ui.theme.typo
+import com.maxrave.simpmusic.ui.screen.home.playbackVideoIdForCell
 import com.maxrave.simpmusic.viewModel.HomeViewModel
 import kotlinx.coroutines.launch
 
@@ -65,7 +67,7 @@ fun HomeDiscoverSection(
     navController: NavController,
     homeViewModel: HomeViewModel,
 ) {
-    val songs = remember(data.contents) { data.contents.filterNotNull() }
+    val songs = data.contents.filterNotNull()
     if (songs.isEmpty()) return
     var sheetTrack by remember { mutableStateOf<Track?>(null) }
     sheetTrack?.let { track ->
@@ -94,7 +96,8 @@ fun HomeDiscoverSection(
                         .padding(top = 10.dp)
                         .height(320.dp),
             ) { index ->
-                val song = songs[index]
+                val song = songs.getOrNull(index) ?: return@HorizontalCenteredHeroCarousel
+                key(playbackVideoIdForCell(song.videoId) ?: "song#$index") {
                 val info = carouselItemDrawInfo
                 // A neighbour is only brought to the middle; the middle card is the one that plays.
                 val play: () -> Unit = {
@@ -167,6 +170,7 @@ fun HomeDiscoverSection(
                         }
                     }
                     HoverPlayButton(visible = hovered && info.isHero(), onClick = play)
+                }
                 }
             }
         }

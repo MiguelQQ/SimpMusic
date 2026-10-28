@@ -34,9 +34,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -116,6 +117,8 @@ import com.maxrave.simpmusic.ui.navigation.destination.list.PodcastDestination
 import com.maxrave.simpmusic.ui.icon.PlayArrow
 import com.maxrave.simpmusic.ui.icon.SimpIcons
 import com.maxrave.simpmusic.ui.theme.LocalForceDarkText
+import com.maxrave.simpmusic.ui.screen.home.homeContentItemKey
+import com.maxrave.simpmusic.ui.screen.home.playbackVideoIdForCell
 import com.maxrave.simpmusic.ui.theme.typo
 import com.maxrave.simpmusic.viewModel.HomeViewModel
 import com.maxrave.simpmusic.viewModel.base.BaseViewModel
@@ -143,7 +146,12 @@ fun HomeItem(
 ) {
     var bottomSheetShow by remember { mutableStateOf(false) }
 
-    val lazyListState = rememberLazyListState()
+    val rowIdentity =
+        data.contents
+            .mapIndexed { index, item ->
+                homeContentItemKey(item?.videoId, item?.browseId, item?.playlistId, item?.title, index)
+            }.joinToString("|")
+    val lazyListState = remember(rowIdentity) { LazyListState() }
     val snapperFlingBehavior = rememberSnapFlingBehavior(SnapLayoutInfoProvider(lazyListState = lazyListState))
 
     var track by remember { mutableStateOf<Track?>(null) }
@@ -162,13 +170,13 @@ fun HomeItem(
             state = lazyListState,
             flingBehavior = snapperFlingBehavior,
         ) {
-            items(
+            itemsIndexed(
                 data.contents,
-                key = { item ->
-                    item?.videoId ?: item?.browseId ?: item?.playlistId ?: item?.title ?: item.hashCode()
+                key = { index, item ->
+                    homeContentItemKey(item?.videoId, item?.browseId, item?.playlistId, item?.title, index)
                 },
-                contentType = { "card" },
-            ) { temp ->
+                contentType = { _, _ -> "card" },
+            ) { _, temp ->
                 if (temp != null) {
                     HomeContentCard(
                         temp = temp,
@@ -495,12 +503,13 @@ fun Content.homeCardAspectRatio(): Float {
 }
 
 internal fun Content.playRadio(viewModel: BaseViewModel) {
-    val firstQueue: Track = toTrack()
+    val id = playbackVideoIdForCell(videoId) ?: return
+    val firstQueue: Track = toTrack().copy(videoId = id)
     viewModel.setQueueData(
         QueueData.Data(
             listTracks = arrayListOf(firstQueue),
             firstPlayedTrack = firstQueue,
-            playlistId = "RDAMVM$videoId",
+            playlistId = "RDAMVM$id",
             playlistName = "\"$title\" ${getStringBlocking(Res.string.radio)}",
             playlistType = PlaylistType.RADIO,
             continuation = null,
