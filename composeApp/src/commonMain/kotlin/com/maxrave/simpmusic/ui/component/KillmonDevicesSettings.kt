@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.maxrave.domain.data.model.connect.connectPickerRows
 import com.maxrave.domain.repository.AccountConnectRepository
 import org.koin.compose.koinInject
 
@@ -29,29 +30,12 @@ fun KillmonDevicesSettings() {
         )
         return
     }
-    val track = state.session?.currentTrack()?.title
-    state.devices.forEach { device ->
-        val kind =
-            when (device.platform) {
-                "android" -> "Teléfono"
-                "ios" -> "iPhone"
-                "windows" -> "PC"
-                "macos" -> "Mac"
-                "linux" -> "Linux"
-                else -> "Dispositivo"
-            }
-        val status =
-            when {
-                device.isActive && !track.isNullOrBlank() -> "Reproduciendo · $track"
-                device.isActive -> "Reproduciendo"
-                device.isSelf -> "Este dispositivo · $kind"
-                else -> "$kind · En línea · Toca para escuchar aquí"
-            }
+    connectPickerRows(state.devices, state.session).forEach { device ->
         SettingItem(
             title = device.displayName,
-            subtitle = status,
+            subtitle = device.status,
             onClick = {
-                if (!device.isActive && state.session?.queue?.isNotEmpty() == true) repo.transferTo(device.deviceId)
+                if (!device.selected && state.session?.queue?.isNotEmpty() == true) repo.transferTo(device.deviceId)
             },
         )
     }

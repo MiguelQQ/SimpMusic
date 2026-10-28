@@ -159,6 +159,12 @@ import simpmusic.composeapp.generated.resources.cd_mini_player
 
 private const val TAG = "MiniPlayer"
 
+private fun artistWithDevice(artist: String, device: String?): String {
+    if (device.isNullOrBlank()) return artist
+    val line = "En $device"
+    return if (artist.isBlank()) line else "$artist · $line"
+}
+
 /** Charcoal card shared with the Android bar. Desktop uses the opaque colour so the capsule is not glass. */
 private val MiniPlayerCard = Color(0xFF2A2A2A).copy(alpha = 0.97f)
 private val MiniPlayerSolid = Color(0xFF2A2A2A)
@@ -252,6 +258,7 @@ fun MiniPlayer(
     navController: NavController? = null,
 ) {
     val jamRoom by koinInject<com.maxrave.domain.repository.ListenTogetherRepository>().room.collectAsStateWithLifecycle()
+    val connectListeningOn by sharedViewModel.connectListeningOn.collectAsStateWithLifecycle()
     val controllerState by sharedViewModel.controllerState.collectAsStateWithLifecycle()
     val timelineState by sharedViewModel.timeline.collectAsStateWithLifecycle()
     // The Desktop capsule's quality line between its timestamps — see toAudioQualityLabel.
@@ -529,7 +536,7 @@ fun MiniPlayer(
                                                 )
                                             }
                                             Text(
-                                                text = target.artistName?.connectArtists().orEmpty(),
+                                                text = artistWithDevice(target.artistName?.connectArtists().orEmpty(), connectListeningOn),
                                                 style =
                                                     typo().bodySmall.copy(
                                                         fontSize = 13.sp,
@@ -856,7 +863,7 @@ fun MiniPlayer(
                                     )
                                 }
                                 Text(
-                                    text = (songEntity?.artistName?.connectArtists() ?: ""),
+                                    text = artistWithDevice(songEntity?.artistName?.connectArtists().orEmpty(), connectListeningOn),
                                     style = typo().bodySmall,
                                     color = textColor.copy(alpha = 0.7f),
                                     maxLines = 1,

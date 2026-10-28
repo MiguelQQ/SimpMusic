@@ -52,6 +52,10 @@ import com.maxrave.domain.mediaservice.handler.RepeatState
 import com.maxrave.domain.mediaservice.handler.SimpleMediaState
 import com.maxrave.domain.mediaservice.handler.SleepTimerState
 import com.maxrave.domain.mediaservice.handler.addToQueueBlock
+import com.maxrave.domain.data.model.connect.asTrack
+import com.maxrave.domain.data.model.connect.listeningOnDeviceName
+import com.maxrave.domain.data.model.connect.toDisplayPlayback
+import com.maxrave.domain.repository.AccountConnectRepository
 import com.maxrave.domain.repository.AlbumRepository
 import com.maxrave.domain.repository.CacheRepository
 import com.maxrave.domain.repository.LocalPlaylistRepository
@@ -87,7 +91,9 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -134,6 +140,7 @@ import kotlin.math.abs
 import kotlin.reflect.KClass
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import kotlin.time.ExperimentalTime
 
 // DataStore key for the kotlin-footguns star prompt. Cleared on every version bump,
 // so the ask comes back after an update - same policy as OPEN_APP_TIME.
@@ -159,6 +166,11 @@ class SharedViewModel(
     var showedUpdateDialog: Boolean = false
 
     private val appIdentity: AppIdentity by inject()
+    private val connectRepository: AccountConnectRepository by inject()
+
+    /** Nombre del aparato que suena, cuando este solo controla. Null si el audio es local. */
+    private val _connectListeningOn = MutableStateFlow<String?>(null)
+    val connectListeningOn: StateFlow<String?> = _connectListeningOn.asStateFlow()
 
     private val _isCheckingUpdate = MutableStateFlow(false)
     val isCheckingUpdate: StateFlow<Boolean> = _isCheckingUpdate
@@ -413,10 +425,15 @@ class SharedViewModel(
             }
         }
         viewModelScope.launch {
-            mediaPlayerHandler.nowPlayingState
-                .distinctUntilChangedBy {
-                    it.songEntity?.videoId
-                }.collectLatest { state ->
+            combine(
+                mediaPlayerHandler.nowPlayingState,
+                connectRepository.state.map { it.isFollowingRemote() }.distinctUntilChanged(),
+            ) { state, following -> state to following }
+                .distinctUntilChangedBy { (state, following) ->
+                    following to state.songEntity?.videoId
+                }.collectLatest { (state, following) ->
+                    if (following) return@collectLatest
+                    _connectListeningOn.value = null
                     canvasJob?.cancel()
                     lyricsJob?.cancel()
                     lyricsJob = null
@@ -504,6 +521,7 @@ class SharedViewModel(
             val job1 =
                 launch {
                     mediaPlayerHandler.simpleMediaState.collect { mediaState ->
+                        if (connectRepository.state.value.isFollowingRemote()) return@collect
                         when (mediaState) {
                             is SimpleMediaState.Buffering -> {
                                 _timeline.update {
@@ -598,11 +616,21 @@ class SharedViewModel(
             val controllerJob =
                 launch {
                     Logger.w(tag, "ControllerJob is running")
-                    combine(mediaPlayerHandler.controlState, listenTogetherRepository.room) { controls, room ->
-                        if (room.inRoom) {
+                    combine(mediaPlayerHandler.controlState, listenTogetherRepository.room, connectRepository.state) { controls, room, connect ->
+                        val session = connect.session
+                        if (connect.isFollowingRemote() && session != null) {
+                            controls.copy(
+                                isPlaying = session.isPlaying,
+                                isNextAvailable = session.index < session.queue.lastIndex,
+                                isPreviousAvailable = true,
+                                isCrossfading = false,
+                            )
+                        } else if (room.inRoom) {
                             val index = room.queue.indexOfFirst { it.id == room.currentTrack?.id }
                             controls.copy(isNextAvailable = index < room.queue.lastIndex, isPreviousAvailable = index >= 0)
-                        } else controls
+                        } else {
+                            controls
+                        }
                     }.collectLatest {
                         Logger.w(tag, "ControlState is $it")
                         _controllerState.value = it
@@ -638,8 +666,24 @@ class SharedViewModel(
                     }.distinctUntilChanged()
                         .collect { isLive -> _timeline.update { it.copy(isLive = isLive) } }
                 }
+            val connectProjectionJob =
+                launch {
+                    var shownId: String? = null
+                    while (isActive) {
+                        val state = connectRepository.state.value
+                        if (state.isFollowingRemote()) {
+                            projectRemotePlayback(state)
+                            shownId = state.session?.currentTrack()?.videoId
+                        } else if (shownId != null) {
+                            shownId = null
+                            _connectListeningOn.value = null
+                        }
+                        delay(250)
+                    }
+                }
             job1.join()
             controllerJob.join()
+            connectProjectionJob.join()
             sleepTimerJob.join()
             playlistNameJob.join()
             liveStreamJob.join()
@@ -1053,36 +1097,111 @@ class SharedViewModel(
         }
     }
 
+    /**
+     * Mientras otro aparato tiene el audio, el mini-player y Now Playing leen esta proyección
+     * en vez del player local (que está en silencio). Los controles de transporte no pasan por él.
+     */
+    @OptIn(ExperimentalTime::class)
+    private fun projectRemotePlayback(state: com.maxrave.domain.data.model.connect.ConnectState) {
+        val session = state.session ?: return
+        val now = Clock.System.now().toEpochMilliseconds()
+        val display = session.toDisplayPlayback(now) ?: return
+        val track = session.currentTrack()?.asTrack() ?: return
+        val previousId = _nowPlayingState.value?.track?.videoId
+        _nowPlayingState.value =
+            NowPlayingTrackState(
+                mediaItem = track.toGenericMediaItem(),
+                track = track,
+                songEntity = track.toSongEntity(),
+            )
+        val device = state.listeningOnDeviceName()
+        _connectListeningOn.value = device
+        val artistLine =
+            listOfNotNull(
+                display.artist.takeIf { it.isNotBlank() },
+                device?.let { "En $it" },
+            ).joinToString(" · ")
+        _nowPlayingScreenData.update {
+            it.copy(
+                nowPlayingTitle = display.title.ifBlank { track.title },
+                artistName = artistLine,
+                thumbnailURL = display.artwork,
+                isVideo = false,
+            )
+        }
+        _timeline.update {
+            it.copy(
+                current = display.positionMs,
+                total = display.durationMs.takeIf { duration -> duration > 0L } ?: it.total,
+                loading = false,
+                isCrossfading = false,
+            )
+        }
+        if (previousId != display.videoId) {
+            getLikeStatus(display.videoId)
+            getSongInfo(display.videoId)
+            getFormat(display.videoId)
+        }
+    }
+
+    @OptIn(ExperimentalTime::class)
+    private fun remotePositionMs(deltaMs: Long = 0L, fraction: Float? = null): Long? {
+        val session = connectRepository.state.value.session ?: return null
+        val now = kotlin.time.Clock.System.now().toEpochMilliseconds()
+        val duration = session.currentTrack()?.durationMs ?: 0L
+        val base =
+            if (fraction != null && duration > 0L) {
+                (duration * fraction).toLong()
+            } else {
+                session.estimatedPositionMs(now) + deltaMs
+            }
+        return base.coerceIn(0L, if (duration > 0L) duration else Long.MAX_VALUE)
+    }
+
+    /** Play, pausa, seek y saltos van al aparato activo. El volumen de este no. */
+    private fun redirectTransport(action: String, positionMs: Long? = null): Boolean {
+        if (!connectRepository.state.value.isFollowingRemote()) return false
+        connectRepository.remoteControl(action, positionMs)
+        return true
+    }
+
     fun onUIEvent(uiEvent: UIEvent) =
         viewModelScope.launch {
             when (uiEvent) {
                 UIEvent.Backward -> {
+                    if (redirectTransport("seek", remotePositionMs(deltaMs = -10_000))) return@launch
                     mediaPlayerHandler.onPlayerEvent(
                         PlayerEvent.Backward,
                     )
                 }
 
                 UIEvent.Forward -> {
+                    if (redirectTransport("seek", remotePositionMs(deltaMs = 10_000))) return@launch
                     mediaPlayerHandler.onPlayerEvent(PlayerEvent.Forward)
                 }
 
                 UIEvent.PlayPause -> {
+                    val playing = connectRepository.state.value.session?.isPlaying == true
+                    if (redirectTransport(if (playing) "pause" else "play")) return@launch
                     mediaPlayerHandler.onPlayerEvent(
                         PlayerEvent.PlayPause,
                     )
                 }
 
                 UIEvent.Next -> {
+                    if (redirectTransport("next")) return@launch
                     mediaPlayerHandler.onPlayerEvent(PlayerEvent.Next)
                 }
 
                 UIEvent.Previous -> {
+                    if (redirectTransport("previous")) return@launch
                     mediaPlayerHandler.onPlayerEvent(
                         PlayerEvent.Previous,
                     )
                 }
 
                 UIEvent.SkipToPrevious -> {
+                    if (redirectTransport("previous")) return@launch
                     mediaPlayerHandler.onPlayerEvent(
                         PlayerEvent.SkipToPrevious,
                     )
@@ -1093,6 +1212,7 @@ class SharedViewModel(
                 }
 
                 is UIEvent.UpdateProgress -> {
+                    if (redirectTransport("seek", remotePositionMs(fraction = uiEvent.newProgress / 100f))) return@launch
                     mediaPlayerHandler.onPlayerEvent(
                         PlayerEvent.UpdateProgress(
                             uiEvent.newProgress,

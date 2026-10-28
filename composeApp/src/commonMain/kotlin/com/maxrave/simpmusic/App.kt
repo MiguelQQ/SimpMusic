@@ -68,7 +68,7 @@ import com.maxrave.common.LibraryChipType
 import com.maxrave.domain.data.player.GenericMediaItem
 import com.maxrave.domain.manager.DataStoreManager
 import com.maxrave.domain.manager.DataStoreManager.Values.TRUE
-import com.maxrave.domain.repository.AccountConnectRepository
+
 import com.maxrave.domain.repository.KillmonAccountRepository
 import com.maxrave.logger.Logger
 import com.maxrave.simpmusic.expect.Orientation
@@ -78,9 +78,7 @@ import com.maxrave.simpmusic.expect.ui.rememberBackdrop
 import com.maxrave.simpmusic.extension.copy
 import com.maxrave.simpmusic.extension.smoothScrimBrush
 import com.maxrave.simpmusic.ui.component.AppBottomNavigationBar
-import com.maxrave.simpmusic.ui.component.ConnectRemotePlayer
-import com.maxrave.simpmusic.ui.component.ConnectRemotePlayerSheet
-import com.maxrave.simpmusic.ui.component.ConnectSessionBar
+
 import com.maxrave.simpmusic.ui.component.AppNavigationRail
 import com.maxrave.simpmusic.ui.component.DesktopSidebar
 import com.maxrave.simpmusic.ui.component.LiquidGlassAppBottomNavigationBar
@@ -172,8 +170,6 @@ fun App(
     val windowSize = currentWindowAdaptiveInfo().windowSizeClass
     val navController = rememberNavController()
     val killmonAccount = koinInject<KillmonAccountRepository>()
-    val connectState by koinInject<AccountConnectRepository>().state.collectAsStateWithLifecycle()
-    val connectFollows = connectState.isFollowingRemote()
     val killmonReady by killmonAccount.ready.collectAsStateWithLifecycle()
     val killmonSession by killmonAccount.session.collectAsStateWithLifecycle()
     KillmonInAppUpdate(active = true)
@@ -588,7 +584,7 @@ fun App(
                         val useFoldingBar = getPlatform() != Platform.Android && isLiquidGlassEnabled == TRUE
                         // A single brush spans the card, its margins, the gap and navigation.
                         // Reach near-black around the icons, then hold it through the labels/inset.
-                        val showCard = isShowMiniPlayer && !useFoldingBar && !killmonBlocksChrome && !connectFollows
+                        val showCard = isShowMiniPlayer && !useFoldingBar && !killmonBlocksChrome
                         Column(
                             Modifier.fillMaxWidth().then(
                                 if (useFoldingBar) {
@@ -604,17 +600,8 @@ fun App(
                                 },
                             ),
                         ) {
-                            if (!useFoldingBar && !showCard && !connectFollows) {
+                            if (!useFoldingBar && !showCard) {
                                 Spacer(Modifier.height(72.dp))
-                            }
-                            if (connectFollows) {
-                                ConnectSessionBar(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 12.dp)
-                                        .padding(bottom = 8.dp),
-                                    onOpen = { isShowNowPlaylistScreen = true },
-                                )
                             }
                             AnimatedVisibility(
                                 showCard,
@@ -678,20 +665,12 @@ fun App(
                 ) {
                     val tabletMiniPlayer: @Composable (Modifier) -> Unit = { modifier ->
                         androidx.compose.animation.AnimatedVisibility(
-                            visible = (isShowMiniPlayer || connectFollows) && isTablet && !isInFullscreen && !killmonBlocksChrome,
+                            visible = isShowMiniPlayer && isTablet && !isInFullscreen && !killmonBlocksChrome,
                             modifier = modifier,
                             enter = fadeIn() + slideInHorizontally(),
                             exit = fadeOut(),
                         ) {
-                            if (connectFollows) {
-                                ConnectSessionBar(
-                                    Modifier
-                                        .fillMaxWidth(if (getPlatform() == Platform.Android) 0.72f else 0.42f)
-                                        .padding(horizontal = 16.dp)
-                                        .padding(bottom = 16.dp),
-                                    onOpen = { isShowNowPlaylistScreen = true },
-                                )
-                            } else MiniPlayer(
+                            MiniPlayer(
                                 if (getPlatform() == Platform.Android) {
                                     Modifier
                                         .fillMaxWidth(0.8f)
@@ -908,21 +887,14 @@ fun App(
                                                 },
                                             ),
                                     ) {
-                                        if (connectFollows) {
-                                            ConnectRemotePlayer(
-                                                onDismiss = { isShowNowPlaylistScreen = false },
-                                                modifier = Modifier.fillMaxSize(),
-                                            )
-                                        } else {
-                                            ForceDarkContent {
-                                                NowPlayingScreenContent(
-                                                    navController = navController,
-                                                    sharedViewModel = viewModel,
-                                                    isExpanded = true,
-                                                    dismissIcon = SimpIcons.ArrowForwardIos,
-                                                ) {
-                                                    isShowNowPlaylistScreen = false
-                                                }
+                                        ForceDarkContent {
+                                            NowPlayingScreenContent(
+                                                navController = navController,
+                                                sharedViewModel = viewModel,
+                                                isExpanded = true,
+                                                dismissIcon = SimpIcons.ArrowForwardIos,
+                                            ) {
+                                                isShowNowPlaylistScreen = false
                                             }
                                         }
                                     }
@@ -933,15 +905,11 @@ fun App(
                 }
 
                 if (isShowNowPlaylistScreen && !isTabletLandscape && !killmonBlocksChrome) {
-                    if (connectFollows) {
-                        ConnectRemotePlayerSheet(onDismiss = { isShowNowPlaylistScreen = false })
-                    } else {
-                        ForceDarkContent {
-                            NowPlayingScreen(
-                                navController = navController,
-                            ) {
-                                isShowNowPlaylistScreen = false
-                            }
+                    ForceDarkContent {
+                        NowPlayingScreen(
+                            navController = navController,
+                        ) {
+                            isShowNowPlaylistScreen = false
                         }
                     }
                 }

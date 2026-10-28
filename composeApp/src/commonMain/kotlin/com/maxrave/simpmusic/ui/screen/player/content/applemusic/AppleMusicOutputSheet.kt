@@ -14,11 +14,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -41,7 +43,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.maxrave.domain.data.model.connect.ConnectDevice
+import com.maxrave.domain.data.model.connect.ConnectPickerRow
+import com.maxrave.domain.data.model.connect.connectPickerRows
 import com.maxrave.domain.data.player.AudioOutput
 import com.maxrave.domain.data.player.AudioOutputKind
 import com.maxrave.domain.data.player.GenericCastState
@@ -141,11 +144,14 @@ internal fun AppleMusicOutputSheet(
         contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
     ) {
         Card(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+            modifier = Modifier.fillMaxWidth().heightIn(max = 720.dp),
             shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
             colors = CardDefaults.cardColors().copy(containerColor = colors.container),
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
                 Spacer(modifier = Modifier.height(5.dp))
                 Box(
                     modifier =
@@ -191,22 +197,15 @@ internal fun AppleMusicOutputSheet(
                         color = colors.subtitle,
                         modifier = Modifier.fillMaxWidth().padding(start = 32.dp, end = 20.dp, top = 4.dp),
                     )
-                    val trackTitle = connect.session?.currentTrack()?.title
-                    connect.devices.forEach { device ->
+                    connectPickerRows(connect.devices, connect.session).forEach { device ->
                         OutputRow(
                             icon = device.icon(),
                             name = device.displayName,
-                            status =
-                                when {
-                                    device.isActive && !trackTitle.isNullOrBlank() -> "Reproduciendo · $trackTitle"
-                                    device.isActive -> stringResource(Res.string.audio_output_playing_here)
-                                    device.isSelf -> "Este dispositivo"
-                                    else -> "En línea"
-                                },
-                            selected = device.isActive,
+                            status = device.status,
+                            selected = device.selected,
                             colors = colors,
                             onClick = {
-                                if (!device.isActive) connectRepo.transferTo(device.deviceId)
+                                if (!device.selected) connectRepo.transferTo(device.deviceId)
                                 closeSheet()
                             },
                         )
@@ -317,7 +316,7 @@ private fun AudioOutput.kindLabel(): String? =
         else -> null
     }
 
-private fun ConnectDevice.icon(): ImageVector =
+private fun ConnectPickerRow.icon(): ImageVector =
     if (platform == "android" || platform == "ios") SimpIcons.Smartphone else SimpIcons.Speaker
 
 private fun AudioOutput.icon(): ImageVector =
