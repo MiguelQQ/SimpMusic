@@ -1,5 +1,7 @@
 package com.maxrave.simpmusic.ui.navigation.graph
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -11,6 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.maxrave.simpmusic.Platform
+import com.maxrave.simpmusic.getPlatform
 import com.maxrave.simpmusic.ui.navigation.destination.home.AnalyticsDestination
 import com.maxrave.simpmusic.ui.navigation.destination.home.HomeDestination
 import com.maxrave.simpmusic.ui.navigation.destination.home.WrappedDestination
@@ -39,21 +43,44 @@ fun AppNavigationGraph(
     showNowPlayingSheet: () -> Unit = {},
     onScrolling: (onTop: Boolean) -> Unit = {},
 ) {
+    val desktop = getPlatform() == Platform.Desktop
+    // Desktop moves a short distance so the page change reads as a fade, not a full-screen swipe.
+    // Pop runs the same pair backwards. Android keeps the full-width slide it already had.
+    val forwardEnter =
+        if (desktop) {
+            fadeIn(tween(durationMillis = 240, easing = FastOutSlowInEasing)) +
+                slideInHorizontally(tween(durationMillis = 260)) { it / 12 }
+        } else {
+            fadeIn() + slideInHorizontally { -it }
+        }
+    val forwardExit =
+        if (desktop) {
+            fadeOut(tween(durationMillis = 160)) +
+                slideOutHorizontally(tween(durationMillis = 160)) { -it / 24 }
+        } else {
+            fadeOut() + slideOutHorizontally { it }
+        }
+    val backwardEnter =
+        if (desktop) {
+            fadeIn(tween(durationMillis = 240, easing = FastOutSlowInEasing)) +
+                slideInHorizontally(tween(durationMillis = 260)) { -it / 12 }
+        } else {
+            fadeIn() + slideInHorizontally { -it }
+        }
+    val backwardExit =
+        if (desktop) {
+            fadeOut(tween(durationMillis = 160)) +
+                slideOutHorizontally(tween(durationMillis = 160)) { it / 24 }
+        } else {
+            fadeOut() + slideOutHorizontally { it }
+        }
     NavHost(
         navController,
         startDestination = startDestination,
-        enterTransition = {
-            fadeIn() + slideInHorizontally { -it }
-        },
-        exitTransition = {
-            fadeOut() + slideOutHorizontally { it }
-        },
-        popEnterTransition = {
-            fadeIn() + slideInHorizontally { -it }
-        },
-        popExitTransition = {
-            fadeOut() + slideOutHorizontally { it }
-        },
+        enterTransition = { forwardEnter },
+        exitTransition = { forwardExit },
+        popEnterTransition = { backwardEnter },
+        popExitTransition = { backwardExit },
     ) {
         // Bottom bar destinations
         composable<HomeDestination> {

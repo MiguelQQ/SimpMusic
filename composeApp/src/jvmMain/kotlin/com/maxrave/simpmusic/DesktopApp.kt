@@ -1,16 +1,24 @@
 package com.maxrave.simpmusic
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -54,11 +62,16 @@ import io.sentry.Sentry
 import io.sentry.SentryLevel
 import io.sentry.protocol.OperatingSystem
 import io.sentry.protocol.User
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeout
 import multiplatform.network.cmptoast.ToastHost
 import multiplatform.network.cmptoast.showToast
 import okhttp3.OkHttpClient
@@ -290,16 +303,17 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
         val showNotificationPermissionDialog by
             desktopNotificationManager.shouldShowPermissionDialog.collectAsState()
         // The single-instance guard now runs before startKoin (top of
-        // runDesktopApp). Here we only react to a restore request raised when a
-        // second instance launches: bring the window back to the foreground and
-        // consume any deep link the second instance forwarded.
+        // runDesktopApp). SharedFlow drops a restore when nobody is collecting yet,
+        // and the window collector starts a frame later, so this counter stays
+        // subscribed for the whole process. The window turns it into the fade.
+        var restoreNonce by remember { mutableIntStateOf(0) }
         LaunchedEffect(Unit) {
-            DesktopRestoreSignal.requests.collect {
-                isVisible = true
-                windowState.isMinimized = false
-                DesktopDeepLinkHandler.consumePendingUri()
-            }
+            DesktopRestoreSignal.requests.collect { restoreNonce++ }
         }
+        val appScope = rememberCoroutineScope()
+        var mainAwtWindow by remember { mutableStateOf<java.awt.Window?>(null) }
+        val hideToTrayRef = remember { mutableStateOf<() -> Unit>({ isVisible = false }) }
+        val opacityLock = remember { Mutex() }
         val openAppString = stringResource(Res.string.open_app)
         val quitAppString = stringResource(Res.string.quit_app)
         val openMiniPlayer = stringResource(Res.string.open_miniplayer)
@@ -348,9 +362,26 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
             }
             Divider()
             Item(quitAppString) {
-                mediaPlayerHandler.release()
-                Sentry.endSession()
-                exitApplication()
+                appScope.launch {
+                    val awtWindow = mainAwtWindow
+                    try {
+                        if (isVisible && awtWindow != null && WindowFade.supported) {
+                            withTimeout(WindowFade.EXIT_MS.toLong() + 200L) {
+                                WindowFade.fade(
+                                    awtWindow,
+                                    runCatching { awtWindow.opacity }.getOrDefault(1f),
+                                    0f,
+                                    WindowFade.EXIT_MS,
+                                )
+                            }
+                        }
+                    } catch (_: Throwable) {
+                        // Hard stop: a stuck fade must not keep the process alive.
+                    }
+                    runCatching { mediaPlayerHandler.release() }
+                    runCatching { Sentry.endSession() }
+                    exitApplication()
+                }
             }
         }
         // Linux keeps the native title bar: undecorated + transparent breaks on some window
@@ -358,15 +389,15 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
         // buttons on the right. macOS keeps traffic lights on the left.
         val isWindows = System.getProperty("os.name", "").contains("Windows", ignoreCase = true)
         val nativeTitleBar = !isMacOS && !isWindows
+        // Linux keeps the native title bar, where per-window opacity is skipped.
+        WindowFade.nativeTitleBar = nativeTitleBar
         // Publish whether the custom title bar will be mounted so getScreenSizeInfo() can
         // subtract the 40dp strip it occupies above the content (see DesktopWindowChrome).
         LaunchedEffect(nativeTitleBar) {
             DesktopWindowChrome.customTitleBarVisible = !nativeTitleBar
         }
         Window(
-            onCloseRequest = {
-                isVisible = false
-            },
+            onCloseRequest = { hideToTrayRef.value() },
             title = stringResource(Res.string.app_name),
             icon = painterResource(Res.drawable.circle_app_icon),
             undecorated = !nativeTitleBar,
@@ -374,6 +405,82 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
             state = windowState,
             visible = isVisible,
         ) {
+            SideEffect { mainAwtWindow = window }
+            val windowScope = rememberCoroutineScope()
+            val hiding = remember { AtomicBoolean(false) }
+            val playedIntro = remember { AtomicBoolean(false) }
+            var windowFocused by remember { mutableStateOf(true) }
+            // Set before the first draw. LaunchedEffect runs after it, which is late enough for a white flash.
+            val hideOpacityForStartup =
+                remember(window) {
+                    if (WindowFade.supported) {
+                        runCatching { window.opacity = 0f }
+                        true
+                    } else {
+                        false
+                    }
+                }
+            val hideToTray: () -> Unit = {
+                if (hiding.compareAndSet(false, true)) {
+                    windowScope.launch {
+                        try {
+                            opacityLock.withLock {
+                                if (WindowFade.supported) {
+                                    WindowFade.fade(
+                                        window,
+                                        runCatching { window.opacity }.getOrDefault(1f),
+                                        0f,
+                                        WindowFade.HIDE_MS,
+                                    )
+                                }
+                                isVisible = false
+                            }
+                        } finally {
+                            hiding.set(false)
+                        }
+                    }
+                }
+            }
+            SideEffect { hideToTrayRef.value = hideToTray }
+            // Two drawn frames at opacity 0, then fade in, so the first pixels are already the UI.
+            LaunchedEffect(window, hideOpacityForStartup) {
+                if (!hideOpacityForStartup) {
+                    playedIntro.set(true)
+                    return@LaunchedEffect
+                }
+                runCatching { window.opacity = 0f }
+                withFrameNanos { }
+                withFrameNanos { }
+                opacityLock.withLock {
+                    if (!isVisible || !playedIntro.compareAndSet(false, true)) return@withLock
+                    WindowFade.fade(window, 0f, 1f, WindowFade.STARTUP_MS)
+                }
+            }
+            LaunchedEffect(restoreNonce) {
+                if (restoreNonce == 0) return@LaunchedEffect
+                opacityLock.withLock {
+                    val opacity = runCatching { window.opacity }.getOrDefault(1f)
+                    val presented = isVisible && !windowState.isMinimized && opacity >= 0.98f
+                    if (presented) {
+                        raiseDesktopWindow(window, isMacOS)
+                    } else {
+                        playedIntro.set(true)
+                        if (WindowFade.supported) {
+                            runCatching { window.opacity = 0f }
+                        } else if (opacity < 0.98f) {
+                            runCatching { window.opacity = 1f }
+                        }
+                        isVisible = true
+                        windowState.isMinimized = false
+                        if (WindowFade.supported) withFrameNanos { }
+                        raiseDesktopWindow(window, isMacOS)
+                        if (WindowFade.supported) {
+                            WindowFade.fade(window, 0f, 1f, WindowFade.RESTORE_MS)
+                        }
+                    }
+                    DesktopDeepLinkHandler.consumePendingUri()
+                }
+            }
             // Returning from macOS System Settings is the only reliable time to learn whether the
             // user enabled notifications after denying the one-shot system prompt.
             DisposableEffect(window) {
@@ -381,6 +488,11 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
                     object : WindowAdapter() {
                         override fun windowGainedFocus(event: WindowEvent) {
                             desktopNotificationManager.refreshPermission()
+                            windowFocused = true
+                        }
+
+                        override fun windowLostFocus(event: WindowEvent) {
+                            windowFocused = false
                         }
                     }
                 window.addWindowFocusListener(listener)
@@ -419,29 +531,12 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
                     }
                 }
             }
-            // Restore requests (Dock reopen, tray, second instance) also need a
-            // z-order raise; visibility/minimized are reset by the
-            // application-level collector, but toFront needs the AWT window.
-            LaunchedEffect(Unit) {
-                DesktopRestoreSignal.requests.collect {
-                    if (isMacOS && java.awt.Desktop.isDesktopSupported()) {
-                        Logger.d("DesktopApp", "Restore: visible=${window.isVisible} active=${window.isActive} focused=${window.isFocused}")
-                        // toFront() alone calls orderFront while the window is still key, which only
-                        // reorders it inside its own Space. requestFocus() always calls
-                        // makeKeyAndOrderFront, and making a window key is what makes macOS switch to
-                        // the Space holding it, the way a Dock click does for other apps.
-                        val desktop = java.awt.Desktop.getDesktop()
-                        if (desktop.isSupported(java.awt.Desktop.Action.APP_REQUEST_FOREGROUND)) {
-                            desktop.requestForeground(true)
-                        }
-                        window.toFront()
-                        window.requestFocus()
-                    } else {
-                        window.toFront()
-                    }
-                }
-            }
-            Column(
+            val focusDim by animateFloatAsState(
+                targetValue = if (windowFocused) 0f else 0.06f,
+                animationSpec = tween(durationMillis = 180),
+                label = "unfocusedDim",
+            )
+            Box(
                 modifier =
                     Modifier
                         .fillMaxSize()
@@ -452,6 +547,9 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
                                 Modifier
                             },
                         ),
+            ) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
             ) {
                 if (!nativeTitleBar) {
                     // The bar sits outside AppTheme, so the colours are resolved here from the
@@ -466,9 +564,7 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
                         title = stringResource(Res.string.app_name),
                         windowState = windowState,
                         window = window,
-                        onCloseRequest = {
-                            isVisible = false
-                        },
+                        onCloseRequest = hideToTray,
                         containerColor =
                             when {
                                 isWindows && isDark -> Color(0xFF1A1030)
@@ -520,17 +616,53 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
                 )
                 ToastHost()
             }
+            // Focus dim is a compose overlay. window.opacity would flicker under the compositor.
+            // No pointer modifier: the veil must not eat clicks.
+            if (focusDim > 0f) {
+                Box(
+                    Modifier
+                        .matchParentSize()
+                        .background(Color.Black.copy(alpha = focusDim)),
+                )
+            }
+            }
         }
 
-        // Mini Player Window (separate window)
-        if (MiniPlayerManager.isOpen) {
+        // Mini Player Window (separate window). Stay mounted through the fade-out.
+        var miniPlayerMounted by remember { mutableStateOf(MiniPlayerManager.isOpen) }
+        LaunchedEffect(MiniPlayerManager.isOpen) {
+            if (MiniPlayerManager.isOpen) miniPlayerMounted = true
+        }
+        if (miniPlayerMounted || MiniPlayerManager.isOpen) {
             MiniPlayerWindow(
                 sharedViewModel = sharedViewModel,
-                onCloseRequest = {
-                    MiniPlayerManager.isOpen = false
-                },
+                onCloseRequest = { MiniPlayerManager.isOpen = false },
+                shouldClose = !MiniPlayerManager.isOpen,
+                onHidden = { miniPlayerMounted = false },
             )
         }
+    }
+}
+
+/**
+ * toFront() alone calls orderFront while the window is still key, which only reorders it inside
+ * its own Space. requestFocus() always calls makeKeyAndOrderFront, and making a window key is what
+ * makes macOS switch to the Space holding it, the way a Dock click does for other apps.
+ */
+private fun raiseDesktopWindow(
+    window: java.awt.Window,
+    isMacOS: Boolean,
+) {
+    if (isMacOS && java.awt.Desktop.isDesktopSupported()) {
+        Logger.d("DesktopApp", "Restore: visible=${window.isVisible} active=${window.isActive} focused=${window.isFocused}")
+        val desktop = java.awt.Desktop.getDesktop()
+        if (desktop.isSupported(java.awt.Desktop.Action.APP_REQUEST_FOREGROUND)) {
+            desktop.requestForeground(true)
+        }
+        window.toFront()
+        window.requestFocus()
+    } else {
+        window.toFront()
     }
 }
 

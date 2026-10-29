@@ -5,7 +5,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
+import com.maxrave.simpmusic.WindowFade
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -43,6 +50,8 @@ import java.util.prefs.Preferences
 fun MiniPlayerWindow(
     sharedViewModel: SharedViewModel,
     onCloseRequest: () -> Unit,
+    shouldClose: Boolean = false,
+    onHidden: () -> Unit = {},
 ) {
     val prefs = remember { Preferences.userRoot().node("KillmonMusic/MiniPlayer") }
 
@@ -115,6 +124,46 @@ fun MiniPlayerWindow(
             }
         },
     ) {
+        val fadeOnOpen =
+            remember(window) {
+                if (WindowFade.supported) {
+                    runCatching { window.opacity = 0f }
+                    true
+                } else {
+                    false
+                }
+            }
+        var fadeInJob by remember { mutableStateOf<Job?>(null) }
+        val hidden = remember { AtomicBoolean(false) }
+        val scope = rememberCoroutineScope()
+        LaunchedEffect(window, fadeOnOpen) {
+            fadeInJob =
+                scope.launch {
+                    if (!fadeOnOpen) return@launch
+                    runCatching { window.opacity = 0f }
+                    withFrameNanos { }
+                    withFrameNanos { }
+                    WindowFade.fade(window, 0f, 1f, WindowFade.STARTUP_MS)
+                }
+        }
+        LaunchedEffect(shouldClose) {
+            if (!shouldClose) return@LaunchedEffect
+            fadeInJob?.cancel()
+            try {
+                if (WindowFade.supported) {
+                    WindowFade.fade(
+                        window,
+                        runCatching { window.opacity }.getOrDefault(1f),
+                        0f,
+                        WindowFade.HIDE_MS,
+                    )
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Throwable) {
+            }
+            if (hidden.compareAndSet(false, true)) onHidden()
+        }
         // Set minimum size at AWT level to prevent flickering
         LaunchedEffect(Unit) {
             (window as? java.awt.Window)?.minimumSize =
